@@ -1,11 +1,13 @@
+#include "config_app.h"
+#include "editor.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-#include "imgui_stdlib.h"
 #include <GL/gl.h>
 #include <GLES3/gl3.h>
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
 #include <cfloat>
+#include <filesystem>
 #include <map>
 #include <spdlog/sinks/ostream_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -48,6 +50,7 @@ struct AppState {
   std::string vert_src = VERT_DEFAULT;
   std::string frag_src = FRAG_DEFAULT;
   bool frag_src_changed;
+  bool zep_init = false;
   float vertices[12] = {
       -1.0f, -1.0f, 0.0f, //
       1.0f,  -1.0f, 0.0f, //
@@ -123,6 +126,10 @@ int main(int, char **) {
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // ?
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;    // Enable docking
 
+  auto fontPath =
+      std::filesystem::path(APP_ROOT) / "fonts" / "Cousine-Regular.ttf";
+  io.Fonts->AddFontFromFileTTF(fontPath.string().c_str(), 18);
+
   // Setup Platform/Renderer backends
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init(glsl_version);
@@ -163,13 +170,22 @@ int main(int, char **) {
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
+    if (!state->zep_init) {
+      // Called once the fonts/device is guaranteed setup
+      zep_init(Zep::NVec2f(1.0f, 1.0f));
+      zep_get_editor().InitWithText("Fragment Shader", state->frag_src);
+      state->zep_init = true;
+    }
+
+    zep_update();
+
     // Render widgets
     setupDockspace();
-    ImGui::SetNextWindowBgAlpha(0.5f);
+    ImGui::SetNextWindowBgAlpha(0.8f);
     renderEditor(state);
-    ImGui::SetNextWindowBgAlpha(0.5f);
+    ImGui::SetNextWindowBgAlpha(0.6f);
     renderViewport(state);
-    ImGui::SetNextWindowBgAlpha(0.5f);
+    ImGui::SetNextWindowBgAlpha(0.6f);
     renderConsole(state);
 
     // Recompile Shader
@@ -212,6 +228,8 @@ int main(int, char **) {
   glDeleteTextures(1, &state->viewport_colorbuffer);
   glDeleteFramebuffers(1, &state->viewport_fbo);
 
+  zep_destroy();
+
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplGlfw_Shutdown();
   ImGui::DestroyContext();
@@ -233,9 +251,9 @@ bool isKeyJustPressed(GLFWwindow *window, int key) {
   return !prevState && (currentState == GLFW_PRESS);
 }
 void processInput(GLFWwindow *window) {
-  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-    glfwSetWindowShouldClose(window, true);
-  }
+  // if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+  //   glfwSetWindowShouldClose(window, true);
+  // }
   if (isKeyJustPressed(window, GLFW_KEY_F1)) {
     static bool wireframe = false;
     wireframe = !wireframe;
@@ -309,14 +327,20 @@ void setupDockspace() {
   ImGui::End();
 }
 void renderEditor(AppState *app_state) {
-  ImGui::Begin("Fragment Shader");
+  static Zep::NVec2i size = Zep::NVec2i(640, 480);
+  static uint64_t last_update = 0;
 
-  static ImGuiInputTextFlags flags = ImGuiInputTextFlags_AllowTabInput;
-  if (ImGui::InputTextMultiline("##Code", &app_state->frag_src,
-                                ImVec2(-FLT_MIN, -FLT_MIN), flags))
+  zep_show(size);
+
+  auto buffer = zep_get_editor().GetBuffers()[0];
+  uint64_t new_update = buffer->GetUpdateCount();
+
+  if (new_update != last_update) {
+    app_state->frag_src = buffer->GetBufferText(buffer->Begin(), buffer->End());
     app_state->frag_src_changed = true;
+  }
 
-  ImGui::End();
+  last_update = new_update;
 }
 void renderViewport(AppState *app_state) {
   ImGui::Begin("Viewport");

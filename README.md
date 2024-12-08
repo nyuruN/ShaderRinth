@@ -13,4 +13,20 @@ should be relatively easy to use and offer various
 presets so that the user can iterate on their ideas
 faster.
 
+## Goal posts
 
+* Integrate more powerful code/text editor [done]
+
+* Create framework for shaders/materials/configurable uniforms etc.
+
+* Ability to save/load renders and shader projects
+
+* Load textures & configure as uniforms
+
+* Manage multiple shader passes
+
+* Node based editor for shader passes / uniforms / textures
+
+* UI improvements
+
+* ...

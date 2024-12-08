@@ -3,19 +3,19 @@ cmake_minimum_required(VERSION 3.31.0)
 # Other arguments
 set(CMAKE_TOOLCHAIN_FILE "~/.local/share/vcpkg/scripts/buildsystems/vcpkg.cmake")
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+add_definitions(-w)
 
 include(FetchContent)
+include_directories(/usr/include/freetype2)
+
+# Set this to get the default file system for zep
+add_definitions(-DZEP_FEATURE_CPP_FILE_SYSTEM)
 
 project(
   ShaderRinth
   VERSION 0.0.1
   DESCRIPTION "Placeholder"
   LANGUAGES CXX
-)
-
-add_executable(
-  app
-  src/main.cpp
 )
 
 # Fetch libraries
@@ -32,6 +32,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glfw)
 find_package(OpenGL REQUIRED)
+find_package(Freetype REQUIRED)
 
 # Setup Imgui
 add_library(imgui INTERFACE)
@@ -47,9 +48,10 @@ add_library(imgui_impl STATIC
   ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
   ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
   ${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp
+  ${imgui_SOURCE_DIR}/misc/freetype/imgui_freetype.cpp
 )
 target_include_directories(imgui_impl PRIVATE ${imgui_SOURCE_DIR} ${glfw_SOURCE_DIR}/include)
-target_link_libraries(imgui_impl PRIVATE imgui glfw OpenGL::GL)
+target_link_libraries(imgui_impl PRIVATE imgui glfw OpenGL::GL freetype)
 
 # Setup spdlog
 add_library(spdlog STATIC IMPORTED)
@@ -58,13 +60,33 @@ set_target_properties(spdlog PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/extern/spdlog/include"
 )
 
-# Link imgui glfw opengl backends
+# Setup zep
+add_definitions(-DZEP_SINGLE_HEADER=1)
+
+set(APP_ROOT ${CMAKE_CURRENT_LIST_DIR})
+configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/config_app.h.cmake ${CMAKE_BINARY_DIR}/config_app.h)
+
+
+set(SOURCES src/main.cpp
+    src/editor.cpp
+    include/editor.h)
+
+# Link executable
+add_executable(
+  app
+  ${SOURCES}
+)
 target_link_libraries(app PRIVATE OpenGL::GL glfw imgui imgui_impl spdlog)
 target_include_directories(app PRIVATE 
   ${imgui_SOURCE_DIR}
   ${imgui_SOURCE_DIR}/misc/cpp
+  ${imgui_SOURCE_DIR}/misc/freetype
   ${imgui_SOURCE_DIR}/backends
   ${glfw_SOURCE_DIR}/include
+  ${CMAKE_SOURCE_DIR}/extern/zep/include
+  ${CMAKE_CURRENT_LIST_DIR} 
+  ${CMAKE_BINARY_DIR}
+  include
 )
 
 # compile options
