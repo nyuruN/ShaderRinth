@@ -6,19 +6,13 @@
 #include <GL/gl.h>
 #include <GLES3/gl3.h>
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
-#include <cfloat>
-#include <filesystem>
-#include <map>
 #include <spdlog/sinks/ostream_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
-#include <sstream>
-#include <stdio.h>
-
-// #define GL_SILENCE_DEPRECATION
 
 const char *VERT_DEFAULT = R"(
 #version 330 core
+
 layout (location = 0) in vec3 aPos;
 
 void main()
@@ -173,7 +167,7 @@ int main(int, char **) {
     if (!state->zep_init) {
       // Called once the fonts/device is guaranteed setup
       zep_init(Zep::NVec2f(1.0f, 1.0f));
-      zep_get_editor().InitWithText("Fragment Shader", state->frag_src);
+      zep_get_editor().InitWithText("frag.glsl", state->frag_src);
       state->zep_init = true;
     }
 
