@@ -1,15 +1,9 @@
 cmake_minimum_required(VERSION 3.31.0)
 
 # Other arguments
-set(CMAKE_TOOLCHAIN_FILE "~/.local/share/vcpkg/scripts/buildsystems/vcpkg.cmake")
+set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 add_definitions(-w)
-
-include(FetchContent)
-include_directories(/usr/include/freetype2)
-
-# Set this to get the default file system for zep
-add_definitions(-DZEP_FEATURE_CPP_FILE_SYSTEM)
 
 project(
   ShaderRinth
@@ -18,82 +12,45 @@ project(
   LANGUAGES CXX
 )
 
-# Fetch libraries
-FetchContent_Declare(
-  imgui
-  GIT_REPOSITORY https://github.com/ocornut/imgui.git
-  GIT_TAG        v1.91.5-docking
+set(EXECUTABLE app)
+
+add_executable(
+  ${EXECUTABLE}
+  src/main.cpp
+  src/editor.cpp
+  include/editor.h
 )
-FetchContent_MakeAvailable(imgui)
-FetchContent_Declare(
-  glfw
-  GIT_REPOSITORY https://github.com/glfw/glfw.git
-  GIT_TAG        3.4
+target_include_directories(${EXECUTABLE} PRIVATE 
+  include
 )
-FetchContent_MakeAvailable(glfw)
+
+# Link libraries
+find_package(imgui CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE} PRIVATE imgui::imgui)
+find_package(glfw3 CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE} PRIVATE glfw)
+find_package(spdlog CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE} PRIVATE spdlog::spdlog)
 find_package(OpenGL REQUIRED)
-find_package(Freetype REQUIRED)
+target_link_libraries(${EXECUTABLE} PRIVATE OpenGL::GL)
+#find_package(Freetype REQUIRED)
 
-# Setup Imgui
-add_library(imgui INTERFACE)
-target_include_directories(imgui INTERFACE ${imgui_SOURCE_DIR})
-
-# Setup Imgui Backend
-add_library(imgui_impl STATIC
-  ${imgui_SOURCE_DIR}/imgui.cpp
-  ${imgui_SOURCE_DIR}/imgui_draw.cpp
-  ${imgui_SOURCE_DIR}/imgui_tables.cpp
-  ${imgui_SOURCE_DIR}/imgui_widgets.cpp
-  ${imgui_SOURCE_DIR}/imgui_demo.cpp
-  ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
-  ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
-  ${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp
-  ${imgui_SOURCE_DIR}/misc/freetype/imgui_freetype.cpp
-)
-target_include_directories(imgui_impl PRIVATE ${imgui_SOURCE_DIR} ${glfw_SOURCE_DIR}/include)
-target_link_libraries(imgui_impl PRIVATE imgui glfw OpenGL::GL freetype)
-
-# Setup spdlog
-add_library(spdlog STATIC IMPORTED)
-set_target_properties(spdlog PROPERTIES
-  IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/extern/spdlog/build/libspdlog.a"
-  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/extern/spdlog/include"
-)
-
-# Setup zep
+# Link zep
+add_definitions(-DZEP_FEATURE_CPP_FILE_SYSTEM)
 add_definitions(-DZEP_SINGLE_HEADER=1)
-
 set(APP_ROOT ${CMAKE_CURRENT_LIST_DIR})
 configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/config_app.h.cmake ${CMAKE_BINARY_DIR}/config_app.h)
-
-
-set(SOURCES src/main.cpp
-    src/editor.cpp
-    include/editor.h)
-
-# Link executable
-add_executable(
-  app
-  ${SOURCES}
-)
-target_link_libraries(app PRIVATE OpenGL::GL glfw imgui imgui_impl spdlog)
-target_include_directories(app PRIVATE 
-  ${imgui_SOURCE_DIR}
-  ${imgui_SOURCE_DIR}/misc/cpp
-  ${imgui_SOURCE_DIR}/misc/freetype
-  ${imgui_SOURCE_DIR}/backends
-  ${glfw_SOURCE_DIR}/include
-  ${CMAKE_SOURCE_DIR}/extern/zep/include
-  ${CMAKE_CURRENT_LIST_DIR} 
+target_include_directories(${EXECUTABLE} PRIVATE 
+  ${CMAKE_SOURCE_DIR}/zep/include 
+  ${CMAKE_CURRENT_LIST_DIR}
   ${CMAKE_BINARY_DIR}
-  include
 )
 
 # compile options
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-  target_compile_options(app PRIVATE /W4)
+  target_compile_options(${EXECUTABLE} PRIVATE /W4)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  target_compile_options(app PRIVATE -Wall -Wextra -Wpedantic)
+  target_compile_options(${EXECUTABLE} PRIVATE -Wall -Wextra -Wpedantic)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   # other macOS-specific flags for Clang
 endif()
