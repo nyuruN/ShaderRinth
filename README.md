@@ -17,7 +17,7 @@ faster.
 
 * Integrate more powerful code/text editor [done]
 
-* Create framework for shaders/materials/configurable uniforms etc.
+* Create framework for shaders/materials/configurable uniforms etc. [wip]
 
 * Ability to save/load renders and shader projects
 
@@ -25,7 +25,7 @@ faster.
 
 * Manage multiple shader passes
 
-* Node based editor for shader passes / uniforms / textures
+* Node based editor for shader passes / uniforms / textures [wip]
 
 * UI improvements
 

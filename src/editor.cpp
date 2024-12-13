@@ -1,3 +1,5 @@
+// Sourced from:
+// https://github.com/cmaughan/zep_imgui/blob/main/demo/src/editor.cpp
 
 #if ZEP_SINGLE_HEADER == 1
 #define ZEP_SINGLE_HEADER_BUILD

@@ -1,3 +1,6 @@
+// Sourced from:
+// https://github.com/cmaughan/zep_imgui/blob/main/demo/include/editor.h
+
 #pragma once
 
 #include <zep.h>
