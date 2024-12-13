@@ -19,6 +19,10 @@ add_executable(
   src/main.cpp
   src/editor.cpp
   include/editor.h
+  # Link imnodes
+  ${CMAKE_CURRENT_LIST_DIR}/imnodes/imnodes.h
+  ${CMAKE_CURRENT_LIST_DIR}/imnodes/imnodes_internal.h
+  ${CMAKE_CURRENT_LIST_DIR}/imnodes/imnodes.cpp
 )
 target_include_directories(${EXECUTABLE} PRIVATE 
   include
@@ -33,7 +37,6 @@ find_package(spdlog CONFIG REQUIRED)
 target_link_libraries(${EXECUTABLE} PRIVATE spdlog::spdlog)
 find_package(OpenGL REQUIRED)
 target_link_libraries(${EXECUTABLE} PRIVATE OpenGL::GL)
-#find_package(Freetype REQUIRED)
 
 # Link zep
 add_definitions(-DZEP_FEATURE_CPP_FILE_SYSTEM)

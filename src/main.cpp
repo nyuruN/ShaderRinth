@@ -3,9 +3,12 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "imnodes/imnodes.h"
 #include <GL/gl.h>
 #include <GLES3/gl3.h>
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
+#include <graph.h>
+#include <memory>
 #include <spdlog/sinks/ostream_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
@@ -72,6 +75,7 @@ void setupDockspace();
 void renderEditor(AppState *app_state);
 void renderViewport(AppState *app_state);
 void renderConsole(AppState *app_state);
+void renderNodeEditor(AppState *app_state);
 
 // Main code
 int main(int, char **) {
@@ -79,10 +83,10 @@ int main(int, char **) {
 
   // Setup logger for gui and stdout
   auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-  console_sink->set_level(spdlog::level::info);
+  console_sink->set_level(spdlog::level::debug);
   auto ostream_sink =
       std::make_shared<spdlog::sinks::ostream_sink_mt>(state->log_stream);
-  ostream_sink->set_level(spdlog::level::warn);
+  ostream_sink->set_level(spdlog::level::info);
 
   std::vector<spdlog::sink_ptr> sinks = {ostream_sink, console_sink};
   auto logger =
@@ -127,6 +131,9 @@ int main(int, char **) {
   // Setup Platform/Renderer backends
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init(glsl_version);
+
+  // Setup Imnodes
+  ImNodes::CreateContext();
 
   // Setup OpenGL
   glGenVertexArrays(1, &state->vao);
@@ -175,12 +182,10 @@ int main(int, char **) {
 
     // Render widgets
     setupDockspace();
-    ImGui::SetNextWindowBgAlpha(0.8f);
     renderEditor(state);
-    ImGui::SetNextWindowBgAlpha(0.6f);
     renderViewport(state);
-    ImGui::SetNextWindowBgAlpha(0.6f);
     renderConsole(state);
+    renderNodeEditor(state);
 
     // Recompile Shader
     if (state->frag_src_changed) {
@@ -196,17 +201,7 @@ int main(int, char **) {
     glViewport(0, 0, display_w, display_h);
     glClearColor(0.15f, 0.20f, 0.25f, 1.00f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glUseProgram(state->program);
 
-    // Update Uniforms
-    int u_time_location = glGetUniformLocation(state->program, "u_time");
-    glUniform1f(u_time_location, glfwGetTime());
-    int u_resolution_location =
-        glGetUniformLocation(state->program, "u_resolution");
-    glUniform2f(u_resolution_location, (float)display_w, (float)display_h);
-
-    glBindVertexArray(state->vao);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     glfwSwapBuffers(window);
@@ -221,6 +216,8 @@ int main(int, char **) {
   glDeleteBuffers(1, &state->ebo);
   glDeleteTextures(1, &state->viewport_colorbuffer);
   glDeleteFramebuffers(1, &state->viewport_fbo);
+
+  ImNodes::DestroyContext();
 
   zep_destroy();
 
@@ -243,6 +240,17 @@ bool isKeyJustPressed(GLFWwindow *window, int key) {
   keyPrevState[key] = (currentState == GLFW_PRESS);
 
   return !prevState && (currentState == GLFW_PRESS);
+}
+// Return true only if the key transitioned from RELEASE to PRESS
+// (ImGui version)
+bool isKeyJustPressed(ImGuiKey key) {
+  static std::map<ImGuiKey, bool> keyPrevState;
+  bool currentState = ImGui::IsKeyDown(key);
+  bool prevState = keyPrevState[key];
+
+  keyPrevState[key] = currentState;
+
+  return !prevState && currentState;
 }
 void processInput(GLFWwindow *window) {
   // if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -392,7 +400,46 @@ void renderConsole(AppState *app_state) {
   if (sticky)
     ImGui::SetScrollY(max_y);
 
-  sticky = (y == max_y);
+  sticky = (y >= max_y);
+
+  ImGui::End();
+}
+void renderNodeEditor(AppState *app_state) {
+  ImGui::Begin("Node Editor");
+
+  static RenderGraph graph;
+  static bool first = true;
+
+  {
+    ImNodes::BeginNodeEditor();
+
+    if (first) {
+      FloatOutputNode out;
+      graph.insert_root_node(std::make_unique<FloatOutputNode>(out));
+      FloatNode node;
+      graph.insert_node(std::make_unique<FloatNode>(node));
+
+      first = false;
+    }
+
+    graph.render();
+
+    ImNodes::EndNodeEditor();
+  }
+
+  {
+    int from_pin, to_pin;
+    if (ImNodes::IsLinkCreated(&from_pin, &to_pin)) {
+      graph.insert_edge(from_pin, to_pin);
+    }
+    if (isKeyJustPressed(ImGuiKey_F2)) {
+      graph.evaluate();
+      auto out = dynamic_cast<FloatOutputNode *>(graph.get_root_node());
+      float output = out->get_value();
+      spdlog::info("Output: {}", output);
+      graph.clear_graph();
+    }
+  }
 
   ImGui::End();
 }
