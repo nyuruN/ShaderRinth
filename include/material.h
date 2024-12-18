@@ -111,7 +111,6 @@ public:
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
-    spdlog::info("Generating buffers");
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(VERTICES), VERTICES, GL_STATIC_DRAW);

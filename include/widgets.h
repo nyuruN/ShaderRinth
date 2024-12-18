@@ -80,7 +80,8 @@ public:
     ImGui::BeginChild("ViewportRender");
 
     ImVec2 wsize = ImGui::GetWindowSize();
-    ImGui::Image((ImTextureID)image, wsize, ImVec2(0, 1), ImVec2(1, 0));
+    if (image != -1)
+      ImGui::Image((ImTextureID)image, wsize, ImVec2(0, 1), ImVec2(1, 0));
 
     ImGui::EndChild();
     ImGui::End();
@@ -142,9 +143,34 @@ public:
     ImNodes::CreateContext();
 
     int out = graph->insert_root_node(std::make_unique<OutputNode>());
-    int node = graph->insert_node(std::make_unique<TimeNode>());
+    int time = graph->insert_node(std::make_unique<TimeNode>());
     int vec = graph->insert_node(std::make_unique<Vec2Node>());
     int frag = graph->insert_node(std::make_unique<FragmentShaderNode>());
+
+    auto f = dynamic_cast<FragmentShaderNode *>(graph->get_node(frag));
+    auto v = dynamic_cast<Vec2Node *>(graph->get_node(vec));
+
+    int out_in =
+        dynamic_cast<OutputNode *>(graph->get_node(out))->get_input_pin();
+    int time_out =
+        dynamic_cast<TimeNode *>(graph->get_node(time))->get_output_pin();
+    int frag_out = f->get_output_pin();
+    int vec_out = v->get_output_pin();
+
+    int u_res_in = f->add_uniform_pin(*graph, DataType::Vec2,
+                                      (std::string) "u_resolution");
+    int u_time_in =
+        f->add_uniform_pin(*graph, DataType::Float, (std::string) "u_time");
+    v->set_value(640.0f, 480.0f);
+
+    graph->insert_edge(frag_out, out_in);
+    graph->insert_edge(time_out, u_time_in);
+    graph->insert_edge(vec_out, u_res_in);
+
+    ImNodes::SetNodeGridSpacePos(out, ImVec2(500, 40));
+    ImNodes::SetNodeGridSpacePos(vec, ImVec2(20, 40));
+    ImNodes::SetNodeGridSpacePos(time, ImVec2(20, 160));
+    ImNodes::SetNodeGridSpacePos(frag, ImVec2(200, 60));
   };
   void onShutdown() override { ImNodes::DestroyContext(); }
   void onUpdate() override {

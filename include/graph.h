@@ -214,7 +214,6 @@ struct RenderGraph {
 
     while (run_order.size() != 0) {
       int nodeid = run_order.back();
-      spdlog::info("running node {}", nodeid);
       nodes[nodeid]->run(*this);
       run_order.pop_back();
 
@@ -223,6 +222,7 @@ struct RenderGraph {
       }
     }
   };
+  Node *get_node(int nodeid) { return nodes[nodeid].get(); }
   Node *get_root_node() { return nodes[root_node].get(); }
   // Prevents nodes from reusing previous data
   void clear_graph_data() {
@@ -241,6 +241,8 @@ class OutputNode : public Node {
   int input_pin;
   int out_texture;
 
+  float node_width = 80.0f;
+
 public:
   int get_input_pin() { return input_pin; }
   int get_image() { return out_texture; }
@@ -255,7 +257,7 @@ public:
       ImGui::Text("Image");
       ImNodes::EndInputAttribute();
     }
-    ImGui::Dummy(ImVec2(80.0f, 45.0f));
+    ImGui::Dummy(ImVec2(node_width, 20.0f));
 
     ImNodes::EndNode();
   }
@@ -266,7 +268,6 @@ public:
   void run(RenderGraph &graph) override {
     std::any data;
     graph.get_pin_data(input_pin, &data);
-    spdlog::info("Reading from pin {}", input_pin);
     try {
       out_texture = std::any_cast<int>(data);
     } catch (std::bad_any_cast) {
@@ -277,7 +278,10 @@ public:
 class TimeNode : public Node {
   int output_pin;
 
+  float node_width = 80.0f;
+
 public:
+  int get_output_pin() { return output_pin; }
   void render(RenderGraph &graph) override {
     ImNodes::BeginNode(id);
 
@@ -286,10 +290,11 @@ public:
     ImNodes::EndNodeTitleBar();
     {
       ImNodes::BeginOutputAttribute(output_pin);
+      ImGui::Indent(node_width - ImGui::CalcTextSize("Float").x);
       ImGui::Text("Float");
       ImNodes::EndOutputAttribute();
     }
-    ImGui::Dummy(ImVec2(80.0f, 45.0f));
+    ImGui::Dummy(ImVec2(node_width, 10.0f));
 
     ImNodes::EndNode();
   }
@@ -305,6 +310,8 @@ class FloatNode : public Node {
   int output_pin;
   float value = 0.0f;
 
+  float node_width = 80.0f;
+
 public:
   void render(RenderGraph &graph) override {
     ImNodes::BeginNode(id);
@@ -314,11 +321,11 @@ public:
     ImNodes::EndNodeTitleBar();
     {
       ImNodes::BeginOutputAttribute(output_pin);
-      ImGui::SetNextItemWidth(120);
-      ImGui::InputFloat("Float", &value);
+      ImGui::SetNextItemWidth(node_width);
+      ImGui::InputFloat("Float", &value, 0, 0, "%.2f");
       ImNodes::EndOutputAttribute();
     }
-    ImGui::Dummy(ImVec2(120, 20));
+    ImGui::Dummy(ImVec2(node_width, 20));
 
     ImNodes::EndNode();
   }
@@ -334,7 +341,14 @@ class Vec2Node : public Node {
   int output_pin;
   float value[2] = {0};
 
+  float node_width = 120.0f;
+
 public:
+  void set_value(float x, float y) {
+    value[0] = x;
+    value[1] = y;
+  }
+  int get_output_pin() { return output_pin; }
   void render(RenderGraph &graph) override {
     ImNodes::BeginNode(id);
 
@@ -343,11 +357,11 @@ public:
     ImNodes::EndNodeTitleBar();
     {
       ImNodes::BeginOutputAttribute(output_pin);
-      ImGui::SetNextItemWidth(120);
+      ImGui::SetNextItemWidth(node_width);
       ImGui::InputFloat2("##hidelabel", value, "%.1f");
       ImNodes::EndOutputAttribute();
     }
-    ImGui::Dummy(ImVec2(120, 20));
+    ImGui::Dummy(ImVec2(node_width, 20));
 
     ImNodes::EndNode();
   }
@@ -377,6 +391,16 @@ class FragmentShaderNode : public Node {
 
 public:
   int get_output_pin() { return output_pin; }
+  int add_uniform_pin(RenderGraph &graph, DataType type, std::string name) {
+    int pinid;
+    graph.register_pin(id, type, &pinid);
+    uniform_pins.push_back(UniformPin{
+      pinid,
+      type,
+      identifier : name,
+    });
+    return pinid;
+  }
   void render(RenderGraph &graph) override {
     ImNodes::BeginNode(id);
 
@@ -404,13 +428,7 @@ public:
       ImGui::SeparatorText("Uniforms");
       for (auto &pair : TYPESTRMAP) {
         if (ImGui::MenuItem(pair.second.c_str())) {
-          int pinid;
-          graph.register_pin(id, pair.first, &pinid);
-          uniform_pins.push_back(UniformPin{
-            pinid,
-            type : pair.first,
-            identifier : fmt::format("u_{}", pair.second),
-          });
+          add_uniform_pin(graph, pair.first, fmt::format("u_{}", pair.second));
         }
       }
       ImGui::EndPopup();
@@ -581,7 +599,6 @@ public:
       break;
     };
     case DataType::Vec2: {
-      debugAny(data);
       float *value = std::any_cast<float *>(data);
       glUniform2fv(loc, 1, value);
       break;
