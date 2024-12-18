@@ -18,7 +18,8 @@ add_executable(
   ${EXECUTABLE}
   src/main.cpp
   src/editor.cpp
-  include/editor.h
+  src/utils.cpp
+  src/graph.cpp
   # Link imnodes
   ${CMAKE_CURRENT_LIST_DIR}/imnodes/imnodes.h
   ${CMAKE_CURRENT_LIST_DIR}/imnodes/imnodes_internal.h
