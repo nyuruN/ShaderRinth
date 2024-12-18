@@ -1,9 +1,8 @@
 #include "imnodes/imnodes.h"
+#include "utils.h"
 #include <GLFW/glfw3.h>
 #include <any>
 #include <cstdlib>
-// #include <geometry.h>
-#include "utils.h"
 #include <imgui.h>
 #include <map>
 #include <memory>
@@ -47,7 +46,6 @@ const std::string to_string(DataType type) noexcept;
 const DataType to_type(std::string str) noexcept;
 
 struct RenderGraph;
-class Node;
 
 // Nodes:
 // This base class defines function required for
@@ -57,13 +55,11 @@ public:
   int id;
 
   // Renders the Node
-  virtual void render(RenderGraph &graph) {
-    spdlog::warn("Default render() used!");
-  };
+  virtual void render(RenderGraph &graph) {};
   virtual void onEnter(RenderGraph &) {};
   virtual void onExit(RenderGraph &) {};
   // Runs the Node under the assumption
-  // that all depencies are fulfilled
+  // that all leaf nodes are satisfied
   // and writes to output pins
   virtual void run(RenderGraph &) {};
 };
@@ -74,7 +70,7 @@ struct RenderGraph {
   struct Pin {
     int node_id;
     int id;
-    DataType type; // This must be the same in a link
+    DataType type;
     std::any data;
   };
   // Represents a connection between nodes
@@ -82,7 +78,7 @@ struct RenderGraph {
     int id;
     int from, to;
   };
-  // Unique ptr since we need polymorphism
+  // unique_ptr since we need polymorphism
   std::map<int, std::unique_ptr<Node>> nodes;
   std::map<int, Edge> edges;
   std::map<int, Pin> pins;
@@ -160,12 +156,10 @@ struct RenderGraph {
   void render() {
     ImNodes::BeginNodeEditor();
 
-    // Render Nodes
-    for (auto &pair : nodes) {
+    for (auto &pair : nodes) { // Render Nodes
       pair.second->render(*this);
     }
-    // Render Edges
-    for (auto &pair : edges) {
+    for (auto &pair : edges) { // Render Edges
       ImNodes::Link(pair.first, pair.second.from, pair.second.to);
     }
 
@@ -174,15 +168,11 @@ struct RenderGraph {
   void get_pin_data(int pinid, std::any *ptr) { *ptr = pins.at(pinid).data; };
   void set_pin_data(int pinid, std::any ptr) {
     std::vector<int> connected_pins;
-    spdlog::info("Scanning from pin {}", pinid);
     for (auto &pair : this->edges) {
-      spdlog::info("Edge {} -> {}", pair.second.from, pair.second.to);
       if (pair.second.from == pinid)
         connected_pins.push_back(pair.second.to);
     }
-
     for (auto &cpin : connected_pins) {
-      spdlog::info("Found pin {}, writing data", cpin);
       this->pins[cpin].data = ptr;
     }
   };
@@ -206,7 +196,7 @@ struct RenderGraph {
     }
   }
   // Starting from the root node, traverse the N-ary tree
-  // to put them in topological order
+  // to perform a topological sort
   void traverse(std::vector<int> &order, int nodeid) {
     order.push_back(nodeid);
 
@@ -217,26 +207,27 @@ struct RenderGraph {
       traverse(order, child);
     }
   }
-  void topological_order() { traverse(this->run_order, this->root_node); };
+  void topological_order() { traverse(run_order, root_node); };
   void evaluate() {
     topological_order();
-    this->should_stop = false;
+    should_stop = false;
 
-    while (this->run_order.size() != 0) {
-      int nodeid = this->run_order.back();
+    while (run_order.size() != 0) {
+      int nodeid = run_order.back();
       spdlog::info("running node {}", nodeid);
-      this->nodes[nodeid]->run(*this);
-      this->run_order.pop_back();
+      nodes[nodeid]->run(*this);
+      run_order.pop_back();
 
-      if (this->should_stop) {
+      if (should_stop) {
         break;
       }
     }
   };
-  Node *get_root_node() { return this->nodes[this->root_node].get(); }
-  void clear_graph() {
-    this->run_order.clear();
-    for (auto &pin : this->pins) {
+  Node *get_root_node() { return nodes[root_node].get(); }
+  // Prevents nodes from reusing previous data
+  void clear_graph_data() {
+    run_order.clear();
+    for (auto &pin : pins) {
       pin.second.data = nullptr;
     }
   };
@@ -251,15 +242,16 @@ class OutputNode : public Node {
   int out_texture;
 
 public:
-  int get_image() { return out_texture; };
+  int get_input_pin() { return input_pin; }
+  int get_image() { return out_texture; }
   void render(RenderGraph &graph) override {
-    ImNodes::BeginNode(this->id);
+    ImNodes::BeginNode(id);
 
     ImNodes::BeginNodeTitleBar();
     ImGui::Text("Output");
     ImNodes::EndNodeTitleBar();
     {
-      ImNodes::BeginInputAttribute(this->input_pin);
+      ImNodes::BeginInputAttribute(input_pin);
       ImGui::Text("Image");
       ImNodes::EndInputAttribute();
     }
@@ -268,17 +260,15 @@ public:
     ImNodes::EndNode();
   }
   void onEnter(RenderGraph &graph) override {
-    graph.register_pin(this->id, DataType::Texture2D, &this->input_pin);
+    graph.register_pin(id, DataType::Texture2D, &input_pin);
   }
-  void onExit(RenderGraph &graph) override {
-    graph.delete_pin(this->input_pin);
-  }
+  void onExit(RenderGraph &graph) override { graph.delete_pin(input_pin); }
   void run(RenderGraph &graph) override {
     std::any data;
-    graph.get_pin_data(this->input_pin, &data);
+    graph.get_pin_data(input_pin, &data);
     spdlog::info("Reading from pin {}", input_pin);
     try {
-      this->out_texture = std::any_cast<int>(data);
+      out_texture = std::any_cast<int>(data);
     } catch (std::bad_any_cast) {
       spdlog::error("Nothing is connected!");
     }
@@ -289,13 +279,13 @@ class TimeNode : public Node {
 
 public:
   void render(RenderGraph &graph) override {
-    ImNodes::BeginNode(this->id);
+    ImNodes::BeginNode(id);
 
     ImNodes::BeginNodeTitleBar();
     ImGui::Text("Time");
     ImNodes::EndNodeTitleBar();
     {
-      ImNodes::BeginOutputAttribute(this->output_pin);
+      ImNodes::BeginOutputAttribute(output_pin);
       ImGui::Text("Float");
       ImNodes::EndOutputAttribute();
     }
@@ -304,47 +294,12 @@ public:
     ImNodes::EndNode();
   }
   void onEnter(RenderGraph &graph) override {
-    graph.register_pin(this->id, DataType::Float, &this->output_pin);
+    graph.register_pin(id, DataType::Float, &output_pin);
   }
-  void onExit(RenderGraph &graph) override {
-    graph.delete_pin(this->output_pin);
-  }
+  void onExit(RenderGraph &graph) override { graph.delete_pin(output_pin); }
   void run(RenderGraph &graph) override {
-    graph.set_pin_data(this->output_pin, (float)glfwGetTime());
+    graph.set_pin_data(output_pin, (float)glfwGetTime());
   }
-};
-class FloatOutputNode : public Node {
-  int input_pin;
-  float value;
-
-public:
-  void render(RenderGraph &graph) override {
-    ImNodes::BeginNode(this->id);
-
-    ImNodes::BeginNodeTitleBar();
-    ImGui::Text("Output");
-    ImNodes::EndNodeTitleBar();
-    {
-      ImNodes::BeginInputAttribute(this->input_pin);
-      ImGui::Text("Float");
-      ImNodes::EndInputAttribute();
-    }
-    ImGui::Dummy(ImVec2(80.0f, 45.0f));
-
-    ImNodes::EndNode();
-  }
-  void onEnter(RenderGraph &graph) override {
-    graph.register_pin(this->id, DataType::Float, &this->input_pin);
-  }
-  void onExit(RenderGraph &graph) override {
-    graph.delete_pin(this->input_pin);
-  }
-  void run(RenderGraph &graph) override {
-    std::any data;
-    graph.get_pin_data(this->input_pin, &data);
-    this->value = std::any_cast<float>(data);
-  }
-  float get_value() { return this->value; };
 };
 class FloatNode : public Node {
   int output_pin;
@@ -352,13 +307,13 @@ class FloatNode : public Node {
 
 public:
   void render(RenderGraph &graph) override {
-    ImNodes::BeginNode(this->id);
+    ImNodes::BeginNode(id);
 
     ImNodes::BeginNodeTitleBar();
     ImGui::Text("Float");
     ImNodes::EndNodeTitleBar();
     {
-      ImNodes::BeginOutputAttribute(this->output_pin);
+      ImNodes::BeginOutputAttribute(output_pin);
       ImGui::SetNextItemWidth(120);
       ImGui::InputFloat("Float", &value);
       ImNodes::EndOutputAttribute();
@@ -368,14 +323,11 @@ public:
     ImNodes::EndNode();
   }
   void onEnter(RenderGraph &graph) override {
-    graph.register_pin(this->id, DataType::Float, &this->output_pin);
+    graph.register_pin(id, DataType::Float, &output_pin);
   }
-  void onExit(RenderGraph &graph) override {
-    graph.delete_pin(this->output_pin);
-  }
+  void onExit(RenderGraph &graph) override { graph.delete_pin(output_pin); }
   void run(RenderGraph &graph) override {
-    std::any data = this->value;
-    graph.set_pin_data(this->output_pin, data);
+    graph.set_pin_data(output_pin, (float)value);
   }
 };
 class Vec2Node : public Node {
@@ -384,13 +336,13 @@ class Vec2Node : public Node {
 
 public:
   void render(RenderGraph &graph) override {
-    ImNodes::BeginNode(this->id);
+    ImNodes::BeginNode(id);
 
     ImNodes::BeginNodeTitleBar();
     ImGui::Text("Vec2");
     ImNodes::EndNodeTitleBar();
     {
-      ImNodes::BeginOutputAttribute(this->output_pin);
+      ImNodes::BeginOutputAttribute(output_pin);
       ImGui::SetNextItemWidth(120);
       ImGui::InputFloat2("##hidelabel", value, "%.1f");
       ImNodes::EndOutputAttribute();
@@ -400,15 +352,11 @@ public:
     ImNodes::EndNode();
   }
   void onEnter(RenderGraph &graph) override {
-    graph.register_pin(this->id, DataType::Vec2, &this->output_pin);
+    graph.register_pin(id, DataType::Vec2, &output_pin);
   }
-  void onExit(RenderGraph &graph) override {
-    graph.delete_pin(this->output_pin);
-  }
+  void onExit(RenderGraph &graph) override { graph.delete_pin(output_pin); }
   void run(RenderGraph &graph) override {
-    std::any data = (float *)this->value;
-    debugAny(data);
-    graph.set_pin_data(this->output_pin, data);
+    graph.set_pin_data(output_pin, (float *)value);
   }
 };
 class FragmentShaderNode : public Node {
@@ -417,19 +365,20 @@ class FragmentShaderNode : public Node {
     DataType type;
     std::string identifier;
   };
-  const float node_width = 240.0f;
 
   int output_pin;
   std::vector<UniformPin> uniform_pins;
-  // float resolution[2] = {680, 480};
   char shader_name[128] = {"Default\0"};
-  unsigned int image_fbo;
-  unsigned int image_colorbuffer;
-  int bound_textures = 0;
+  GLuint image_fbo;
+  GLuint image_colorbuffer;
+  GLuint bound_textures = 0;
+
+  const float node_width = 240.0f;
 
 public:
+  int get_output_pin() { return output_pin; }
   void render(RenderGraph &graph) override {
-    ImNodes::BeginNode(this->id);
+    ImNodes::BeginNode(id);
 
     ImNodes::BeginNodeTitleBar();
     ImGui::TextUnformatted("FragmentShader");
@@ -443,14 +392,9 @@ public:
     ImGui::SameLine();
     ImGui::SetNextItemWidth(node_width - ImGui::CalcTextSize("Source").x);
     ImGui::InputText("##hidelabel", shader_name, sizeof(shader_name));
-    // ImGui::Text("Resolution");
-    // ImGui::SameLine();
-    // ImGui::SetNextItemWidth(node_width -
-    // ImGui::CalcTextSize("Resolution").x); ImGui::InputFloat2("##hidelabel",
-    // resolution, "%.0f");
 
     {
-      ImNodes::BeginOutputAttribute(this->output_pin);
+      ImNodes::BeginOutputAttribute(output_pin);
       ImGui::Indent(node_width - ImGui::CalcTextSize("Image").x);
       ImGui::Text("Image");
       ImNodes::EndOutputAttribute();
@@ -461,8 +405,8 @@ public:
       for (auto &pair : TYPESTRMAP) {
         if (ImGui::MenuItem(pair.second.c_str())) {
           int pinid;
-          graph.register_pin(this->id, pair.first, &pinid);
-          this->uniform_pins.push_back(UniformPin{
+          graph.register_pin(id, pair.first, &pinid);
+          uniform_pins.push_back(UniformPin{
             pinid,
             type : pair.first,
             identifier : fmt::format("u_{}", pair.second),
@@ -475,7 +419,7 @@ public:
     { // Render uniforms + delete logic
       std::vector<int> marked;
       int idx = 0;
-      for (auto &pin : this->uniform_pins) {
+      for (auto &pin : uniform_pins) {
         ImNodes::BeginInputAttribute(pin.pinid);
         ImGui::Text(to_string(pin.type).c_str());
         ImGui::SameLine();
@@ -506,7 +450,7 @@ public:
     ImNodes::EndNode();
   }
   void onEnter(RenderGraph &graph) override {
-    graph.register_pin(this->id, DataType::Texture2D, &this->output_pin);
+    graph.register_pin(id, DataType::Texture2D, &this->output_pin);
 
     glGenFramebuffers(1, &image_fbo);
     glGenTextures(1, &image_colorbuffer);
@@ -520,7 +464,7 @@ public:
     glBindTexture(GL_TEXTURE_2D, 0);
   }
   void onExit(RenderGraph &graph) override {
-    graph.delete_pin(this->output_pin);
+    graph.delete_pin(output_pin);
     for (auto &pin : uniform_pins) {
       graph.delete_pin(pin.pinid);
     }
@@ -553,24 +497,23 @@ public:
                  NULL);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    spdlog::info("Before Uniform");
     for (auto &pin : uniform_pins) {
       std::any data;
       graph.get_pin_data(pin.pinid, &data);
       set_uniform(*shader.get(), pin.identifier, pin.type, data);
     }
-    spdlog::info("After Uniform");
 
     glBindFramebuffer(GL_FRAMEBUFFER, image_fbo);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                            image_colorbuffer, 0);
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+      graph.should_stop = true;
       spdlog::error("Framebuffer is not complete!");
+      return;
     }
 
     glViewport(0, 0, graph.viewport_resolution.x, graph.viewport_resolution.y);
-    // glClearColor(0.15f, 0.20f, 0.25f, 1.00f);
-    glClearColor(0.5f, 0.55f, 0.6f, 1.00f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.00f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     shader->use();
@@ -579,8 +522,6 @@ public:
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     bound_textures = 0;
 
-    spdlog::info("Results saved in Texture {}, in pin {}", image_colorbuffer,
-                 output_pin);
     graph.set_pin_data(output_pin, (int)image_colorbuffer);
   }
   unsigned int get_next_texture_unit() {
@@ -590,8 +531,8 @@ public:
   }
   void set_uniform(Shader &shader, std::string identifier, DataType type,
                    std::any data) {
-    unsigned int loc = shader.get_uniform_loc(identifier.data());
-    debugAny(data);
+    GLuint loc = shader.get_uniform_loc(identifier.data());
+    // debugAny(data);
 
     switch (type) {
     case DataType::Int: {
@@ -656,8 +597,8 @@ public:
       break;
     };
     case DataType::Texture2D: {
-      unsigned int texture = std::any_cast<unsigned int>(data);
-      unsigned int unit = get_next_texture_unit();
+      GLuint texture = std::any_cast<unsigned int>(data);
+      int unit = get_next_texture_unit();
       glActiveTexture(unit);
       glBindTexture(GL_TEXTURE_2D, texture);
       glUniform1i(loc, texture);

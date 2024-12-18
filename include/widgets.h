@@ -4,14 +4,13 @@
 #include <GLES3/gl3.h>
 #include <GLFW/glfw3.h>
 #include <editor.h>
-// #include <geometry.h>
 #include <graph.h>
 #include <spdlog/sinks/ostream_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
-// #include <utils.h>
 #include <zep.h>
 
+// A stateful widget
 class Widget {
   // Runs on the FIRST startup frame
   virtual void onStartup() {};
@@ -22,22 +21,28 @@ class Widget {
 };
 
 class EditorWidget : public Widget {
+private:
+  std::string _source;
+
 public:
-  std::string filename;
-  std::string source;
+  std::string buffername;
   bool is_dirty;
 
   Zep::NVec2i size = Zep::NVec2i(640, 480);
   uint64_t last_update = 0;
 
   EditorWidget(std::string filename, std::string source) {
-    this->filename = filename;
-    this->source = source;
+    buffername = filename;
+    _source = source;
+  }
+  std::string get_text() {
+    auto buffer = zep_get_editor().GetBuffers()[0];
+    buffer->GetBufferText(buffer->Begin(), buffer->End());
   }
 
   void onStartup() override {
     zep_init(Zep::NVec2f(1.0f, 1.0f));
-    zep_get_editor().InitWithText(this->filename, this->source);
+    zep_get_editor().InitWithText(buffername, _source);
   };
   void onShutdown() override { zep_destroy(); }
   void onUpdate() override {
@@ -45,106 +50,46 @@ public:
     uint64_t new_update = buffer->GetUpdateCount();
 
     if (new_update != last_update) {
-      this->source = buffer->GetBufferText(buffer->Begin(), buffer->End());
       this->is_dirty = true;
     }
-
     last_update = new_update;
 
     zep_update(); // cursor blink etc.
   };
   void render() override { zep_show(size); }
 };
+/// TODO:
+/// Add option to display the image without stretching
 class ViewportWidget : public Widget {
 public:
-  // ScreenQuadGeometry screen_geo = ScreenQuadGeometry();
-  //  unsigned int viewport_fbo;
-  //  unsigned int viewport_colorbuffer;
-  //  unsigned int vert_shader;
-  //  unsigned int frag_shader;
-  //  unsigned int program;
-
   ImVec2 wsize = ImVec2(640, 480);
-  int image_override = 0;
+  GLuint image = -1;
 
+  void set_image(GLuint textureid) { image = textureid; }
   void onStartup() override {
-    // glGenFramebuffers(1, &this->viewport_fbo);
-    // glGenTextures(1, &this->viewport_colorbuffer);
-    //
-    // glBindTexture(GL_TEXTURE_2D, this->viewport_colorbuffer);
-    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, wsize.x, wsize.y, 0, GL_RGB,
-    //              GL_UNSIGNED_BYTE, NULL);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // glBindTexture(GL_TEXTURE_2D, 0);
+    // TODO
   };
   void onShutdown() override {
-    // glDeleteShader(this->vert_shader);
-    // glDeleteShader(this->frag_shader);
-    // glDeleteProgram(this->program);
-    // glDeleteTextures(1, &this->viewport_colorbuffer);
-    // glDeleteFramebuffers(1, &this->viewport_fbo);
+    // TODO
   }
   void onUpdate() override {
-    // Update Uniforms
-    // int u_time_location = glGetUniformLocation(this->program, "u_time");
-    // glUniform1f(u_time_location, glfwGetTime());
-    // int u_resolution_location =
-    //     glGetUniformLocation(this->program, "u_resolution");
-    // glUniform2f(u_resolution_location, wsize.x, wsize.y);
-  };
-  void onResize(ImVec2 newsize) {
-    // this->wsize = newsize; // TODO
-    //
-    // // Resize colorbuffer
-    // glBindTexture(GL_TEXTURE_2D, this->viewport_colorbuffer);
-    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, wsize.x, wsize.y, 0, GL_RGB,
-    //              GL_UNSIGNED_BYTE, NULL);
-    // glBindTexture(GL_TEXTURE_2D, 0);
-    //
-    // // Update resolution uniform
-    // int u_resolution_location =
-    //     glGetUniformLocation(this->program, "u_resolution");
-    // glUniform2f(u_resolution_location, wsize.x, wsize.y);
+    // TODO
   };
   void render() override {
     ImGui::Begin("Viewport");
     ImGui::BeginChild("ViewportRender");
 
     ImVec2 wsize = ImGui::GetWindowSize();
-    //
-    // if (this->wsize.x != wsize.x || this->wsize.y != wsize.y) {
-    //   onResize(wsize);
-    // }
-    //
-    // glBindFramebuffer(GL_FRAMEBUFFER, this->viewport_fbo);
-    //
-    // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-    // GL_TEXTURE_2D,
-    //                        this->viewport_colorbuffer, 0);
-    //
-    // if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    // {
-    //   spdlog::error("Framebuffer is not complete!");
-    // }
-    //
-    // glViewport(0, 0, wsize.x, wsize.y);
-    // glClearColor(0.15f, 0.20f, 0.25f, 1.00f);
-    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // glUseProgram(this->program);
-
-    // screen_geo.draw_geometry();
-
-    ImGui::Image((ImTextureID)image_override, wsize, ImVec2(0, 1),
-                 ImVec2(1, 0));
-
-    // glBindFramebuffer(GL_FRAMEBUFFER, 0); // reset default framebuffer
+    ImGui::Image((ImTextureID)image, wsize, ImVec2(0, 1), ImVec2(1, 0));
 
     ImGui::EndChild();
     ImGui::End();
   }
 };
+/// TODO:
+/// Add custom colors to console output
 class ConsoleWidget : public Widget {
+private:
   std::ostringstream log_stream;
   std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> console_sink;
   std::shared_ptr<spdlog::sinks::ostream_sink_mt> ostream_sink;
@@ -196,14 +141,10 @@ public:
   void onStartup() override {
     ImNodes::CreateContext();
 
-    OutputNode out;
-    graph->insert_root_node(std::make_unique<OutputNode>(out));
-    TimeNode node;
-    graph->insert_node(std::make_unique<TimeNode>(node));
-    Vec2Node vec;
-    graph->insert_node(std::make_unique<Vec2Node>(vec));
-    FragmentShaderNode frag;
-    graph->insert_node(std::make_unique<FragmentShaderNode>(frag));
+    int out = graph->insert_root_node(std::make_unique<OutputNode>());
+    int node = graph->insert_node(std::make_unique<TimeNode>());
+    int vec = graph->insert_node(std::make_unique<Vec2Node>());
+    int frag = graph->insert_node(std::make_unique<FragmentShaderNode>());
   };
   void onShutdown() override { ImNodes::DestroyContext(); }
   void onUpdate() override {

@@ -8,7 +8,6 @@
 
 // Reserved for later use
 class Geometry {
-
 public:
   virtual void compile_vertex_shader(unsigned int &vert_shader) {};
   virtual void draw_geometry() {};
@@ -16,13 +15,13 @@ public:
 };
 
 class Shader {
-  unsigned int shader;
-  unsigned int program;
-  int success;
+  GLuint program;
   char *source;
   bool compiled = false;
+  char log[512] = {'\0'};
 
 public:
+  Shader(char *src) { source = src; }
   Shader(std::filesystem::path path) {
     std::ifstream file(path);
     if (!file)
@@ -32,54 +31,52 @@ public:
     buf << file.rdbuf();
     source = buf.str().data();
   }
-  Shader(char *src) { source = src; }
   bool compile(std::shared_ptr<Geometry> geo) {
-    shader = glCreateShader(GL_FRAGMENT_SHADER);
+    spdlog::info("Compiling fragment shader");
 
-    spdlog::info("Embedding Sources");
-    glShaderSource(shader, 1, &source, NULL);
-    glCompileShader(shader);
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-    spdlog::info("Compiled fragment");
+    GLuint frag = glCreateShader(GL_FRAGMENT_SHADER);
+    int success;
+    glShaderSource(frag, 1, &source, NULL);
+    glCompileShader(frag);
+    glGetShaderiv(frag, GL_COMPILE_STATUS, &success);
 
     if (!success) {
-      spdlog::error("Failed to compile Shader");
+      spdlog::error("Failed to compile fragment shader");
+      glGetShaderInfoLog(frag, 512, NULL, log);
       return success;
     }
 
-    spdlog::info("Compiling vertex");
-    unsigned int vert;
+    GLuint vert;
     geo->compile_vertex_shader(vert);
+    glGetShaderiv(vert, GL_COMPILE_STATUS, &success);
 
-    spdlog::info("Linking Program");
+    if (!success) {
+      spdlog::error("Failed to compile vertex shader");
+      glGetShaderInfoLog(frag, 512, NULL, log);
+      return success;
+    }
+
     program = glCreateProgram();
-    glAttachShader(program, shader);
+    glAttachShader(program, frag);
     glAttachShader(program, vert);
     glLinkProgram(program);
     glGetProgramiv(program, GL_COMPILE_STATUS, &success);
 
+    glDeleteShader(vert); // Detach shader and mark for deletion
+    glDeleteShader(frag);
+
     if (!success) {
       spdlog::error("Failed to link program");
+      glGetProgramInfoLog(program, 512, NULL, log);
       return success;
     }
 
-    spdlog::info("Compiling fragment shader");
     compiled = true;
-
     return success;
   }
   void use() { glUseProgram(program); }
   bool is_compiled() { return compiled; }
-  char *get_log() {
-    if (!success) {
-      char buf[512] = {'\0'};
-      glGetShaderInfoLog(shader, 512, NULL, buf);
-      if (buf[0] != '\0')
-        return buf;
-      glGetProgramInfoLog(program, 512, NULL, buf);
-      return buf;
-    }
-  }
+  char *get_log() { return log; }
   unsigned int get_uniform_loc(char *name) {
     return glGetUniformLocation(program, name);
   }
@@ -105,9 +102,9 @@ void main()
 }
 )";
 
-  unsigned int vao;
-  unsigned int vbo;
-  unsigned int ebo;
+  GLuint vao;
+  GLuint vbo;
+  GLuint ebo;
 
 public:
   ScreenQuadGeometry() {
@@ -127,24 +124,11 @@ public:
                           (void *)0);
     glEnableVertexAttribArray(0);
   }
-  void compile_vertex_shader(unsigned int &vert_shader) override {
+  void compile_vertex_shader(GLuint &vert_shader) override {
     spdlog::info("Compiling Vertex Shader");
-    int success;
-    char info_log[512];
-
     vert_shader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vert_shader, 1, &VERT_SRC, NULL);
     glCompileShader(vert_shader);
-
-    glGetShaderiv(vert_shader, GL_COMPILE_STATUS, &success);
-
-    if (!success) {
-      spdlog::error("VERTEX Shader compilation failed!");
-      glGetShaderInfoLog(vert_shader, 512, NULL, info_log);
-      spdlog::error(info_log);
-    }
-
-    spdlog::info("Finished compiling vertex shader");
   }
   void draw_geometry() override {
     spdlog::info("Drawing geometry");
