@@ -245,7 +245,7 @@ class OutputNode : public Node {
 
 public:
   int get_input_pin() { return input_pin; }
-  int get_image() { return out_texture; }
+  GLuint get_image() { return out_texture; }
   void render(RenderGraph &graph) override {
     ImNodes::BeginNode(id);
 

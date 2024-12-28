@@ -1,4 +1,5 @@
 #include "config_app.h"
+#include "editor.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -32,7 +33,6 @@ void main() {
 )";
 
 struct AppState {
-  std::string frag_src = FRAG_DEFAULT;
   bool startup_frame = true;
 };
 
@@ -87,12 +87,12 @@ int main(int, char **) {
   AppState *state = new AppState();
   auto graph = std::make_shared<RenderGraph>();
   auto geo = std::make_shared<ScreenQuadGeometry>();
-  auto shader = std::make_shared<Shader>(Shader((char *)FRAG_DEFAULT));
+  auto shader = std::make_shared<Shader>(Shader(std::string(FRAG_DEFAULT)));
   assets.set_shader(std::string("Default"), shader);
   graph->set_geometry(geo);
 
   EditorWidget editor = EditorWidget("default.glsl", FRAG_DEFAULT);
-  ViewportWidget viewport = ViewportWidget();
+  ViewportWidget viewport = ViewportWidget(graph);
   ConsoleWidget console = ConsoleWidget();
   NodeEditorWidget node_editor = NodeEditorWidget(graph);
 
@@ -125,12 +125,11 @@ int main(int, char **) {
     console.onUpdate();
     node_editor.onUpdate();
 
-    if (isKeyJustPressed(ImGuiKey_F2)) {
-      graph->evaluate();
-      auto out = dynamic_cast<OutputNode *>(graph->get_root_node());
-      int output = out->get_image();
-      viewport.set_image(output);
-      graph->clear_graph_data();
+    if (editor.is_dirty) {
+      std::string text = editor.get_text();
+      shader->set_source(text);
+      shader->should_recompile();
+      editor.is_dirty = false;
     }
 
     // Render widgets
@@ -180,6 +179,10 @@ void processInput(GLFWwindow *window) {
       glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     else
       glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  }
+  if (isKeyJustPressed(window, GLFW_KEY_F3)) {
+    auto buffer = zep_get_editor().GetBuffers()[0];
+    spdlog::info("Name: {}, {}", buffer->GetName(), buffer->GetDisplayName());
   }
 }
 void setupDockspace() {

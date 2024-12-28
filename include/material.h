@@ -16,12 +16,12 @@ public:
 
 class Shader {
   GLuint program;
-  char *source;
+  std::string source;
   bool compiled = false;
   char log[512] = {'\0'};
 
 public:
-  Shader(char *src) { source = src; }
+  Shader(std::string src) { source = src; }
   Shader(std::filesystem::path path) {
     std::ifstream file(path);
     if (!file)
@@ -32,11 +32,12 @@ public:
     source = buf.str().data();
   }
   bool compile(std::shared_ptr<Geometry> geo) {
-    spdlog::info("Compiling fragment shader");
+    spdlog::info("Compiling shaders");
 
-    GLuint frag = glCreateShader(GL_FRAGMENT_SHADER);
     int success;
-    glShaderSource(frag, 1, &source, NULL);
+    const char *src = source.c_str();
+    GLuint frag = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(frag, 1, &src, NULL);
     glCompileShader(frag);
     glGetShaderiv(frag, GL_COMPILE_STATUS, &success);
 
@@ -76,6 +77,8 @@ public:
   }
   void use() { glUseProgram(program); }
   bool is_compiled() { return compiled; }
+  void should_recompile() { compiled = false; }
+  void set_source(std::string src) { source = src; }
   char *get_log() { return log; }
   unsigned int get_uniform_loc(char *name) {
     return glGetUniformLocation(program, name);
@@ -124,13 +127,11 @@ public:
     glEnableVertexAttribArray(0);
   }
   void compile_vertex_shader(GLuint &vert_shader) override {
-    spdlog::info("Compiling Vertex Shader");
     vert_shader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vert_shader, 1, &VERT_SRC, NULL);
     glCompileShader(vert_shader);
   }
   void draw_geometry() override {
-    spdlog::info("Drawing geometry");
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);

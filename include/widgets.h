@@ -26,9 +26,8 @@ private:
 
 public:
   std::string buffername;
-  bool is_dirty;
+  bool is_dirty = false;
 
-  Zep::NVec2i size = Zep::NVec2i(640, 480);
   uint64_t last_update = 0;
 
   EditorWidget(std::string filename, std::string source) {
@@ -37,12 +36,12 @@ public:
   }
   std::string get_text() {
     auto buffer = zep_get_editor().GetBuffers()[0];
-    buffer->GetBufferText(buffer->Begin(), buffer->End());
+    return buffer->GetBufferText(buffer->Begin(), buffer->End());
   }
-
   void onStartup() override {
     zep_init(Zep::NVec2f(1.0f, 1.0f));
     zep_get_editor().InitWithText(buffername, _source);
+    last_update = zep_get_editor().GetBuffers()[0]->GetUpdateCount();
   };
   void onShutdown() override { zep_destroy(); }
   void onUpdate() override {
@@ -56,16 +55,16 @@ public:
 
     zep_update(); // cursor blink etc.
   };
-  void render() override { zep_show(size); }
+  void render() override { zep_show(Zep::NVec2i(0, 0)); }
 };
 /// TODO:
 /// Add option to display the image without stretching
 class ViewportWidget : public Widget {
 public:
+  std::shared_ptr<RenderGraph> viewgraph;
   ImVec2 wsize = ImVec2(640, 480);
-  GLuint image = -1;
 
-  void set_image(GLuint textureid) { image = textureid; }
+  ViewportWidget(std::shared_ptr<RenderGraph> graph) { viewgraph = graph; }
   void onStartup() override {
     // TODO
   };
@@ -76,12 +75,18 @@ public:
     // TODO
   };
   void render() override {
-    ImGui::Begin("Viewport");
+    ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoMove);
     ImGui::BeginChild("ViewportRender");
 
-    ImVec2 wsize = ImGui::GetWindowSize();
-    if (image != -1)
-      ImGui::Image((ImTextureID)image, wsize, ImVec2(0, 1), ImVec2(1, 0));
+    wsize = ImGui::GetWindowSize();
+
+    viewgraph->clear_graph_data();
+    viewgraph->set_resolution(wsize);
+    viewgraph->evaluate();
+    auto out = dynamic_cast<OutputNode *>(viewgraph->get_root_node());
+    GLuint output = out->get_image();
+
+    ImGui::Image((ImTextureID)output, wsize, ImVec2(0, 1), ImVec2(1, 0));
 
     ImGui::EndChild();
     ImGui::End();

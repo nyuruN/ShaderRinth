@@ -114,15 +114,13 @@ void zep_load(const fs::path &file) {
 }
 
 void zep_show(const Zep::NVec2i &displaySize) {
-  bool show = true;
 #ifdef ZEP_CONSOLE
   spZep->Draw("Console", &show, ImVec4(0, 0, 500, 400), true);
   spZep->AddLog("Hello!");
 #else
   ImGui::SetNextWindowSize(ImVec2(displaySize.x, displaySize.y),
                            ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("Zep", &show,
-                    ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_MenuBar)) {
+  if (!ImGui::Begin("Zep", nullptr, ImGuiWindowFlags_NoScrollbar)) {
     ImGui::End();
     return;
   }
