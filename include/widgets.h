@@ -22,38 +22,35 @@ class Widget {
 
 class EditorWidget : public Widget {
 private:
-  std::string _source;
+  std::shared_ptr<Shader> shader;
 
 public:
-  std::string buffername;
   bool is_dirty = false;
-
   uint64_t last_update = 0;
 
-  EditorWidget(std::string filename, std::string source) {
-    buffername = filename;
-    _source = source;
-  }
-  std::string get_text() {
+  EditorWidget(std::shared_ptr<Shader> shader) { this->shader = shader; }
+  std::string get_buffer_text() {
     auto buffer = zep_get_editor().GetBuffers()[0];
     return buffer->GetBufferText(buffer->Begin(), buffer->End());
   }
   void onStartup() override {
     zep_init(Zep::NVec2f(1.0f, 1.0f));
-    zep_get_editor().InitWithText(buffername, _source);
+    zep_get_editor().InitWithText(shader->get_name(), shader->get_source());
     last_update = zep_get_editor().GetBuffers()[0]->GetUpdateCount();
   };
   void onShutdown() override { zep_destroy(); }
   void onUpdate() override {
-    auto buffer = zep_get_editor().GetBuffers()[0];
-    uint64_t new_update = buffer->GetUpdateCount();
-
-    if (new_update != last_update) {
+    uint64_t new_update = zep_get_editor().GetBuffers()[0]->GetUpdateCount();
+    if (new_update != last_update)
       this->is_dirty = true;
-    }
     last_update = new_update;
 
-    zep_update(); // cursor blink etc.
+    if (is_dirty) {
+      std::string text = get_buffer_text();
+      shader->set_source(text);
+      shader->should_recompile();
+      is_dirty = false;
+    }
   };
   void render() override { zep_show(Zep::NVec2i(0, 0)); }
 };
@@ -75,7 +72,7 @@ public:
     // TODO
   };
   void render() override {
-    ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoMove);
+    ImGui::Begin("Viewport");
     ImGui::BeginChild("ViewportRender");
 
     wsize = ImGui::GetWindowSize();
@@ -187,7 +184,7 @@ public:
   }
   void render() override {
     ImGui::Begin("Node Editor");
-    this->graph.get()->render();
+    graph.get()->render();
     ImGui::End();
   }
 };

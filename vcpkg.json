@@ -2,6 +2,7 @@
   "dependencies": [
     "glfw3",
     "spdlog",
+    "cereal",
     {
       "name": "imgui",
       "features": [ "docking-experimental", "glfw-binding", "opengl3-binding" ]

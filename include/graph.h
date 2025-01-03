@@ -43,7 +43,6 @@ const std::map<DataType, std::string> TYPESTRMAP = {
 };
 
 const std::string to_string(DataType type) noexcept;
-const DataType to_type(std::string str) noexcept;
 
 struct RenderGraph;
 
@@ -55,7 +54,7 @@ public:
   int id;
 
   // Renders the Node
-  virtual void render(RenderGraph &graph) {};
+  virtual void render(RenderGraph &) {};
   virtual void onEnter(RenderGraph &) {};
   virtual void onExit(RenderGraph &) {};
   // Runs the Node under the assumption
@@ -78,17 +77,21 @@ struct RenderGraph {
     int id;
     int from, to;
   };
-  // unique_ptr since we need polymorphism
   std::map<int, std::unique_ptr<Node>> nodes;
   std::map<int, Edge> edges;
   std::map<int, Pin> pins;
-  int root_node;
+
+  std::shared_ptr<Assets<Shader>> shaders;
   std::shared_ptr<Geometry> graph_geometry = nullptr;
   ImVec2 viewport_resolution = ImVec2(640, 480);
+  int root_node;
 
   std::vector<int> run_order;
   bool should_stop = false;
 
+  RenderGraph(std::shared_ptr<Assets<Shader>> shaders) {
+    this->shaders = shaders;
+  };
   void set_resolution(ImVec2 res) { viewport_resolution = res; }
   void set_geometry(std::shared_ptr<Geometry> geo) { graph_geometry = geo; }
   int get_next_node_id() {
@@ -239,7 +242,7 @@ struct RenderGraph {
 
 class OutputNode : public Node {
   int input_pin;
-  int out_texture;
+  GLuint out_texture;
 
   float node_width = 80.0f;
 
@@ -494,7 +497,7 @@ public:
 
     try {
       auto str = std::string(shader_name);
-      shader = assets.get_shader(str);
+      shader = graph.shaders->at(str);
     } catch (std::out_of_range) {
       graph.should_stop = true;
       spdlog::error("Shader \"{}\" does not exist!", shader_name);

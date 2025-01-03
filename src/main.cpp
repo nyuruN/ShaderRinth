@@ -1,46 +1,20 @@
+#include "app.h"
 #include "config_app.h"
 #include "editor.h"
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
-#include "imnodes/imnodes.h"
 #include <GL/gl.h>
 #include <GLES3/gl3.h>
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 #include <spdlog/sinks/ostream_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
-// #include <utils.h>
-#include <widgets.h> // Will drag graph.h
-
-const char *FRAG_DEFAULT = R"(
-#version 330 core
-
-out vec4 FragColor;
-
-uniform float u_time;
-uniform vec2 u_resolution;
-
-void main() {
-  vec3 col = vec3(0.5f);
-  vec2 uv = gl_FragCoord.xy / u_resolution;
-
-  col.xy = uv;
-  col.z = sin(u_time) * 0.5f + 0.5f;
-
-  FragColor = vec4(col, 1.0f);
-}
-)";
-
-struct AppState {
-  bool startup_frame = true;
-};
 
 static void glfw_error_callback(int error, const char *description) {
   spdlog::error("GLFW Error %d: %s\n", error, description);
 }
 void processInput(GLFWwindow *window);
-void setupDockspace();
 
 // Main code
 int main(int, char **) {
@@ -74,8 +48,8 @@ int main(int, char **) {
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard |
                       ImGuiConfigFlags_DockingEnable; // Enable docking
 
-    auto fontPath =
-        std::filesystem::path(APP_ROOT) / "fonts" / "Cousine-Regular.ttf";
+    auto fontPath = std::filesystem::path(APP_ROOT) / "assets" / "fonts" /
+                    "Cousine-Regular.ttf";
     io.Fonts->AddFontFromFileTTF(fontPath.string().c_str(), 16);
 
     // Setup Platform/Renderer backends
@@ -83,20 +57,10 @@ int main(int, char **) {
     ImGui_ImplOpenGL3_Init(glsl_version);
   }
 
-  // Setup App Logic
-  AppState *state = new AppState();
-  auto graph = std::make_shared<RenderGraph>();
-  auto geo = std::make_shared<ScreenQuadGeometry>();
-  auto shader = std::make_shared<Shader>(Shader(std::string(FRAG_DEFAULT)));
-  assets.set_shader(std::string("Default"), shader);
-  graph->set_geometry(geo);
-
-  EditorWidget editor = EditorWidget("default.glsl", FRAG_DEFAULT);
-  ViewportWidget viewport = ViewportWidget(graph);
-  ConsoleWidget console = ConsoleWidget();
-  NodeEditorWidget node_editor = NodeEditorWidget(graph);
+  App app = App();
 
   // Main loop
+  bool first_frame = true;
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
     processInput(window);
@@ -112,34 +76,14 @@ int main(int, char **) {
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    if (state->startup_frame) {
-      state->startup_frame = false;
-      editor.onStartup();
-      viewport.onStartup();
-      console.onStartup();
-      node_editor.onStartup();
+    if (first_frame) {
+      first_frame = false;
+      app.startup();
     }
 
-    editor.onUpdate();
-    viewport.onUpdate();
-    console.onUpdate();
-    node_editor.onUpdate();
+    app.update();
 
-    if (editor.is_dirty) {
-      std::string text = editor.get_text();
-      shader->set_source(text);
-      shader->should_recompile();
-      editor.is_dirty = false;
-    }
-
-    // Render widgets
-    setupDockspace();
-    editor.render();
-    viewport.render();
-    console.render();
-    node_editor.render();
-
-    // TODO: Recompile Shader
+    app.render();
 
     // Rendering
     ImGui::Render();
@@ -148,17 +92,12 @@ int main(int, char **) {
     glViewport(0, 0, display_w, display_h);
     glClearColor(0.15f, 0.20f, 0.25f, 1.00f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     glfwSwapBuffers(window);
   }
 
-  // Cleanup
-  editor.onShutdown();
-  viewport.onShutdown();
-  console.onShutdown();
-  node_editor.onShutdown();
+  app.shutdown();
 
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplGlfw_Shutdown();
@@ -184,29 +123,4 @@ void processInput(GLFWwindow *window) {
     auto buffer = zep_get_editor().GetBuffers()[0];
     spdlog::info("Name: {}, {}", buffer->GetName(), buffer->GetDisplayName());
   }
-}
-void setupDockspace() {
-  // Create a full-screen window to host the docking space
-  ImGui::SetNextWindowPos(ImVec2(0, 0)); // Position at the top-left corner
-  ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize); // Size matches display
-  ImGui::SetNextWindowBgAlpha(0.0f); // Make it invisible if desired
-
-  // Create a window for the docking space (no title bar, resize, or move)
-  ImGuiWindowFlags dockspace_flags =
-      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
-      ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-      ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-
-  // Disable padding and scrolling in the dockspace window
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-  ImGui::Begin("DockSpaceWindow", nullptr, dockspace_flags);
-  ImGui::PopStyleVar();
-
-  // Create a dock space
-  ImGuiID dockspace_id = ImGui::GetID("DockSpace");
-  ImGui::PushStyleColor(ImGuiCol_DockingEmptyBg, ImVec4(0., 0., 0., 0.));
-  ImGui::DockSpace(dockspace_id, ImVec2(0, 0), ImGuiDockNodeFlags_None);
-  ImGui::PopStyleColor();
-
-  ImGui::End();
 }

@@ -20,12 +20,10 @@ add_executable(
   src/editor.cpp
   src/utils.cpp
   src/graph.cpp
-  # Link imnodes
-  ${CMAKE_CURRENT_LIST_DIR}/imnodes/imnodes.h
-  ${CMAKE_CURRENT_LIST_DIR}/imnodes/imnodes_internal.h
-  ${CMAKE_CURRENT_LIST_DIR}/imnodes/imnodes.cpp
+  imnodes/imnodes.cpp
 )
 target_include_directories(${EXECUTABLE} PRIVATE 
+  ${CMAKE_CURRENT_LIST_DIR}
   include
 )
 
@@ -36,6 +34,8 @@ find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(${EXECUTABLE} PRIVATE glfw)
 find_package(spdlog CONFIG REQUIRED)
 target_link_libraries(${EXECUTABLE} PRIVATE spdlog::spdlog)
+find_package(cereal CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE} PRIVATE cereal::cereal)
 find_package(OpenGL REQUIRED)
 target_link_libraries(${EXECUTABLE} PRIVATE OpenGL::GL)
 
@@ -46,7 +46,6 @@ set(APP_ROOT ${CMAKE_CURRENT_LIST_DIR})
 configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/config_app.h.cmake ${CMAKE_BINARY_DIR}/config_app.h)
 target_include_directories(${EXECUTABLE} PRIVATE 
   ${CMAKE_SOURCE_DIR}/zep/include 
-  ${CMAKE_CURRENT_LIST_DIR}
   ${CMAKE_BINARY_DIR}
 )
 

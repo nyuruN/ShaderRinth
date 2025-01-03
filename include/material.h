@@ -6,7 +6,6 @@
 #include <imgui.h>
 #include <spdlog/spdlog.h>
 
-// Reserved for later use
 class Geometry {
 public:
   virtual void compile_vertex_shader(unsigned int &vert_shader) {};
@@ -15,21 +14,21 @@ public:
 };
 
 class Shader {
-  GLuint program;
-  std::string source;
-  bool compiled = false;
   char log[512] = {'\0'};
+  std::string source;
+  std::string name;
+  GLuint program;
+  bool compiled = false;
 
 public:
-  Shader(std::string src) { source = src; }
   Shader(std::filesystem::path path) {
     std::ifstream file(path);
     if (!file)
       throw std::runtime_error("Failed to open file: " + path.string());
-
     std::ostringstream buf;
     buf << file.rdbuf();
-    source = buf.str().data();
+    source = buf.str();
+    name = path.filename();
   }
   bool compile(std::shared_ptr<Geometry> geo) {
     spdlog::info("Compiling shaders");
@@ -79,8 +78,10 @@ public:
   bool is_compiled() { return compiled; }
   void should_recompile() { compiled = false; }
   void set_source(std::string src) { source = src; }
+  std::string get_source() { return source; }
+  std::string get_name() { return name; }
   char *get_log() { return log; }
-  unsigned int get_uniform_loc(char *name) {
+  GLuint get_uniform_loc(char *name) {
     return glGetUniformLocation(program, name);
   }
 };
