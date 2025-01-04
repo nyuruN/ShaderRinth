@@ -2,6 +2,7 @@
 #include <GL/gl.h>
 #include <GLES3/gl3.h>
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
+#include <imgui.h>
 #include <spdlog/sinks/ostream_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
@@ -9,15 +10,11 @@
 #include <widgets.h> // Will drag graph.h
 
 struct App {
-  typedef std::vector<std::shared_ptr<Widget>> Workspace;
+  using Workspace =
+      std::pair<std::string, std::vector<std::shared_ptr<Widget>>>;
 
-  std::vector<Workspace> workspaces; // Tabs
-  uint current_workspace = 0;
-
-  std::shared_ptr<EditorWidget> editor;
-  std::shared_ptr<NodeEditorWidget> node_editor;
-  std::shared_ptr<ViewportWidget> viewport;
-  std::shared_ptr<ConsoleWidget> console;
+  std::vector<Workspace> workspaces;
+  int current_workspace = 0;
 
   std::shared_ptr<RenderGraph> graph;
 
@@ -33,45 +30,87 @@ struct App {
         Shader(std::filesystem::path(APP_ROOT) / "assets" / "shaders" /
                "default_frag.glsl"));
     shaders->insert(std::make_pair(std::string("Default"), shader));
+    shader->set_name("Default");
 
-    editor = std::make_shared<EditorWidget>(EditorWidget(shader));
-    viewport = std::make_shared<ViewportWidget>(ViewportWidget(graph));
-    console = std::make_shared<ConsoleWidget>(ConsoleWidget());
-    node_editor = std::make_shared<NodeEditorWidget>(NodeEditorWidget(graph));
+    auto editor = std::make_shared<EditorWidget>(EditorWidget(shader));
+    auto viewport = std::make_shared<ViewportWidget>(ViewportWidget(graph));
+    auto console = std::make_shared<ConsoleWidget>(ConsoleWidget());
+    auto node_editor =
+        std::make_shared<NodeEditorWidget>(NodeEditorWidget(graph));
+
+    workspaces = std::vector<Workspace>({
+        Workspace("Shading",
+                  {
+                      editor,
+                      viewport,
+                      console,
+                  }),
+        Workspace("RenderGraph", {node_editor}),
+    });
   }
+  void save() {} // TODO
+  void load() {} // TODO
+  void save_settings() {
+    const auto path = std::filesystem::path(APP_ROOT) / "srconfig.json";
+    // TODO
+  }
+  void load_settings() {} // TODO
+  void save_project() {
+    // TODO: Save everything related to a project
+  }
+  void load_project() {} // TODO
   void startup() {
-    editor->onStartup();
-    viewport->onStartup();
-    console->onStartup();
-    node_editor->onStartup();
+    for (auto &pair : workspaces) {
+      for (auto &widget : pair.second)
+        widget->onStartup();
+    }
   }
   void update() {
-    editor->onUpdate();
-    viewport->onUpdate();
-    console->onUpdate();
-    node_editor->onUpdate();
+    for (auto &widget : workspaces[current_workspace].second)
+      widget->onUpdate();
   }
-  // Render widgets
+  // Render the application
   void render() {
-    setupDockspace(); // Render a tab
-    editor->render();
-    viewport->render();
-    console->render();
-    node_editor->render();
+    if (ImGui::BeginMainMenuBar()) {
+      // Dummy items
+      ImGui::MenuItem("File");
+      ImGui::MenuItem("Edit");
+      ImGui::MenuItem("View");
+
+      ImGui::Indent(165);
+      if (ImGui::BeginTabBar("Workspaces", ImGuiTabBarFlags_Reorderable)) {
+        int idx = 0;
+        for (auto &pair : workspaces) {
+          if (ImGui::BeginTabItem(pair.first.c_str())) {
+            current_workspace = idx;
+            ImGui::EndTabItem();
+          }
+          idx++;
+        }
+        ImGui::EndTabBar();
+      }
+
+      ImGui::EndMainMenuBar();
+    }
+
+    renderDockspace();
+    for (auto &widget : workspaces[current_workspace].second)
+      widget->render();
   }
   // Cleanup
   void shutdown() {
-    editor->onShutdown();
-    viewport->onShutdown();
-    console->onShutdown();
-    node_editor->onShutdown();
+    for (auto &pair : workspaces) {
+      for (auto &widget : pair.second)
+        widget->onShutdown();
+    }
   }
-  void setupDockspace() {
-    // Create a full-screen window to host the docking space
-    ImGui::SetNextWindowPos(ImVec2(0, 0)); // Position at the top-left corner
-    ImGui::SetNextWindowSize(
-        ImGui::GetIO().DisplaySize);   // Size matches display
-    ImGui::SetNextWindowBgAlpha(0.0f); // Make it invisible if desired
+  void renderDockspace() {
+    // Create a window just below the menu to host the docking space
+    float menu_height = ImGui::GetFrameHeight();
+    ImVec2 size = ImGui::GetWindowSize();
+    size.y -= menu_height;
+    ImGui::SetNextWindowPos(ImVec2(0, menu_height));
+    ImGui::SetNextWindowSize(size); // Size matches display
 
     // Create a window for the docking space (no title bar, resize, or move)
     ImGuiWindowFlags dockspace_flags =
@@ -86,9 +125,8 @@ struct App {
 
     // Create a dock space
     ImGuiID dockspace_id = ImGui::GetID("DockSpace");
-    ImGui::PushStyleColor(ImGuiCol_DockingEmptyBg, ImVec4(0., 0., 0., 0.));
-    ImGui::DockSpace(dockspace_id, ImVec2(0, 0), ImGuiDockNodeFlags_None);
-    ImGui::PopStyleColor();
+    ImGui::DockSpace(dockspace_id, ImVec2(0, 0),
+                     ImGuiDockNodeFlags_PassthruCentralNode);
 
     ImGui::End();
   }

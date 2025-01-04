@@ -12,6 +12,7 @@
 
 // A stateful widget
 class Widget {
+public:
   // Runs on the FIRST startup frame
   virtual void onStartup() {};
   virtual void onShutdown() {};
@@ -35,7 +36,11 @@ public:
   }
   void onStartup() override {
     zep_init(Zep::NVec2f(1.0f, 1.0f));
-    zep_get_editor().InitWithText(shader->get_name(), shader->get_source());
+    auto path = shader->get_path();
+    zep_get_editor().InitWithText(path.has_value()
+                                      ? path.value().filename().string()
+                                      : shader->get_name().append(".glsl"),
+                                  shader->get_source());
     last_update = zep_get_editor().GetBuffers()[0]->GetUpdateCount();
   };
   void onShutdown() override { zep_destroy(); }
@@ -52,7 +57,9 @@ public:
       is_dirty = false;
     }
   };
-  void render() override { zep_show(Zep::NVec2i(0, 0)); }
+  void render() override {
+    zep_show(Zep::NVec2i(0, 0), shader->get_name().c_str());
+  }
 };
 /// TODO:
 /// Add option to display the image without stretching

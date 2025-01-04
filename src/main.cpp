@@ -4,6 +4,8 @@
 #include <GL/gl.h>
 #include <GLES3/gl3.h>
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
+#include <cereal/archives/json.hpp>
+#include <cereal/cereal.hpp>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -57,6 +59,8 @@ int main(int, char **) {
     ImGui_ImplOpenGL3_Init(glsl_version);
   }
 
+  // std::ifstream ifs(std::filesystem::path(APP_ROOT));
+  // cereal::JSONInputArchive archive = cereal::JSONInputArchive(ifs);
   App app = App();
 
   // Main loop

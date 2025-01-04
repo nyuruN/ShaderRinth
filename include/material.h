@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <fstream>
 #include <imgui.h>
+#include <optional>
 #include <spdlog/spdlog.h>
 
 class Geometry {
@@ -13,12 +14,13 @@ public:
   virtual void destroy_geometry() {};
 };
 
-class Shader {
+struct Shader {
   char log[512] = {'\0'};
   std::string source;
   std::string name;
   GLuint program;
   bool compiled = false;
+  std::optional<std::filesystem::path> path = {};
 
 public:
   Shader(std::filesystem::path path) {
@@ -28,6 +30,7 @@ public:
     std::ostringstream buf;
     buf << file.rdbuf();
     source = buf.str();
+    this->path = path;
     name = path.filename();
   }
   bool compile(std::shared_ptr<Geometry> geo) {
@@ -78,8 +81,10 @@ public:
   bool is_compiled() { return compiled; }
   void should_recompile() { compiled = false; }
   void set_source(std::string src) { source = src; }
-  std::string get_source() { return source; }
-  std::string get_name() { return name; }
+  std::string &get_source() { return source; }
+  void set_name(std::string name) { this->name = name; }
+  std::string &get_name() { return name; }
+  std::optional<std::filesystem::path> &get_path() { return path; }
   char *get_log() { return log; }
   GLuint get_uniform_loc(char *name) {
     return glGetUniformLocation(program, name);

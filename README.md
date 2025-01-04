@@ -19,14 +19,28 @@ faster.
 
 * Create framework for shaders/materials/configurable uniforms etc. [wip]
 
+* Node based editor for shader passes / uniforms / textures [wip]
+
 * Ability to save/load renders and shader projects
 
 * Load textures & configure as uniforms
 
 * Manage multiple shader passes
 
-* Node based editor for shader passes / uniforms / textures [wip]
-
 * UI improvements
 
 * ...
+
+## Config layout
+
+Global config
+  Recent files
+  Style information ??
+
+Project local config
+  Workspace widgets
+  Current Workspace
+  Shader & Geometry Assets
+  RenderGraph Assets
+
+
