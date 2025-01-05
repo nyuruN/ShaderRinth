@@ -1,7 +1,16 @@
 #include "imnodes/imnodes.h"
+#include "material.h"
 #include "utils.h"
 #include <GLFW/glfw3.h>
 #include <any>
+#include <cereal/cereal.hpp>
+#include <cereal/types/array.hpp>
+#include <cereal/types/base_class.hpp>
+#include <cereal/types/map.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/types/polymorphic.hpp>
+#include <cereal/types/string.hpp>
+#include <cereal/types/vector.hpp>
 #include <cstdlib>
 #include <imgui.h>
 #include <map>
@@ -11,38 +20,75 @@
 // DataType:
 // Type of the data transferred between nodes
 enum DataType {
-  Int,
-  IVec2,
-  IVec3,
-  IVec4,
-  UInt,
-  UVec2,
-  UVec3,
-  UVec4,
-  Float,
-  Vec2,
-  Vec3,
-  Vec4,
-  Texture2D,
+  Int,       // int
+  IVec2,     // std::array<int, 2>
+  IVec3,     // std::array<int, 2>
+  IVec4,     // std::array<int, 2>
+  UInt,      // uint
+  UVec2,     // std::array<uint, 2>
+  UVec3,     // std::array<uint, 2>
+  UVec4,     // std::array<uint, 2>
+  Float,     // float
+  Vec2,      // std::array<float, 2>
+  Vec3,      // std::array<float, 2>
+  Vec4,      // std::array<float, 2>
+  Texture2D, // GLuint
 };
 
-const std::map<DataType, std::string> TYPESTRMAP = {
-    {DataType::Int, "Int"},
-    {DataType::IVec2, "IVec2"},
-    {DataType::IVec3, "IVec3"},
-    {DataType::IVec4, "IVec4"},
-    {DataType::UInt, "UInt"},
-    {DataType::UVec2, "UVec2"},
-    {DataType::UVec3, "UVec3"},
-    {DataType::UVec4, "UVec4"},
-    {DataType::Float, "Float"},
-    {DataType::Vec2, "Vec2"},
-    {DataType::Vec3, "Vec3"},
-    {DataType::Vec4, "Vec4"},
-    {DataType::Texture2D, "Texture2D"},
-};
+struct Data {
+  using Int = int;
+  using IVec2 = std::array<int, 2>;
+  using IVec3 = std::array<int, 2>;
+  using IVec4 = std::array<int, 2>;
+  using UInt = uint;
+  using UVec2 = std::array<uint, 2>;
+  using UVec3 = std::array<uint, 2>;
+  using UVec4 = std::array<uint, 2>;
+  using Float = float;
+  using Vec2 = std::array<float, 2>;
+  using Vec3 = std::array<float, 2>;
+  using Vec4 = std::array<float, 2>;
+  using Texture2D = GLuint;
 
-const std::string to_string(DataType type) noexcept;
+  constexpr static DataType ALL[] = {
+      DataType::Int,       DataType::IVec2, DataType::IVec3, DataType::IVec4,
+      DataType::UInt,      DataType::UVec2, DataType::UVec3, DataType::UVec4,
+      DataType::Float,     DataType::Vec2,  DataType::Vec3,  DataType::Vec4,
+      DataType::Texture2D,
+  };
+
+  DataType type;
+  std::any data;
+
+  Data(DataType type = DataType(-1), std::any data = nullptr)
+      : type(type), data(data) {}
+  constexpr bool operator==(DataType t) { return type == t; }
+
+  template <typename T> T get() { return std::any_cast<T>(data); }
+  void set(std::any d) { data = d; }
+  template <class Archive> void serialize(Archive &ar) { ar(CEREAL_NVP(type)); }
+  constexpr static char *type_name(DataType type) {
+    // clang-format off
+    switch (type) {
+      case DataType::Int:       return "Int";
+      case DataType::IVec2:     return "IVec2";
+    	case DataType::IVec3:     return "IVec3";
+    	case DataType::IVec4:     return "IVec4";
+    	case DataType::UInt:      return "UInt";
+    	case DataType::UVec2:     return "UVec2";
+    	case DataType::UVec3:     return "UVec3";
+    	case DataType::UVec4:     return "UVec4";
+    	case DataType::Float:     return "Float";
+    	case DataType::Vec2:      return "Vec2";
+    	case DataType::Vec3:      return "Vec3";
+    	case DataType::Vec4:      return "Vec4";
+    	case DataType::Texture2D: return "Texture2D";
+      default: throw std::runtime_error("invalid data type!");
+    }
+    // clang-format on
+  }
+  char *type_name() { return type_name(type); }
+};
 
 struct RenderGraph;
 
@@ -54,28 +100,37 @@ public:
   int id;
 
   // Renders the Node
-  virtual void render(RenderGraph &) {};
-  virtual void onEnter(RenderGraph &) {};
-  virtual void onExit(RenderGraph &) {};
-  // Runs the Node under the assumption
-  // that all leaf nodes are satisfied
-  // and writes to output pins
-  virtual void run(RenderGraph &) {};
+  virtual void render(RenderGraph &) {}
+  virtual void onEnter(RenderGraph &) {}
+  virtual void onExit(RenderGraph &) {}
+  // Called when the Graph is loaded in
+  virtual void onLoad(RenderGraph &) {}
+  // Runs the Node and writes to output pins
+  virtual void run(RenderGraph &) {}
+
+  template <class Archive> void serialize(Archive &ar) { ar(id); }
 };
 
 // RenderGraph
 struct RenderGraph {
   // Represents a pin of a node
   struct Pin {
-    int node_id;
     int id;
-    DataType type;
-    std::any data;
+    int node_id;
+    Data data;
+
+    template <class Archive> void serialize(Archive &ar) {
+      ar(CEREAL_NVP(id), CEREAL_NVP(node_id), CEREAL_NVP(data));
+    }
   };
   // Represents a connection between nodes
   struct Edge {
     int id;
     int from, to;
+
+    template <class Archive> void serialize(Archive &ar) {
+      ar(CEREAL_NVP(id), CEREAL_NVP(from), CEREAL_NVP(to));
+    }
   };
   std::map<int, std::unique_ptr<Node>> nodes;
   std::map<int, Edge> edges;
@@ -89,9 +144,31 @@ struct RenderGraph {
   std::vector<int> run_order;
   bool should_stop = false;
 
-  RenderGraph(std::shared_ptr<Assets<Shader>> shaders) {
+  RenderGraph(std::shared_ptr<Assets<Shader>> shaders =
+                  std::make_shared<Assets<Shader>>()) {
     this->shaders = shaders;
   };
+  template <class Archive> void load(Archive &ar) {
+    ar(CEREAL_NVP(nodes), CEREAL_NVP(edges), CEREAL_NVP(pins),
+       CEREAL_NVP(shaders), CEREAL_NVP(graph_geometry));
+    Data::Vec2 resolution;
+    ar(cereal::make_nvp("viewport_resolution", resolution),
+       CEREAL_NVP(root_node));
+    viewport_resolution.x = resolution[0];
+    viewport_resolution.y = resolution[1];
+
+    for (auto &pair : nodes) {
+      pair.second->onLoad(*this);
+    }
+  }
+  template <class Archive> void save(Archive &ar) const {
+    ar(CEREAL_NVP(nodes), CEREAL_NVP(edges), CEREAL_NVP(pins),
+       CEREAL_NVP(shaders), CEREAL_NVP(graph_geometry));
+    auto resolution =
+        Data::Vec2({viewport_resolution.x, viewport_resolution.y});
+    ar(cereal::make_nvp("viewport_resolution", resolution),
+       CEREAL_NVP(root_node));
+  }
   void set_resolution(ImVec2 res) { viewport_resolution = res; }
   void set_geometry(std::shared_ptr<Geometry> geo) { graph_geometry = geo; }
   int get_next_node_id() {
@@ -107,8 +184,8 @@ struct RenderGraph {
     return id++;
   };
   int insert_root_node(std::unique_ptr<Node> node) {
-    int nodeid = this->insert_node(std::move(node));
-    this->root_node = nodeid;
+    int nodeid = insert_node(std::move(node));
+    root_node = nodeid;
     return nodeid;
   };
   int insert_node(std::unique_ptr<Node> node) {
@@ -119,15 +196,12 @@ struct RenderGraph {
     return nodeid;
   };
   void register_pin(int nodeid, DataType type, int *pinid) {
-    Pin pin;
-    pin.type = type;
-    pin.node_id = nodeid;
-    pin.id = this->get_next_pin_id();
+    Pin pin = {id : get_next_pin_id(), node_id : nodeid, data : Data(type)};
     *pinid = pin.id;
     pins.insert(std::make_pair(pin.id, pin));
   };
   int insert_edge(int frompin, int topin) {
-    if (this->pins[frompin].type != this->pins[topin].type) {
+    if (pins.at(frompin).data.type != pins.at(topin).data.type) {
       spdlog::error("Not same type!");
       return -1;
     }
@@ -168,15 +242,15 @@ struct RenderGraph {
 
     ImNodes::EndNodeEditor();
   };
-  void get_pin_data(int pinid, std::any *ptr) { *ptr = pins.at(pinid).data; };
+  Data get_pin_data(int pinid) { return pins.at(pinid).data; };
   void set_pin_data(int pinid, std::any ptr) {
     std::vector<int> connected_pins;
-    for (auto &pair : this->edges) {
+    for (auto &pair : edges) {
       if (pair.second.from == pinid)
         connected_pins.push_back(pair.second.to);
     }
     for (auto &cpin : connected_pins) {
-      this->pins[cpin].data = ptr;
+      this->pins.at(cpin).data.set(ptr);
     }
   };
   void get_pins(int nodeid, std::vector<int> &pins) {
@@ -189,11 +263,11 @@ struct RenderGraph {
     std::vector<int> pins;
     get_pins(nodeid, pins);
 
-    for (auto &epair : this->edges) {
+    for (auto &epair : edges) {
       for (auto &pin : pins) {
         // output pin connected to some other node
         if (pin == epair.second.to) {
-          children.push_back(this->pins[epair.second.from].node_id);
+          children.push_back(this->pins.at(epair.second.from).node_id);
         }
       }
     }
@@ -217,7 +291,7 @@ struct RenderGraph {
 
     while (run_order.size() != 0) {
       int nodeid = run_order.back();
-      nodes[nodeid]->run(*this);
+      nodes.at(nodeid)->run(*this);
       run_order.pop_back();
 
       if (should_stop) {
@@ -225,13 +299,13 @@ struct RenderGraph {
       }
     }
   };
-  Node *get_node(int nodeid) { return nodes[nodeid].get(); }
-  Node *get_root_node() { return nodes[root_node].get(); }
+  Node *get_node(int nodeid) { return nodes.at(nodeid).get(); }
+  Node *get_root_node() { return nodes.at(root_node).get(); }
   // Prevents nodes from reusing previous data
   void clear_graph_data() {
     run_order.clear();
     for (auto &pin : pins) {
-      pin.second.data = nullptr;
+      pin.second.data.set(nullptr);
     }
   };
 };
@@ -269,13 +343,16 @@ public:
   }
   void onExit(RenderGraph &graph) override { graph.delete_pin(input_pin); }
   void run(RenderGraph &graph) override {
-    std::any data;
-    graph.get_pin_data(input_pin, &data);
+    Data data = graph.get_pin_data(input_pin);
     try {
-      out_texture = std::any_cast<int>(data);
+      out_texture = data.get<GLuint>();
     } catch (std::bad_any_cast) {
       spdlog::error("Nothing is connected!");
     }
+  }
+  template <class Archive> void serialize(Archive &ar) {
+    ar(cereal::base_class<Node>(this));
+    ar(input_pin, out_texture);
   }
 };
 class TimeNode : public Node {
@@ -306,7 +383,11 @@ public:
   }
   void onExit(RenderGraph &graph) override { graph.delete_pin(output_pin); }
   void run(RenderGraph &graph) override {
-    graph.set_pin_data(output_pin, (float)glfwGetTime());
+    graph.set_pin_data(output_pin, (Data::Float)glfwGetTime());
+  }
+  template <class Archive> void serialize(Archive &ar) {
+    ar(cereal::base_class<Node>(this));
+    ar(output_pin);
   }
 };
 class FloatNode : public Node {
@@ -337,12 +418,16 @@ public:
   }
   void onExit(RenderGraph &graph) override { graph.delete_pin(output_pin); }
   void run(RenderGraph &graph) override {
-    graph.set_pin_data(output_pin, (float)value);
+    graph.set_pin_data(output_pin, (Data::Float)value);
+  }
+  template <class Archive> void serialize(Archive &ar) {
+    ar(cereal::base_class<Node>(this));
+    ar(output_pin, value);
   }
 };
 class Vec2Node : public Node {
   int output_pin;
-  float value[2] = {0};
+  std::array<float, 2> value = {0};
 
   float node_width = 120.0f;
 
@@ -361,7 +446,7 @@ public:
     {
       ImNodes::BeginOutputAttribute(output_pin);
       ImGui::SetNextItemWidth(node_width);
-      ImGui::InputFloat2("##hidelabel", value, "%.1f");
+      ImGui::InputFloat2("##hidelabel", value.data(), "%.1f");
       ImNodes::EndOutputAttribute();
     }
     ImGui::Dummy(ImVec2(node_width, 20));
@@ -373,7 +458,11 @@ public:
   }
   void onExit(RenderGraph &graph) override { graph.delete_pin(output_pin); }
   void run(RenderGraph &graph) override {
-    graph.set_pin_data(output_pin, (float *)value);
+    graph.set_pin_data(output_pin, (Data::Vec2)value);
+  }
+  template <class Archive> void serialize(Archive &ar) {
+    ar(cereal::base_class<Node>(this));
+    ar(output_pin, value);
   }
 };
 class FragmentShaderNode : public Node {
@@ -381,11 +470,16 @@ class FragmentShaderNode : public Node {
     int pinid;
     DataType type;
     std::string identifier;
+
+    template <class Archive> void serialize(Archive &ar) {
+      ar(pinid, type, identifier);
+    }
   };
 
   int output_pin;
   std::vector<UniformPin> uniform_pins;
-  char shader_name[128] = {"Default\0"};
+  std::shared_ptr<Shader> shader;
+
   GLuint image_fbo;
   GLuint image_colorbuffer;
   GLuint bound_textures = 0;
@@ -393,6 +487,7 @@ class FragmentShaderNode : public Node {
   const float node_width = 240.0f;
 
 public:
+  void set_shader(std::shared_ptr<Shader> shader) { this->shader = shader; }
   int get_output_pin() { return output_pin; }
   int add_uniform_pin(RenderGraph &graph, DataType type, std::string name) {
     int pinid;
@@ -418,7 +513,21 @@ public:
     ImGui::Text("Source");
     ImGui::SameLine();
     ImGui::SetNextItemWidth(node_width - ImGui::CalcTextSize("Source").x);
-    ImGui::InputText("##hidelabel", shader_name, sizeof(shader_name));
+
+    if (ImGui::BeginCombo("##hidelabel", "preview")) {
+      auto shadermap = graph.shaders;
+      for (auto const &pair : *shadermap) {
+        bool is_selected =
+            (shader) && (shader->get_name() == pair.second->get_name());
+        if (ImGui::Selectable(pair.first.c_str(), is_selected))
+          set_shader(pair.second);
+        // Set the initial focus when opening the combo (scrolling + keyboard
+        // navigation focus)
+        if (is_selected)
+          ImGui::SetItemDefaultFocus();
+      }
+      ImGui::EndCombo();
+    }
 
     {
       ImNodes::BeginOutputAttribute(output_pin);
@@ -429,9 +538,10 @@ public:
 
     if (ImGui::BeginPopup("add_uniform_popup")) { // Creation logic
       ImGui::SeparatorText("Uniforms");
-      for (auto &pair : TYPESTRMAP) {
-        if (ImGui::MenuItem(pair.second.c_str())) {
-          add_uniform_pin(graph, pair.first, fmt::format("u_{}", pair.second));
+      for (auto &type : Data::ALL) {
+        if (ImGui::MenuItem(Data::type_name(type))) {
+          add_uniform_pin(graph, type,
+                          fmt::format("u_{}", Data::type_name(type)));
         }
       }
       ImGui::EndPopup();
@@ -442,15 +552,15 @@ public:
       int idx = 0;
       for (auto &pin : uniform_pins) {
         ImNodes::BeginInputAttribute(pin.pinid);
-        ImGui::Text(to_string(pin.type).c_str());
+        ImGui::Text(Data::type_name(pin.type));
         ImGui::SameLine();
 
-        // TODO I should optimize this someday :(
+        // TODO: I should optimize this someday :(
         std::vector<char> buf(pin.identifier.begin(), pin.identifier.end());
         buf.push_back('\0');
         ImGui::SetNextItemWidth(
             node_width - 20 - ImGui::CalcTextSize(" - ").x -
-            ImGui::CalcTextSize(to_string(pin.type).c_str()).x);
+            ImGui::CalcTextSize(Data::type_name(pin.type)).x);
         ImGui::InputText("##hidelabel", buf.data(), sizeof(buf));
         pin.identifier = std::string(buf.data());
 
@@ -472,7 +582,9 @@ public:
   }
   void onEnter(RenderGraph &graph) override {
     graph.register_pin(id, DataType::Texture2D, &this->output_pin);
-
+    onLoad(graph);
+  }
+  void onLoad(RenderGraph &graph) override {
     glGenFramebuffers(1, &image_fbo);
     glGenTextures(1, &image_colorbuffer);
 
@@ -493,14 +605,8 @@ public:
     glDeleteTextures(1, &image_colorbuffer);
   }
   void run(RenderGraph &graph) override {
-    std::shared_ptr<Shader> shader;
-
-    try {
-      auto str = std::string(shader_name);
-      shader = graph.shaders->at(str);
-    } catch (std::out_of_range) {
+    if (!shader) {
       graph.should_stop = true;
-      spdlog::error("Shader \"{}\" does not exist!", shader_name);
       return;
     }
 
@@ -519,9 +625,8 @@ public:
     glBindTexture(GL_TEXTURE_2D, 0);
 
     for (auto &pin : uniform_pins) {
-      std::any data;
-      graph.get_pin_data(pin.pinid, &data);
-      set_uniform(*shader.get(), pin.identifier, pin.type, data);
+      Data data = graph.get_pin_data(pin.pinid);
+      set_uniform(*shader.get(), pin.identifier, data);
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, image_fbo);
@@ -543,81 +648,55 @@ public:
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     bound_textures = 0;
 
-    graph.set_pin_data(output_pin, (int)image_colorbuffer);
+    graph.set_pin_data(output_pin, (Data::Texture2D)image_colorbuffer);
   }
   unsigned int get_next_texture_unit() {
     unsigned int unit = bound_textures;
     bound_textures++;
     return GL_TEXTURE0 + unit;
   }
-  void set_uniform(Shader &shader, std::string identifier, DataType type,
-                   std::any data) {
+  void set_uniform(Shader &shader, std::string identifier, Data data) {
     GLuint loc = shader.get_uniform_loc(identifier.data());
-    // debugAny(data);
-
-    switch (type) {
+    // clang-format off
+    switch (data.type) {
     case DataType::Int: {
-      int value = std::any_cast<int>(data);
-      glUniform1iv(loc, 1, &value);
-      break;
+      auto val = data.get<int>(); glUniform1iv(loc, 1, &val); break;
     };
     case DataType::IVec2: {
-      int *value = std::any_cast<int *>(data);
-      glUniform2iv(loc, 1, value);
-      break;
+      auto val = data.get<Data::IVec2>().data(); glUniform2iv(loc, 1, val); break;
     };
     case DataType::IVec3: {
-      int *value = std::any_cast<int *>(data);
-      glUniform3iv(loc, 1, value);
-      break;
+      auto val = data.get<Data::IVec3>().data(); glUniform3iv(loc, 1, val); break;
     };
     case DataType::IVec4: {
-      int *value = std::any_cast<int *>(data);
-      glUniform4iv(loc, 1, value);
-      break;
+      auto val = data.get<Data::IVec4>().data(); glUniform4iv(loc, 1, val); break;
     };
     case DataType::UInt: {
-      unsigned int value = std::any_cast<unsigned int>(data);
-      glUniform1uiv(loc, 1, &value);
-      break;
+      auto val = data.get<Data::UInt>(); glUniform1uiv(loc, 1, &val); break;
     };
     case DataType::UVec2: {
-      unsigned int *value = std::any_cast<unsigned int *>(data);
-      glUniform2uiv(loc, 1, value);
-      break;
+      auto val = data.get<Data::UVec2>().data(); glUniform2uiv(loc, 1, val); break;
     };
     case DataType::UVec3: {
-      unsigned int *value = std::any_cast<unsigned int *>(data);
-      glUniform3uiv(loc, 1, value);
-      break;
+      auto val = data.get<Data::UVec3>().data(); glUniform3uiv(loc, 1, val); break;
     };
     case DataType::UVec4: {
-      unsigned int *value = std::any_cast<unsigned int *>(data);
-      glUniform4uiv(loc, 1, value);
-      break;
+      auto val = data.get<Data::UVec4>().data(); glUniform4uiv(loc, 1, val); break;
     };
     case DataType::Float: {
-      float value = std::any_cast<float>(data);
-      glUniform1fv(loc, 1, &value);
-      break;
+      auto val = data.get<Data::Float>(); glUniform1fv(loc, 1, &val); break;
     };
     case DataType::Vec2: {
-      float *value = std::any_cast<float *>(data);
-      glUniform2fv(loc, 1, value);
-      break;
+      auto val = data.get<Data::Vec2>().data(); glUniform2fv(loc, 1, val); break;
     };
     case DataType::Vec3: {
-      float *value = std::any_cast<float *>(data);
-      glUniform3fv(loc, 1, value);
-      break;
+      auto val = data.get<Data::Vec3>().data(); glUniform3fv(loc, 1, val); break;
     };
     case DataType::Vec4: {
-      float *value = std::any_cast<float *>(data);
-      glUniform4fv(loc, 1, value);
-      break;
+      auto val = data.get<Data::Vec4>().data(); glUniform4fv(loc, 1, val); break;
     };
     case DataType::Texture2D: {
-      GLuint texture = std::any_cast<unsigned int>(data);
+      GLuint texture = data.get<Data::Texture2D>();
       int unit = get_next_texture_unit();
       glActiveTexture(unit);
       glBindTexture(GL_TEXTURE_2D, texture);
@@ -625,5 +704,21 @@ public:
       break;
     };
     }
+    // clang-format on
+  }
+  template <class Archive> void serialize(Archive &ar) {
+    ar(cereal::base_class<Node>(this));
+    ar(output_pin, uniform_pins, shader);
   }
 };
+
+// Type registration
+#include <cereal/archives/binary.hpp>
+#include <cereal/archives/json.hpp>
+#include <cereal/archives/xml.hpp>
+
+CEREAL_REGISTER_TYPE(OutputNode)
+CEREAL_REGISTER_TYPE(TimeNode)
+CEREAL_REGISTER_TYPE(FloatNode)
+CEREAL_REGISTER_TYPE(Vec2Node)
+CEREAL_REGISTER_TYPE(FragmentShaderNode)

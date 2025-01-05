@@ -1,8 +1,11 @@
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <map>
-#include <material.h>
+#include <memory>
 #include <string>
+
+#define VP(T) ::cereal::make_nvp(#T, T)
+#define NVP(S, T) ::cereal::make_nvp(S, T)
 
 template <typename T> using Assets = std::map<std::string, std::shared_ptr<T>>;
 

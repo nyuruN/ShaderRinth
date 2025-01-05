@@ -59,8 +59,6 @@ int main(int, char **) {
     ImGui_ImplOpenGL3_Init(glsl_version);
   }
 
-  // std::ifstream ifs(std::filesystem::path(APP_ROOT));
-  // cereal::JSONInputArchive archive = cereal::JSONInputArchive(ifs);
   App app = App();
 
   // Main loop

@@ -3,6 +3,7 @@
     "glfw3",
     "spdlog",
     "cereal",
+    "portable-file-dialogs",
     {
       "name": "imgui",
       "features": [ "docking-experimental", "glfw-binding", "opengl3-binding" ]

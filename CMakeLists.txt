@@ -38,6 +38,8 @@ find_package(cereal CONFIG REQUIRED)
 target_link_libraries(${EXECUTABLE} PRIVATE cereal::cereal)
 find_package(OpenGL REQUIRED)
 target_link_libraries(${EXECUTABLE} PRIVATE OpenGL::GL)
+find_path(PORTABLE_FILE_DIALOGS_INCLUDE_DIRS "portable-file-dialogs.h")
+target_include_directories(${EXECUTABLE} PRIVATE ${PORTABLE_FILE_DIALOGS_INCLUDE_DIRS})
 
 # Link zep
 add_definitions(-DZEP_FEATURE_CPP_FILE_SYSTEM)

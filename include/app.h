@@ -1,64 +1,82 @@
 #include "config_app.h"
+#include "portable-file-dialogs.h"
+#include "widgets.h" // Will all other headers
 #include <GL/gl.h>
 #include <GLES3/gl3.h>
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
+#include <cereal/archives/json.hpp>
+#include <cereal/cereal.hpp>
+#include <cereal/types/map.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/types/string.hpp>
+#include <cereal/types/utility.hpp>
+#include <cereal/types/vector.hpp>
 #include <imgui.h>
-#include <spdlog/sinks/ostream_sink.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/spdlog.h>
-// #include <utils.h>
-#include <widgets.h> // Will drag graph.h
+#include <optional>
+
+using Workspace = std::pair<std::string, std::vector<std::shared_ptr<Widget>>>;
 
 struct App {
-  using Workspace =
-      std::pair<std::string, std::vector<std::shared_ptr<Widget>>>;
-
-  std::vector<Workspace> workspaces;
-  int current_workspace = 0;
-
-  std::shared_ptr<RenderGraph> graph;
-
+  // Assets
   std::shared_ptr<Assets<Shader>> shaders = std::make_shared<Assets<Shader>>();
   std::shared_ptr<Assets<Geometry>> geometries =
       std::make_shared<Assets<Geometry>>();
+  std::shared_ptr<RenderGraph> graph;
+  // GUI Layout
+  std::vector<Workspace> workspaces;
+  int current_workspace = 0;
+  // Project
+  std::optional<std::filesystem::path> project_root;
 
   // Setup App Logic
   App() {
-    graph = std::make_shared<RenderGraph>(RenderGraph(shaders));
+    graph = std::make_shared<RenderGraph>(shaders);
     graph->set_geometry(std::make_shared<ScreenQuadGeometry>());
-    auto shader = std::make_shared<Shader>(
-        Shader(std::filesystem::path(APP_ROOT) / "assets" / "shaders" /
-               "default_frag.glsl"));
-    shaders->insert(std::make_pair(std::string("Default"), shader));
-    shader->set_name("Default");
-
-    auto editor = std::make_shared<EditorWidget>(EditorWidget(shader));
-    auto viewport = std::make_shared<ViewportWidget>(ViewportWidget(graph));
-    auto console = std::make_shared<ConsoleWidget>(ConsoleWidget());
-    auto node_editor =
-        std::make_shared<NodeEditorWidget>(NodeEditorWidget(graph));
+    auto shader =
+        std::make_shared<Shader>(Shader(DEFAULT_FRAG_PATH, "Default"));
+    shaders->insert(std::make_pair(shader->name, shader));
 
     workspaces = std::vector<Workspace>({
         Workspace("Shading",
                   {
-                      editor,
-                      viewport,
-                      console,
+                      std::make_shared<EditorWidget>(shader),
+                      std::make_shared<ViewportWidget>(graph),
+                      std::make_shared<ConsoleWidget>(),
                   }),
-        Workspace("RenderGraph", {node_editor}),
+        Workspace("RenderGraph", {std::make_shared<NodeEditorWidget>(graph)}),
     });
   }
-  void save() {} // TODO
-  void load() {} // TODO
+  // void save() {} // TODO
+  // void load() {} // TODO
   void save_settings() {
     const auto path = std::filesystem::path(APP_ROOT) / "srconfig.json";
     // TODO
   }
   void load_settings() {} // TODO
+  // TODO: Save everything related to a project
   void save_project() {
-    // TODO: Save everything related to a project
+    if (!project_root) {
+      auto dir = pfd::select_folder("Select a project directory").result();
+      project_root = dir;
+    }
+
+    std::ofstream ofs(project_root.value() / "srproject.json");
+    cereal::JSONOutputArchive archive(ofs);
+
+    archive(                                               //
+        VP(shaders),                                       //
+        VP(geometries),                                    //
+        VP(graph),                                         //
+        VP(workspaces),                                    //
+        VP(current_workspace),                             //
+        NVP("project_root", project_root.value().string()) //
+    );
+
+    archive.serializeDeferments();
+
+    spdlog::info("Project saved in {}!", project_root.value().string());
   }
-  void load_project() {} // TODO
+  void load_project(std::filesystem::path project_root) {}
   void startup() {
     for (auto &pair : workspaces) {
       for (auto &widget : pair.second)
@@ -73,9 +91,18 @@ struct App {
   void render() {
     if (ImGui::BeginMainMenuBar()) {
       // Dummy items
-      ImGui::MenuItem("File");
-      ImGui::MenuItem("Edit");
-      ImGui::MenuItem("View");
+      if (ImGui::BeginMenu("File")) {
+        ImGui::MenuItem("Open");
+        if (ImGui::MenuItem("Save"))
+          save_project();
+        ImGui::EndMenu();
+      }
+      if (ImGui::BeginMenu("Edit")) {
+        ImGui::EndMenu();
+      }
+      if (ImGui::BeginMenu("View")) {
+        ImGui::EndMenu();
+      }
 
       ImGui::Indent(165);
       if (ImGui::BeginTabBar("Workspaces", ImGuiTabBarFlags_Reorderable)) {

@@ -1,37 +1,62 @@
+#include "config_app.h"
 #include <GL/gl.h>
 #include <GLES3/gl3.h>
 #include <GLFW/glfw3.h>
+#include <cereal/cereal.hpp>
+#include <cereal/types/base_class.hpp>
+#include <cereal/types/polymorphic.hpp>
+#include <cereal/types/string.hpp>
 #include <filesystem>
 #include <fstream>
 #include <imgui.h>
-#include <optional>
 #include <spdlog/spdlog.h>
+
+const std::filesystem::path DEFAULT_FRAG_PATH =
+    std::filesystem::path(APP_ROOT) / "assets" / "shaders" /
+    "default_frag.glsl";
 
 class Geometry {
 public:
+  std::string name;
+
   virtual void compile_vertex_shader(unsigned int &vert_shader) {};
   virtual void draw_geometry() {};
   virtual void destroy_geometry() {};
+
+  template <class Archive> void serialize(Archive &ar) { ar(name); }
 };
 
 struct Shader {
   char log[512] = {'\0'};
+  std::filesystem::path path;
   std::string source;
   std::string name;
   GLuint program;
   bool compiled = false;
-  std::optional<std::filesystem::path> path = {};
 
 public:
-  Shader(std::filesystem::path path) {
+  Shader(std::filesystem::path path, std::string name = "Default") {
     std::ifstream file(path);
-    if (!file)
-      throw std::runtime_error("Failed to open file: " + path.string());
+    if (!file) {
+      file = std::ifstream(DEFAULT_FRAG_PATH);
+      if (!file)
+        throw std::runtime_error("failed to open default_frag.glsl file");
+    }
     std::ostringstream buf;
     buf << file.rdbuf();
     source = buf.str();
     this->path = path;
-    name = path.filename();
+    this->name = name;
+  }
+  template <class Archive>
+  static void load_and_construct(Archive &ar,
+                                 cereal::construct<Shader> &construct) {
+    std::string name, path;
+    ar(name, path);
+    construct(std::filesystem::path(path), name);
+  }
+  template <class Archive> void serialize(Archive &ar) {
+    ar(name, path.string());
   }
   bool compile(std::shared_ptr<Geometry> geo) {
     spdlog::info("Compiling shaders");
@@ -84,7 +109,7 @@ public:
   std::string &get_source() { return source; }
   void set_name(std::string name) { this->name = name; }
   std::string &get_name() { return name; }
-  std::optional<std::filesystem::path> &get_path() { return path; }
+  std::filesystem::path &get_path() { return path; }
   char *get_log() { return log; }
   GLuint get_uniform_loc(char *name) {
     return glGetUniformLocation(program, name);
@@ -116,7 +141,8 @@ void main()
   GLuint ebo;
 
 public:
-  ScreenQuadGeometry() {
+  ScreenQuadGeometry(std::string name = "FullscreenQuad") {
+    this->name = name;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
@@ -147,4 +173,10 @@ public:
     glDeleteBuffers(1, &ebo);
     glDeleteVertexArrays(1, &vao);
   }
+  template <class Archive> void serialize(Archive &ar) {
+    ar(cereal::base_class<Geometry>(this));
+  }
 };
+
+// Type registration
+CEREAL_REGISTER_TYPE(ScreenQuadGeometry)
