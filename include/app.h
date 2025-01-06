@@ -13,6 +13,7 @@
 #include <cereal/types/vector.hpp>
 #include <imgui.h>
 #include <optional>
+#include <vector>
 
 using Workspace = std::pair<std::string, std::vector<std::shared_ptr<Widget>>>;
 
@@ -27,15 +28,18 @@ struct App {
   int current_workspace = 0;
   // Project
   std::optional<std::filesystem::path> project_root;
+  bool is_project_dirty = false;
 
   // Setup App Logic
   App() {
-    graph = std::make_shared<RenderGraph>(shaders);
-    graph->set_geometry(std::make_shared<ScreenQuadGeometry>());
-    auto shader =
-        std::make_shared<Shader>(Shader(DEFAULT_FRAG_PATH, "Default"));
+    auto shader = std::make_shared<Shader>(Shader("Default"));
+    auto geo = std::make_shared<ScreenQuadGeometry>();
     shaders->insert(std::make_pair(shader->name, shader));
+    geometries->insert(std::make_pair(geo->name, geo));
+    graph = std::make_shared<RenderGraph>(shaders, geo);
+    graph->default_layout();
 
+    // clang-format off
     workspaces = std::vector<Workspace>({
         Workspace("Shading",
                   {
@@ -45,6 +49,7 @@ struct App {
                   }),
         Workspace("RenderGraph", {std::make_shared<NodeEditorWidget>(graph)}),
     });
+    // clang-format on
   }
   // void save() {} // TODO
   // void load() {} // TODO
@@ -53,30 +58,79 @@ struct App {
     // TODO
   }
   void load_settings() {} // TODO
-  // TODO: Save everything related to a project
+  // Save everything related to a project
   void save_project() {
     if (!project_root) {
       auto dir = pfd::select_folder("Select a project directory").result();
       project_root = dir;
     }
 
+    // TODO: Save Shader sources
+    for (auto &pair : *shaders) {
+      pair.second->save(project_root.value());
+    }
+
     std::ofstream ofs(project_root.value() / "srproject.json");
     cereal::JSONOutputArchive archive(ofs);
 
-    archive(                                               //
-        VP(shaders),                                       //
-        VP(geometries),                                    //
-        VP(graph),                                         //
-        VP(workspaces),                                    //
-        VP(current_workspace),                             //
-        NVP("project_root", project_root.value().string()) //
+    archive(                  //
+        VP(shaders),          //
+        VP(geometries),       //
+        VP(graph),            //
+        VP(workspaces),       //
+        VP(current_workspace) //
     );
 
     archive.serializeDeferments();
 
     spdlog::info("Project saved in {}!", project_root.value().string());
   }
-  void load_project(std::filesystem::path project_root) {}
+  void open_project() {
+    if (is_project_dirty) {
+      // Prompt the user to save the project
+    }
+
+    std::string dir =
+        pfd::select_folder("Select an existing project directory").result();
+    std::ifstream file(std::filesystem::path(dir) / "srproject.json");
+    if (!file || !file.good()) {
+      spdlog::error("Unknown project directory format!");
+      return;
+    }
+    cereal::JSONInputArchive archive(file);
+    project_root = std::string(dir);
+
+    // Call onShutdown to all widgets
+    for (auto &pair : workspaces) {
+      for (auto &widget : pair.second) {
+        widget->onShutdown();
+      }
+    }
+    shaders->clear();
+    geometries->clear();
+    workspaces.clear();
+    graph->destroy();
+
+    archive(                  //
+        VP(shaders),          //
+        VP(geometries),       //
+        VP(graph),            //
+        VP(workspaces),       //
+        VP(current_workspace) //
+    );
+
+    for (auto &pair : *shaders) { // Load shader sources
+      spdlog::info("name = {}", pair.first);
+      pair.second->load(project_root.value());
+    }
+    for (auto &pair : workspaces) { // Load widgets
+      for (auto &widget : pair.second) {
+        widget->onStartup();
+      }
+    }
+
+    spdlog::info("Project loaded in {}", project_root.value().string());
+  }
   void startup() {
     for (auto &pair : workspaces) {
       for (auto &widget : pair.second)
@@ -92,7 +146,8 @@ struct App {
     if (ImGui::BeginMainMenuBar()) {
       // Dummy items
       if (ImGui::BeginMenu("File")) {
-        ImGui::MenuItem("Open");
+        if (ImGui::MenuItem("Open"))
+          open_project();
         if (ImGui::MenuItem("Save"))
           save_project();
         ImGui::EndMenu();
@@ -126,6 +181,7 @@ struct App {
   }
   // Cleanup
   void shutdown() {
+    graph->destroy();
     for (auto &pair : workspaces) {
       for (auto &widget : pair.second)
         widget->onShutdown();

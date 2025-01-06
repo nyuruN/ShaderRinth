@@ -1,4 +1,5 @@
 #include "config_app.h"
+#include "utils.h"
 #include <GL/gl.h>
 #include <GLES3/gl3.h>
 #include <GLFW/glfw3.h>
@@ -28,35 +29,63 @@ public:
 
 struct Shader {
   char log[512] = {'\0'};
-  std::filesystem::path path;
+  std::filesystem::path path; //  is RELATIVE to project_root
   std::string source;
   std::string name;
   GLuint program;
   bool compiled = false;
 
 public:
-  Shader(std::filesystem::path path, std::string name = "Default") {
-    std::ifstream file(path);
-    if (!file) {
-      file = std::ifstream(DEFAULT_FRAG_PATH);
-      if (!file)
-        throw std::runtime_error("failed to open default_frag.glsl file");
-    }
+  Shader(std::string name) {
+    std::ifstream file(DEFAULT_FRAG_PATH);
+    if (!file)
+      throw std::runtime_error("failed to open default_frag.glsl");
     std::ostringstream buf;
     buf << file.rdbuf();
+
+    std::string n(name);
+    path = std::filesystem::path("shaders") / n.append(".glsl");
     source = buf.str();
-    this->path = path;
     this->name = name;
+  }
+  Shader(std::string name, std::filesystem::path path) {
+    this->name = name;
+    this->path = path;
   }
   template <class Archive>
   static void load_and_construct(Archive &ar,
                                  cereal::construct<Shader> &construct) {
     std::string name, path;
     ar(name, path);
-    construct(std::filesystem::path(path), name);
+    construct(name, std::filesystem::path(path));
   }
   template <class Archive> void serialize(Archive &ar) {
-    ar(name, path.string());
+    ar(VP(name), NVP("path", path.string()));
+  }
+  void save(std::filesystem::path project_root) {
+    auto abs_path = project_root / path;
+    // Ensure the parent directory exists
+    std::filesystem::create_directories(abs_path.parent_path());
+
+    std::ofstream file(abs_path);
+    if (!file) {
+      spdlog::error("failed to save shader \"{}\" in \"{}\"!", name,
+                    abs_path.string());
+      return;
+    }
+    file << source;
+  }
+  void load(std::filesystem::path project_root) {
+    std::filesystem::path abs_path = project_root / path;
+    std::ifstream file(abs_path);
+    if (!file) {
+      spdlog::error("failed to load shader \"{}\" in \"{}\"!", name,
+                    abs_path.string());
+      return;
+    }
+    std::ostringstream buf;
+    buf << file.rdbuf();
+    source = buf.str();
   }
   bool compile(std::shared_ptr<Geometry> geo) {
     spdlog::info("Compiling shaders");
@@ -84,6 +113,7 @@ public:
       return success;
     }
 
+    glDeleteProgram(program);
     program = glCreateProgram();
     glAttachShader(program, frag);
     glAttachShader(program, vert);
@@ -109,7 +139,7 @@ public:
   std::string &get_source() { return source; }
   void set_name(std::string name) { this->name = name; }
   std::string &get_name() { return name; }
-  std::filesystem::path &get_path() { return path; }
+  std::filesystem::path get_path() { return path; }
   char *get_log() { return log; }
   GLuint get_uniform_loc(char *name) {
     return glGetUniformLocation(program, name);

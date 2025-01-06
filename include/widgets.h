@@ -1,6 +1,3 @@
-// [WIP] Widgets system
-//
-// Separates different parts of the application
 #include "editor.h"
 #include "graph.h"
 #include "utils.h"
@@ -22,10 +19,10 @@
 // A stateful widget
 class Widget {
 public:
-  // Runs on the FIRST startup frame
+  // Runs on the first frame when the Widget is loaded in
   virtual void onStartup() {};
   virtual void onShutdown() {};
-  // Separate render code from state code
+  // Separates render code from state code
   virtual void onUpdate() {};
   virtual void render() {};
   template <class Archive> void serialize(Archive &ar) {}
@@ -39,7 +36,7 @@ public:
   bool is_dirty = false;
   uint64_t last_update = 0;
 
-  EditorWidget(std::shared_ptr<Shader> shader) { this->shader = shader; }
+  EditorWidget(std::shared_ptr<Shader> shader) : shader(shader) {}
   template <class Archive>
   static void load_and_construct(Archive &ar,
                                  cereal::construct<EditorWidget> &construct) {
@@ -93,15 +90,9 @@ public:
     construct(viewgraph);
   }
   template <class Archive> void serialize(Archive &ar) { ar(VP(viewgraph)); }
-  void onStartup() override {
-    // TODO
-  };
-  void onShutdown() override {
-    // TODO
-  }
-  void onUpdate() override {
-    // TODO
-  };
+  void onStartup() override {};
+  void onShutdown() override {}
+  void onUpdate() override {};
   void render() override {
     ImGui::Begin("Viewport");
     ImGui::BeginChild("ViewportRender");
@@ -124,13 +115,13 @@ public:
 /// Add custom colors to console output
 class ConsoleWidget : public Widget {
 private:
-  std::ostringstream log_stream;
+  std::shared_ptr<std::ostringstream> log_stream;
   std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> console_sink;
   std::shared_ptr<spdlog::sinks::ostream_sink_mt> ostream_sink;
   bool sticky = false;
 
 public:
-  template <class Archive> void serialize(Archive &ar) {}
+  template <class Archive> void serialize(Archive &ar) { ar(sticky); }
   std::shared_ptr<spdlog::logger> create_logger(char *name) {
     std::vector<spdlog::sink_ptr> sinks = {ostream_sink, console_sink};
     auto logger =
@@ -138,24 +129,22 @@ public:
     return logger;
   }
   void onStartup() override {
+    log_stream = std::make_shared<std::ostringstream>();
     console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     console_sink->set_level(spdlog::level::debug);
-    ostream_sink = std::make_shared<spdlog::sinks::ostream_sink_mt>(log_stream);
+    ostream_sink =
+        std::make_shared<spdlog::sinks::ostream_sink_mt>(*log_stream);
     ostream_sink->set_level(spdlog::level::info);
 
     auto logger = create_logger("Global");
     spdlog::set_default_logger(logger);
   }
-  void onShutdown() override {
-    // TODO
-  }
-  void onUpdate() override {
-    // TODO
-  }
+  void onShutdown() override {}
+  void onUpdate() override {}
   void render() override {
     ImGui::Begin("Console");
 
-    ImGui::TextWrapped("%s", this->log_stream.str().c_str());
+    ImGui::TextWrapped("%s", this->log_stream->str().c_str());
 
     float max_y = ImGui::GetScrollMaxY();
     float y = ImGui::GetScrollY();
@@ -172,7 +161,7 @@ class NodeEditorWidget : public Widget {
 public:
   std::shared_ptr<RenderGraph> graph;
 
-  NodeEditorWidget(std::shared_ptr<RenderGraph> graph) { this->graph = graph; }
+  NodeEditorWidget(std::shared_ptr<RenderGraph> graph) : graph(graph) {}
   template <class Archive>
   static void
   load_and_construct(Archive &ar,
@@ -182,41 +171,8 @@ public:
     construct(graph);
   }
   template <class Archive> void serialize(Archive &ar) { ar(VP(graph)); }
-  void onStartup() override {
-    ImNodes::CreateContext();
-
-    int out = graph->insert_root_node(std::make_unique<OutputNode>());
-    int time = graph->insert_node(std::make_unique<TimeNode>());
-    int vec = graph->insert_node(std::make_unique<Vec2Node>());
-    int frag = graph->insert_node(std::make_unique<FragmentShaderNode>());
-
-    auto f = dynamic_cast<FragmentShaderNode *>(graph->get_node(frag));
-    auto v = dynamic_cast<Vec2Node *>(graph->get_node(vec));
-
-    int out_in =
-        dynamic_cast<OutputNode *>(graph->get_node(out))->get_input_pin();
-    int time_out =
-        dynamic_cast<TimeNode *>(graph->get_node(time))->get_output_pin();
-    int frag_out = f->get_output_pin();
-    int vec_out = v->get_output_pin();
-    f->set_shader(graph->shaders->at("Default"));
-
-    int u_res_in = f->add_uniform_pin(*graph, DataType::Vec2,
-                                      (std::string) "u_resolution");
-    int u_time_in =
-        f->add_uniform_pin(*graph, DataType::Float, (std::string) "u_time");
-    v->set_value(640.0f, 480.0f);
-
-    graph->insert_edge(frag_out, out_in);
-    graph->insert_edge(time_out, u_time_in);
-    graph->insert_edge(vec_out, u_res_in);
-
-    ImNodes::SetNodeGridSpacePos(out, ImVec2(500, 40));
-    ImNodes::SetNodeGridSpacePos(vec, ImVec2(20, 40));
-    ImNodes::SetNodeGridSpacePos(time, ImVec2(20, 160));
-    ImNodes::SetNodeGridSpacePos(frag, ImVec2(200, 60));
-  };
-  void onShutdown() override { ImNodes::DestroyContext(); }
+  void onStartup() override {};
+  void onShutdown() override {}
   void onUpdate() override {
     int from_pin, to_pin;
     if (ImNodes::IsLinkCreated(&from_pin, &to_pin)) {

@@ -103,7 +103,7 @@ public:
   virtual void render(RenderGraph &) {}
   virtual void onEnter(RenderGraph &) {}
   virtual void onExit(RenderGraph &) {}
-  // Called when the Graph is loaded in
+  // Called when the Node is serialized and needs RenderGraph to setup
   virtual void onLoad(RenderGraph &) {}
   // Runs the Node and writes to output pins
   virtual void run(RenderGraph &) {}
@@ -137,38 +137,56 @@ struct RenderGraph {
   std::map<int, Pin> pins;
 
   std::shared_ptr<Assets<Shader>> shaders;
-  std::shared_ptr<Geometry> graph_geometry = nullptr;
+  std::shared_ptr<Geometry> graph_geometry;
   ImVec2 viewport_resolution = ImVec2(640, 480);
   int root_node;
 
   std::vector<int> run_order;
   bool should_stop = false;
+  ImNodesContext *context;
 
-  RenderGraph(std::shared_ptr<Assets<Shader>> shaders =
-                  std::make_shared<Assets<Shader>>()) {
+  RenderGraph(
+      std::shared_ptr<Assets<Shader>> shaders =
+          std::make_shared<Assets<Shader>>(),
+      std::shared_ptr<Geometry> geo = std::make_shared<ScreenQuadGeometry>()) {
     this->shaders = shaders;
+    this->graph_geometry = geo;
+    this->context = ImNodes::CreateContext();
   };
   template <class Archive> void load(Archive &ar) {
-    ar(CEREAL_NVP(nodes), CEREAL_NVP(edges), CEREAL_NVP(pins),
-       CEREAL_NVP(shaders), CEREAL_NVP(graph_geometry));
     Data::Vec2 resolution;
-    ar(cereal::make_nvp("viewport_resolution", resolution),
-       CEREAL_NVP(root_node));
+    ar(                                                      //
+        CEREAL_NVP(nodes),                                   //
+        CEREAL_NVP(edges),                                   //
+        CEREAL_NVP(pins),                                    //
+        CEREAL_NVP(shaders),                                 //
+        CEREAL_NVP(graph_geometry),                          //
+        cereal::make_nvp("viewport_resolution", resolution), //
+        CEREAL_NVP(root_node)                                //
+    );
+
     viewport_resolution.x = resolution[0];
     viewport_resolution.y = resolution[1];
 
+    // Setup nodes
     for (auto &pair : nodes) {
       pair.second->onLoad(*this);
     }
   }
   template <class Archive> void save(Archive &ar) const {
-    ar(CEREAL_NVP(nodes), CEREAL_NVP(edges), CEREAL_NVP(pins),
-       CEREAL_NVP(shaders), CEREAL_NVP(graph_geometry));
     auto resolution =
         Data::Vec2({viewport_resolution.x, viewport_resolution.y});
-    ar(cereal::make_nvp("viewport_resolution", resolution),
-       CEREAL_NVP(root_node));
+    ar(                                                      //
+        CEREAL_NVP(nodes),                                   //
+        CEREAL_NVP(edges),                                   //
+        CEREAL_NVP(pins),                                    //
+        CEREAL_NVP(shaders),                                 //
+        CEREAL_NVP(graph_geometry),                          //
+        cereal::make_nvp("viewport_resolution", resolution), //
+        CEREAL_NVP(root_node)                                //
+    );
   }
+  void destroy() { ImNodes::DestroyContext(context); }
   void set_resolution(ImVec2 res) { viewport_resolution = res; }
   void set_geometry(std::shared_ptr<Geometry> geo) { graph_geometry = geo; }
   int get_next_node_id() {
@@ -308,6 +326,7 @@ struct RenderGraph {
       pin.second.data.set(nullptr);
     }
   };
+  void default_layout();
 };
 
 // ============
