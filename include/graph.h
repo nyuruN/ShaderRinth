@@ -533,7 +533,8 @@ public:
     ImGui::SameLine();
     ImGui::SetNextItemWidth(node_width - ImGui::CalcTextSize("Source").x);
 
-    if (ImGui::BeginCombo("##hidelabel", "preview")) {
+    if (ImGui::BeginCombo("##hidelabel",
+                          bool(shader) ? shader->get_name().c_str() : "")) {
       auto shadermap = graph.shaders;
       for (auto const &pair : *shadermap) {
         bool is_selected =

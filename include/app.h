@@ -62,6 +62,8 @@ struct App {
   void save_project() {
     if (!project_root) {
       auto dir = pfd::select_folder("Select a project directory").result();
+      if (dir.empty())
+        return;
       project_root = dir;
     }
 
@@ -90,37 +92,43 @@ struct App {
       // Prompt the user to save the project
     }
 
-    std::string dir =
+    auto dir =
         pfd::select_folder("Select an existing project directory").result();
+    if (dir.empty())
+      return;
+
     std::ifstream file(std::filesystem::path(dir) / "srproject.json");
     if (!file || !file.good()) {
       spdlog::error("Unknown project directory format!");
       return;
     }
-    cereal::JSONInputArchive archive(file);
     project_root = std::string(dir);
 
-    // Call onShutdown to all widgets
-    for (auto &pair : workspaces) {
-      for (auto &widget : pair.second) {
-        widget->onShutdown();
+    { // Safely clear all resources
+      for (auto &pair : workspaces) {
+        for (auto &widget : pair.second) {
+          widget->onShutdown();
+        }
       }
+      workspaces.clear();
+      graph->destroy();
+      graph = nullptr;
+      geometries = nullptr;
+      shaders = nullptr;
     }
-    shaders->clear();
-    geometries->clear();
-    workspaces.clear();
-    graph->destroy();
 
-    archive(                  //
-        VP(shaders),          //
-        VP(geometries),       //
-        VP(graph),            //
-        VP(workspaces),       //
-        VP(current_workspace) //
-    );
+    {
+      cereal::JSONInputArchive archive(file);
+      archive(                  //
+          VP(shaders),          //
+          VP(geometries),       //
+          VP(graph),            //
+          VP(workspaces),       //
+          VP(current_workspace) //
+      );
+    }
 
     for (auto &pair : *shaders) { // Load shader sources
-      spdlog::info("name = {}", pair.first);
       pair.second->load(project_root.value());
     }
     for (auto &pair : workspaces) { // Load widgets
@@ -129,7 +137,7 @@ struct App {
       }
     }
 
-    spdlog::info("Project loaded in {}", project_root.value().string());
+    spdlog::info("Project loaded {}", project_root.value().string());
   }
   void startup() {
     for (auto &pair : workspaces) {

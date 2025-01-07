@@ -7,3 +7,6 @@
 [submodule "imnodes"]
 	path = imnodes
 	url = https://github.com/Nelarius/imnodes.git
+[submodule "portable-file-dialogs"]
+	path = portable-file-dialogs
+	url = https://github.com/samhocevar/portable-file-dialogs.git

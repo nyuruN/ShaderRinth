@@ -23,11 +23,15 @@ add_executable(
   imnodes/imnodes.cpp
 )
 target_include_directories(${EXECUTABLE} PRIVATE 
-  ${CMAKE_CURRENT_LIST_DIR}
   include
+
+  ${CMAKE_SOURCE_DIR}
+  imnodes
+  zep/include
+  portable-file-dialogs
 )
 
-# Link libraries
+# Link libraries (vcpkg)
 find_package(imgui CONFIG REQUIRED)
 target_link_libraries(${EXECUTABLE} PRIVATE imgui::imgui)
 find_package(glfw3 CONFIG REQUIRED)
@@ -38,8 +42,6 @@ find_package(cereal CONFIG REQUIRED)
 target_link_libraries(${EXECUTABLE} PRIVATE cereal::cereal)
 find_package(OpenGL REQUIRED)
 target_link_libraries(${EXECUTABLE} PRIVATE OpenGL::GL)
-find_path(PORTABLE_FILE_DIALOGS_INCLUDE_DIRS "portable-file-dialogs.h")
-target_include_directories(${EXECUTABLE} PRIVATE ${PORTABLE_FILE_DIALOGS_INCLUDE_DIRS})
 
 # Link zep
 add_definitions(-DZEP_FEATURE_CPP_FILE_SYSTEM)
@@ -47,8 +49,7 @@ add_definitions(-DZEP_SINGLE_HEADER=1)
 set(APP_ROOT ${CMAKE_CURRENT_LIST_DIR})
 configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/config_app.h.cmake ${CMAKE_BINARY_DIR}/config_app.h)
 target_include_directories(${EXECUTABLE} PRIVATE 
-  ${CMAKE_SOURCE_DIR}/zep/include 
-  ${CMAKE_BINARY_DIR}
+  ${CMAKE_BINARY_DIR} # config_app.h
 )
 
 # compile options
