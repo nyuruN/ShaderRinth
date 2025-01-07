@@ -1,15 +1,15 @@
+#pragma once
+
 #include "config_app.h"
 #include "utils.h"
 #include <GL/gl.h>
 #include <GLES3/gl3.h>
-#include <GLFW/glfw3.h>
 #include <cereal/cereal.hpp>
 #include <cereal/types/base_class.hpp>
 #include <cereal/types/polymorphic.hpp>
 #include <cereal/types/string.hpp>
 #include <filesystem>
 #include <fstream>
-#include <imgui.h>
 #include <spdlog/spdlog.h>
 
 const std::filesystem::path DEFAULT_FRAG_PATH =

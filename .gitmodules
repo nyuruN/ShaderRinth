@@ -10,3 +10,12 @@
 [submodule "portable-file-dialogs"]
 	path = portable-file-dialogs
 	url = https://github.com/samhocevar/portable-file-dialogs.git
+[submodule "extern/imnodes"]
+	path = extern/imnodes
+	url = https://github.com/Nelarius/imnodes.git
+[submodule "extern/portable-file-dialogs"]
+	path = extern/portable-file-dialogs
+	url = https://github.com/samhocevar/portable-file-dialogs.git
+[submodule "extern/zep"]
+	path = extern/zep
+	url = git@github.com:nyuruN/zep.git

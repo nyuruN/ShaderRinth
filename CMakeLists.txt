@@ -20,15 +20,16 @@ add_executable(
   src/editor.cpp
   src/utils.cpp
   src/graph.cpp
-  imnodes/imnodes.cpp
+  
+  extern/imnodes/imnodes.cpp
 )
 target_include_directories(${EXECUTABLE} PRIVATE 
   include
 
   ${CMAKE_SOURCE_DIR}
-  imnodes
-  zep/include
-  portable-file-dialogs
+  extern/imnodes
+  extern/zep/include
+  extern/portable-file-dialogs
 )
 
 # Link libraries (vcpkg)

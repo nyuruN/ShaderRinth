@@ -1,7 +1,4 @@
-#include <GLFW/glfw3.h>
-#include <cstdlib>
-#include <graph.h>
-#include <spdlog/spdlog.h>
+#include "nodes.h"
 
 void RenderGraph::default_layout() {
   int out = insert_root_node(std::make_unique<OutputNode>());

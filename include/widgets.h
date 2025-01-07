@@ -1,5 +1,8 @@
+#pragma once
+
 #include "editor.h"
 #include "graph.h"
+#include "nodes.h"
 #include "utils.h"
 #include <GLES3/gl3.h>
 #include <GLFW/glfw3.h>

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "config_app.h"
 #include "portable-file-dialogs.h"
 #include "widgets.h" // Will all other headers
