@@ -164,6 +164,8 @@ class NodeEditorWidget : public Widget {
 public:
   std::shared_ptr<RenderGraph> graph;
 
+  ImNodesEditorContext *context;
+
   NodeEditorWidget(std::shared_ptr<RenderGraph> graph) : graph(graph) {}
   template <class Archive>
   static void
@@ -174,8 +176,8 @@ public:
     construct(graph);
   }
   template <class Archive> void serialize(Archive &ar) { ar(VP(graph)); }
-  void onStartup() override {};
-  void onShutdown() override {}
+  void onStartup() override { context = ImNodes::EditorContextCreate(); };
+  void onShutdown() override { ImNodes::EditorContextFree(context); }
   void onUpdate() override {
     int from_pin, to_pin;
     if (ImNodes::IsLinkCreated(&from_pin, &to_pin)) {
@@ -185,7 +187,12 @@ public:
   }
   void render() override {
     ImGui::Begin("Node Editor");
+    ImNodes::EditorContextSet(context);
+    ImNodes::BeginNodeEditor();
+
     graph.get()->render();
+
+    ImNodes::EndNodeEditor();
     ImGui::End();
   }
 };

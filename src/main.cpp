@@ -50,6 +50,8 @@ int main(int, char **) {
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard |
                       ImGuiConfigFlags_DockingEnable; // Enable docking
 
+    ImNodes::CreateContext();
+
     auto fontPath = std::filesystem::path(APP_ROOT) / "assets" / "fonts" /
                     "Cousine-Regular.ttf";
     io.Fonts->AddFontFromFileTTF(fontPath.string().c_str(), 16);
@@ -100,6 +102,8 @@ int main(int, char **) {
   }
 
   app.shutdown();
+
+  ImNodes::DestroyContext();
 
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplGlfw_Shutdown();

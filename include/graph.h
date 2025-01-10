@@ -141,7 +141,6 @@ struct RenderGraph {
 
   std::vector<int> run_order;
   bool should_stop = false;
-  ImNodesContext *context;
 
   RenderGraph(
       std::shared_ptr<Assets<Shader>> shaders =
@@ -149,7 +148,6 @@ struct RenderGraph {
       std::shared_ptr<Geometry> geo = std::make_shared<ScreenQuadGeometry>()) {
     this->shaders = shaders;
     this->graph_geometry = geo;
-    this->context = ImNodes::CreateContext();
   };
   template <class Archive> void load(Archive &ar) {
     Data::Vec2 resolution;
@@ -184,7 +182,6 @@ struct RenderGraph {
         CEREAL_NVP(root_node)                                //
     );
   }
-  void destroy() { ImNodes::DestroyContext(context); }
   void set_resolution(ImVec2 res) { viewport_resolution = res; }
   void set_geometry(std::shared_ptr<Geometry> geo) { graph_geometry = geo; }
   int get_next_node_id() {
@@ -247,16 +244,12 @@ struct RenderGraph {
   };
   void delete_edge(int edgeid) { edges.erase(edges.find(edgeid)); };
   void render() {
-    ImNodes::BeginNodeEditor();
-
     for (auto &pair : nodes) { // Render Nodes
       pair.second->render(*this);
     }
     for (auto &pair : edges) { // Render Edges
       ImNodes::Link(pair.first, pair.second.from, pair.second.to);
     }
-
-    ImNodes::EndNodeEditor();
   };
   Data get_pin_data(int pinid) { return pins.at(pinid).data; };
   void set_pin_data(int pinid, std::any ptr) {
@@ -324,5 +317,6 @@ struct RenderGraph {
       pin.second.data.set(nullptr);
     }
   };
-  void default_layout();
+  // Default node layout
+  void default_layout(std::shared_ptr<Shader>);
 };

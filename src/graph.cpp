@@ -1,6 +1,6 @@
 #include "nodes.h"
 
-void RenderGraph::default_layout() {
+void RenderGraph::default_layout(std::shared_ptr<Shader> shader) {
   int out = insert_root_node(std::make_unique<OutputNode>());
   int time = insert_node(std::make_unique<TimeNode>());
   int vec = insert_node(std::make_unique<Vec2Node>());
@@ -13,7 +13,7 @@ void RenderGraph::default_layout() {
   int time_out = dynamic_cast<TimeNode *>(get_node(time))->get_output_pin();
   int frag_out = f->get_output_pin();
   int vec_out = v->get_output_pin();
-  f->set_shader(shaders->at("Default"));
+  f->set_shader(shader);
 
   int u_res_in = f->add_uniform_pin(*this, DataType::Vec2, "u_resolution");
   int u_time_in = f->add_uniform_pin(*this, DataType::Float, "u_time");

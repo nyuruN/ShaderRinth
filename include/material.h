@@ -48,22 +48,34 @@ public:
     source = buf.str();
     this->name = name;
   }
-  Shader(std::string name, std::filesystem::path path) {
+  Shader(std::string name, std::filesystem::path path, std::string source) {
     this->name = name;
     this->path = path;
+    this->source = source;
   }
   template <class Archive>
   static void load_and_construct(Archive &ar,
                                  cereal::construct<Shader> &construct) {
-    std::string name, path;
+    std::string name, path, source;
     ar(name, path);
-    construct(name, std::filesystem::path(path));
+
+    std::filesystem::path abs_path =
+        Global::instance().get_project_root() / path;
+    spdlog::info("PATH IS {}", abs_path.string());
+    std::ifstream file(abs_path);
+    if (!file) {
+      spdlog::error("failed to load shader \"{}\" in \"{}\"!", name,
+                    abs_path.string());
+      return;
+    }
+    std::ostringstream buf;
+    buf << file.rdbuf();
+    source = buf.str();
+
+    construct(name, path, source);
   }
-  template <class Archive> void serialize(Archive &ar) {
-    ar(VP(name), NVP("path", path.string()));
-  }
-  void save(std::filesystem::path project_root) {
-    auto abs_path = project_root / path;
+  template <class Archive> void save(Archive &ar) const {
+    auto abs_path = Global::instance().get_project_root() / path;
     // Ensure the parent directory exists
     std::filesystem::create_directories(abs_path.parent_path());
 
@@ -74,18 +86,8 @@ public:
       return;
     }
     file << source;
-  }
-  void load(std::filesystem::path project_root) {
-    std::filesystem::path abs_path = project_root / path;
-    std::ifstream file(abs_path);
-    if (!file) {
-      spdlog::error("failed to load shader \"{}\" in \"{}\"!", name,
-                    abs_path.string());
-      return;
-    }
-    std::ostringstream buf;
-    buf << file.rdbuf();
-    source = buf.str();
+
+    ar(VP(name), NVP("path", path.string()));
   }
   bool compile(std::shared_ptr<Geometry> geo) {
     spdlog::info("Compiling shaders");

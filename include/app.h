@@ -6,7 +6,6 @@
 #include <GL/gl.h>
 #include <GLES3/gl3.h>
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
-#include <cereal/archives/json.hpp>
 #include <cereal/cereal.hpp>
 #include <cereal/types/map.hpp>
 #include <cereal/types/memory.hpp>
@@ -39,7 +38,7 @@ struct App {
     shaders->insert(std::make_pair(shader->name, shader));
     geometries->insert(std::make_pair(geo->name, geo));
     graph = std::make_shared<RenderGraph>(shaders, geo);
-    graph->default_layout();
+    graph->default_layout(shader);
 
     // clang-format off
     workspaces = std::vector<Workspace>({
@@ -69,23 +68,19 @@ struct App {
       project_root = dir;
     }
 
-    // TODO: Save Shader sources
-    for (auto &pair : *shaders) {
-      pair.second->save(project_root.value());
+    { // Serialize
+      Global::instance().set_project_root(project_root.value());
+      std::ofstream ofs(project_root.value() / "srproject.json");
+      cereal::JSONOutputArchive archive(ofs);
+
+      archive(                  //
+          VP(shaders),          //
+          VP(geometries),       //
+          VP(graph),            //
+          VP(workspaces),       //
+          VP(current_workspace) //
+      );
     }
-
-    std::ofstream ofs(project_root.value() / "srproject.json");
-    cereal::JSONOutputArchive archive(ofs);
-
-    archive(                  //
-        VP(shaders),          //
-        VP(geometries),       //
-        VP(graph),            //
-        VP(workspaces),       //
-        VP(current_workspace) //
-    );
-
-    archive.serializeDeferments();
 
     spdlog::info("Project saved in {}!", project_root.value().string());
   }
@@ -104,7 +99,7 @@ struct App {
       spdlog::error("Unknown project directory format!");
       return;
     }
-    project_root = std::string(dir);
+    project_root = dir;
 
     { // Safely clear all resources
       for (auto &pair : workspaces) {
@@ -113,13 +108,13 @@ struct App {
         }
       }
       workspaces.clear();
-      graph->destroy();
       graph = nullptr;
       geometries = nullptr;
       shaders = nullptr;
     }
 
     {
+      Global::instance().set_project_root(project_root.value());
       cereal::JSONInputArchive archive(file);
       archive(                  //
           VP(shaders),          //
@@ -130,9 +125,6 @@ struct App {
       );
     }
 
-    for (auto &pair : *shaders) { // Load shader sources
-      pair.second->load(project_root.value());
-    }
     for (auto &pair : workspaces) { // Load widgets
       for (auto &widget : pair.second) {
         widget->onStartup();
@@ -191,7 +183,6 @@ struct App {
   }
   // Cleanup
   void shutdown() {
-    graph->destroy();
     for (auto &pair : workspaces) {
       for (auto &widget : pair.second)
         widget->onShutdown();
