@@ -34,11 +34,10 @@ public:
 class EditorWidget : public Widget {
 private:
   std::shared_ptr<Shader> shader;
-
-public:
   bool is_dirty = false;
   uint64_t last_update = 0;
 
+public:
   EditorWidget(std::shared_ptr<Shader> shader) : shader(shader) {}
   template <class Archive>
   static void load_and_construct(Archive &ar,
@@ -80,10 +79,11 @@ public:
 /// TODO:
 /// Add option to display the image without stretching
 class ViewportWidget : public Widget {
-public:
+private:
   std::shared_ptr<RenderGraph> viewgraph;
   ImVec2 wsize = ImVec2(640, 480);
 
+public:
   ViewportWidget(std::shared_ptr<RenderGraph> graph) { viewgraph = graph; }
   template <class Archive>
   static void load_and_construct(Archive &ar,
@@ -161,11 +161,11 @@ public:
   }
 };
 class NodeEditorWidget : public Widget {
-public:
+private:
   std::shared_ptr<RenderGraph> graph;
-
   ImNodesEditorContext *context;
 
+public:
   NodeEditorWidget(std::shared_ptr<RenderGraph> graph) : graph(graph) {}
   template <class Archive>
   static void

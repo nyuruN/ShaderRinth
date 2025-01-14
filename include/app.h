@@ -160,7 +160,6 @@ struct App {
       if (ImGui::BeginMenu("View")) {
         ImGui::EndMenu();
       }
-
       ImGui::Indent(165);
       if (ImGui::BeginTabBar("Workspaces", ImGuiTabBarFlags_Reorderable)) {
         int idx = 0;
@@ -173,7 +172,6 @@ struct App {
         }
         ImGui::EndTabBar();
       }
-
       ImGui::EndMainMenuBar();
     }
 

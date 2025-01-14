@@ -236,7 +236,7 @@ struct RenderGraph {
     std::vector<int> marked;
     for (auto &pair : edges) {
       if (pair.second.from == pinid || pair.second.to == pinid) {
-        marked.push_back(pinid);
+        marked.push_back(pair.second.id);
       }
     }
     for (auto &edgeid : marked)

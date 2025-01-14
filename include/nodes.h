@@ -246,7 +246,9 @@ public:
       std::vector<int> marked;
       int idx = 0;
       for (auto &pin : uniform_pins) {
-        ImNodes::BeginInputAttribute(pin.pinid);
+        ImNodes::BeginInputAttribute(pin.pinid, (pin.type == DataType::Float)
+                                                    ? ImNodesPinShape_Quad
+                                                    : ImNodesPinShape_Circle);
         ImGui::Text(Data::type_name(pin.type));
         ImGui::SameLine();
 
@@ -262,14 +264,14 @@ public:
         ImGui::SameLine();
         ImGui::Indent(node_width - ImGui::CalcTextSize(" - ").x);
         if (ImGui::Button(" - ")) {
-          marked.push_back(pin.pinid);
+          marked.push_back(idx);
         }
         ImNodes::EndInputAttribute();
         idx++;
       }
-      for (auto &idx : marked) {
-        graph.delete_pin(uniform_pins[idx].pinid);
-        uniform_pins.erase(uniform_pins.begin() + idx);
+      for (auto &i : marked) {
+        graph.delete_pin(uniform_pins[i].pinid);
+        uniform_pins.erase(uniform_pins.begin() + i);
       }
     }
 
