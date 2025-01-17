@@ -14,8 +14,6 @@
 #include <cereal/types/string.hpp>
 #include <cereal/types/vector.hpp>
 #include <memory>
-#include <spdlog/sinks/ostream_sink.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 #include <zep.h>
 
@@ -118,36 +116,18 @@ public:
 /// Add custom colors to console output
 class ConsoleWidget : public Widget {
 private:
-  std::shared_ptr<std::ostringstream> log_stream;
-  std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> console_sink;
-  std::shared_ptr<spdlog::sinks::ostream_sink_mt> ostream_sink;
   bool sticky = false;
 
 public:
   template <class Archive> void serialize(Archive &ar) { ar(sticky); }
-  std::shared_ptr<spdlog::logger> create_logger(char *name) {
-    std::vector<spdlog::sink_ptr> sinks = {ostream_sink, console_sink};
-    auto logger =
-        std::make_shared<spdlog::logger>(name, sinks.begin(), sinks.end());
-    return logger;
-  }
-  void onStartup() override {
-    log_stream = std::make_shared<std::ostringstream>();
-    console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-    console_sink->set_level(spdlog::level::debug);
-    ostream_sink =
-        std::make_shared<spdlog::sinks::ostream_sink_mt>(*log_stream);
-    ostream_sink->set_level(spdlog::level::info);
-
-    auto logger = create_logger("Global");
-    spdlog::set_default_logger(logger);
-  }
+  void onStartup() override {}
   void onShutdown() override {}
   void onUpdate() override {}
   void render() override {
     ImGui::Begin("Console");
 
-    ImGui::TextWrapped("%s", this->log_stream->str().c_str());
+    ImGui::TextWrapped("%s",
+                       Global::instance().get_log_stream_string().c_str());
 
     float max_y = ImGui::GetScrollMaxY();
     float y = ImGui::GetScrollY();
@@ -162,8 +142,8 @@ public:
 };
 class NodeEditorWidget : public Widget {
 private:
-  std::shared_ptr<RenderGraph> graph;
-  ImNodesEditorContext *context;
+  std::shared_ptr<RenderGraph> graph = nullptr;
+  ImNodesEditorContext *context = nullptr;
 
 public:
   NodeEditorWidget(std::shared_ptr<RenderGraph> graph) : graph(graph) {}
@@ -176,7 +156,11 @@ public:
     construct(graph);
   }
   template <class Archive> void serialize(Archive &ar) { ar(VP(graph)); }
-  void onStartup() override { context = ImNodes::EditorContextCreate(); };
+  void onStartup() override {
+    context = ImNodes::EditorContextCreate();
+    ImNodes::EditorContextSet(context);
+    graph->set_node_positions();
+  };
   void onShutdown() override { ImNodes::EditorContextFree(context); }
   void onUpdate() override {
     int from_pin, to_pin;

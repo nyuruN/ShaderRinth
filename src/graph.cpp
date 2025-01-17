@@ -23,8 +23,8 @@ void RenderGraph::default_layout(std::shared_ptr<Shader> shader) {
   insert_edge(time_out, u_time_in);
   insert_edge(vec_out, u_res_in);
 
-  ImNodes::SetNodeGridSpacePos(out, ImVec2(500, 40));
-  ImNodes::SetNodeGridSpacePos(vec, ImVec2(20, 40));
-  ImNodes::SetNodeGridSpacePos(time, ImVec2(20, 160));
-  ImNodes::SetNodeGridSpacePos(frag, ImVec2(200, 60));
+  get_node(out)->pos = {500, 40};
+  get_node(vec)->pos = {20, 40};
+  get_node(time)->pos = {20, 160};
+  get_node(frag)->pos = {200, 60};
 }

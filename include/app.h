@@ -19,20 +19,20 @@
 using Workspace = std::pair<std::string, std::vector<std::shared_ptr<Widget>>>;
 
 struct App {
-  // Assets
-  std::shared_ptr<Assets<Shader>> shaders = std::make_shared<Assets<Shader>>();
-  std::shared_ptr<Assets<Geometry>> geometries =
-      std::make_shared<Assets<Geometry>>();
-  std::shared_ptr<RenderGraph> graph;
-  // GUI Layout
-  std::vector<Workspace> workspaces;
-  int current_workspace = 0;
-  // Project
-  std::optional<std::filesystem::path> project_root;
+  // clang-format off
+  std::shared_ptr<Assets<Shader>>       shaders = std::make_shared<Assets<Shader>>();
+  std::shared_ptr<Assets<Geometry>>     geometries = std::make_shared<Assets<Geometry>>();
+  std::shared_ptr<RenderGraph>          graph;
+  std::vector<Workspace>                workspaces;
+  int                                   current_workspace = 0;
+  std::optional<std::filesystem::path>  project_root;
+  // clang-format on
+
   bool is_project_dirty = false;
 
   // Setup App Logic
   App() {
+    Global::instance().init();
     auto shader = std::make_shared<Shader>(Shader("Default"));
     auto geo = std::make_shared<ScreenQuadGeometry>();
     shaders->insert(std::make_pair(shader->name, shader));
@@ -52,13 +52,10 @@ struct App {
     });
     // clang-format on
   }
-  // void save() {} // TODO
-  // void load() {} // TODO
-  void save_settings() {
-    const auto path = std::filesystem::path(APP_ROOT) / "srconfig.json";
-    // TODO
-  }
-  void load_settings() {} // TODO
+  // TODO: Save persistent preferences global to all instances
+  void save_settings() {}
+  // TODO: Load persistent preferences global to all instances
+  void load_settings() {}
   // Save everything related to a project
   void save_project() {
     if (!project_root) {
@@ -66,10 +63,10 @@ struct App {
       if (dir.empty())
         return;
       project_root = dir;
+      Global::instance().set_project_root(project_root.value());
     }
 
     { // Serialize
-      Global::instance().set_project_root(project_root.value());
       std::ofstream ofs(project_root.value() / "srproject.json");
       cereal::JSONOutputArchive archive(ofs);
 
@@ -82,11 +79,11 @@ struct App {
       );
     }
 
-    spdlog::info("Project saved in {}!", project_root.value().string());
+    spdlog::info("Project saved in {}", project_root.value().string());
   }
   void open_project() {
     if (is_project_dirty) {
-      // Prompt the user to save the project
+      // Prompt the user to save the project first
     }
 
     auto dir =
@@ -95,26 +92,22 @@ struct App {
       return;
 
     std::ifstream file(std::filesystem::path(dir) / "srproject.json");
-    if (!file || !file.good()) {
+    if (!file) {
       spdlog::error("Unknown project directory format!");
       return;
     }
     project_root = dir;
+    Global::instance().set_project_root(project_root.value());
 
     { // Safely clear all resources
-      for (auto &pair : workspaces) {
-        for (auto &widget : pair.second) {
-          widget->onShutdown();
-        }
-      }
-      workspaces.clear();
+      shutdown();
+      workspaces = {};
       graph = nullptr;
       geometries = nullptr;
       shaders = nullptr;
     }
 
     {
-      Global::instance().set_project_root(project_root.value());
       cereal::JSONInputArchive archive(file);
       archive(                  //
           VP(shaders),          //
@@ -123,12 +116,7 @@ struct App {
           VP(workspaces),       //
           VP(current_workspace) //
       );
-    }
-
-    for (auto &pair : workspaces) { // Load widgets
-      for (auto &widget : pair.second) {
-        widget->onStartup();
-      }
+      startup();
     }
 
     spdlog::info("Project loaded {}", project_root.value().string());
@@ -137,6 +125,12 @@ struct App {
     for (auto &pair : workspaces) {
       for (auto &widget : pair.second)
         widget->onStartup();
+    }
+  }
+  void shutdown() {
+    for (auto &pair : workspaces) {
+      for (auto &widget : pair.second)
+        widget->onShutdown();
     }
   }
   void update() {
@@ -178,13 +172,6 @@ struct App {
     renderDockspace();
     for (auto &widget : workspaces[current_workspace].second)
       widget->render();
-  }
-  // Cleanup
-  void shutdown() {
-    for (auto &pair : workspaces) {
-      for (auto &widget : pair.second)
-        widget->onShutdown();
-    }
   }
   void renderDockspace() {
     // Create a window just below the menu to host the docking space

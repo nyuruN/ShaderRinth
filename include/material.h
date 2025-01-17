@@ -61,7 +61,6 @@ public:
 
     std::filesystem::path abs_path =
         Global::instance().get_project_root() / path;
-    spdlog::info("PATH IS {}", abs_path.string());
     std::ifstream file(abs_path);
     if (!file) {
       spdlog::error("failed to load shader \"{}\" in \"{}\"!", name,

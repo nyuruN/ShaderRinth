@@ -3,6 +3,7 @@
 #include "graph.h"
 #include <cereal/types/base_class.hpp>
 #include <cereal/types/polymorphic.hpp>
+#include <imgui_stdlib.h>
 
 // ============
 // Custom Nodes
@@ -140,7 +141,18 @@ public:
     {
       ImNodes::BeginOutputAttribute(output_pin);
       ImGui::SetNextItemWidth(node_width);
-      ImGui::InputFloat2("##hidelabel", value.data(), "%.1f");
+      // static float v[2] = {};
+      ImGui::InputFloat2("##hidelabel", value.data(), "%.1f",
+                         ImGuiInputTextFlags_NoUndoRedo);
+      // if (ImGui::IsItemDeactivatedAfterEdit()) {
+      //   auto b = value;
+      //   Action(
+      //       [this] {
+      //         value[0] = v[0];
+      //         value[1] = v[1];
+      //       },
+      //       [this, b] { value = b; });
+      // };
       ImNodes::EndOutputAttribute();
     }
     ImGui::Dummy(ImVec2(node_width, 20));
@@ -210,8 +222,7 @@ public:
 
     if (ImGui::BeginCombo("##hidelabel",
                           bool(shader) ? shader->get_name().c_str() : "")) {
-      auto shadermap = graph.shaders;
-      for (auto const &pair : *shadermap) {
+      for (auto const &pair : *graph.shaders) {
         bool is_selected =
             (shader) && (shader->get_name() == pair.second->get_name());
         if (ImGui::Selectable(pair.first.c_str(), is_selected))
@@ -252,14 +263,10 @@ public:
         ImGui::Text(Data::type_name(pin.type));
         ImGui::SameLine();
 
-        // TODO: I should optimize this someday :(
-        std::vector<char> buf(pin.identifier.begin(), pin.identifier.end());
-        buf.push_back('\0');
         ImGui::SetNextItemWidth(
             node_width - 20 - ImGui::CalcTextSize(" - ").x -
             ImGui::CalcTextSize(Data::type_name(pin.type)).x);
-        ImGui::InputText("##hidelabel", buf.data(), sizeof(buf));
-        pin.identifier = std::string(buf.data());
+        ImGui::InputText("##hidelabel", &pin.identifier);
 
         ImGui::SameLine();
         ImGui::Indent(node_width - ImGui::CalcTextSize(" - ").x);

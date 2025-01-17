@@ -95,7 +95,8 @@ struct RenderGraph;
 // integration within the RenderGraph
 class Node {
 public:
-  int id;
+  int id = -1;
+  Data::Vec2 pos = {};
 
   // Renders the Node
   virtual void render(RenderGraph &) {}
@@ -106,40 +107,40 @@ public:
   // Runs the Node and writes to output pins
   virtual void run(RenderGraph &) {}
 
-  template <class Archive> void serialize(Archive &ar) { ar(id); }
+  template <class Archive> void serialize(Archive &ar) { ar(id, pos); }
 };
 
 // RenderGraph
 struct RenderGraph {
   // Represents a pin of a node
   struct Pin {
-    int id;
-    int node_id;
+    int id = -1;
+    int node_id = -1;
     Data data;
 
     template <class Archive> void serialize(Archive &ar) {
-      ar(CEREAL_NVP(id), CEREAL_NVP(node_id), CEREAL_NVP(data));
+      ar(VP(id), VP(node_id), VP(data));
     }
   };
   // Represents a connection between nodes
   struct Edge {
-    int id;
-    int from, to;
+    int id = -1;
+    int from = -1, to = -1;
 
     template <class Archive> void serialize(Archive &ar) {
-      ar(CEREAL_NVP(id), CEREAL_NVP(from), CEREAL_NVP(to));
+      ar(VP(id), VP(from), VP(to));
     }
   };
-  std::map<int, std::unique_ptr<Node>> nodes;
-  std::map<int, Edge> edges;
-  std::map<int, Pin> pins;
+  std::map<int, std::unique_ptr<Node>> nodes = {};
+  std::map<int, Edge> edges = {};
+  std::map<int, Pin> pins = {};
 
-  std::shared_ptr<Assets<Shader>> shaders;
-  std::shared_ptr<Geometry> graph_geometry;
+  std::shared_ptr<Assets<Shader>> shaders = nullptr;
+  std::shared_ptr<Geometry> graph_geometry = nullptr;
   ImVec2 viewport_resolution = ImVec2(640, 480);
-  int root_node;
+  int root_node = -1;
 
-  std::vector<int> run_order;
+  std::vector<int> run_order = {};
   bool should_stop = false;
 
   RenderGraph(
@@ -151,14 +152,15 @@ struct RenderGraph {
   };
   template <class Archive> void load(Archive &ar) {
     Data::Vec2 resolution;
-    ar(                                                      //
-        CEREAL_NVP(nodes),                                   //
-        CEREAL_NVP(edges),                                   //
-        CEREAL_NVP(pins),                                    //
-        CEREAL_NVP(shaders),                                 //
-        CEREAL_NVP(graph_geometry),                          //
-        cereal::make_nvp("viewport_resolution", resolution), //
-        CEREAL_NVP(root_node)                                //
+
+    ar(                                         //
+        VP(nodes),                              //
+        VP(edges),                              //
+        VP(pins),                               //
+        VP(shaders),                            //
+        VP(graph_geometry),                     //
+        NVP("viewport_resolution", resolution), //
+        VP(root_node)                           //
     );
 
     viewport_resolution.x = resolution[0];
@@ -170,17 +172,30 @@ struct RenderGraph {
     }
   }
   template <class Archive> void save(Archive &ar) const {
-    auto resolution =
-        Data::Vec2({viewport_resolution.x, viewport_resolution.y});
-    ar(                                                      //
-        CEREAL_NVP(nodes),                                   //
-        CEREAL_NVP(edges),                                   //
-        CEREAL_NVP(pins),                                    //
-        CEREAL_NVP(shaders),                                 //
-        CEREAL_NVP(graph_geometry),                          //
-        cereal::make_nvp("viewport_resolution", resolution), //
-        CEREAL_NVP(root_node)                                //
+    Data::Vec2 resolution = {viewport_resolution.x, viewport_resolution.y};
+
+    for (auto &pair : nodes) { // Save node positions
+      auto v = ImNodes::GetNodeGridSpacePos(pair.second->id);
+      pair.second->pos = {v.x, v.y};
+    }
+
+    ar(                                         //
+        VP(nodes),                              //
+        VP(edges),                              //
+        VP(pins),                               //
+        VP(shaders),                            //
+        VP(graph_geometry),                     //
+        NVP("viewport_resolution", resolution), //
+        VP(root_node)                           //
     );
+  }
+  // Sets up node position once an editor context is present
+  // Used for loading only!
+  void set_node_positions() {
+    for (auto &pair : nodes) {
+      ImVec2 pos = {pair.second->pos[0], pair.second->pos[1]};
+      ImNodes::SetNodeGridSpacePos(pair.second->id, pos);
+    }
   }
   void set_resolution(ImVec2 res) { viewport_resolution = res; }
   void set_geometry(std::shared_ptr<Geometry> geo) { graph_geometry = geo; }

@@ -7,6 +7,9 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <spdlog/sinks/ostream_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
 #include <string>
 #include <vector>
 
@@ -16,12 +19,35 @@
 template <typename T> using Assets = std::map<std::string, std::shared_ptr<T>>;
 
 struct Global {
+
 public:
   static Global &instance() {
     static Global instance;
     return instance;
   }
+  void init() {
+    log_stream = std::make_shared<std::ostringstream>();
+    console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+    console_sink->set_level(spdlog::level::debug);
+    ostream_sink =
+        std::make_shared<spdlog::sinks::ostream_sink_mt>(*log_stream);
+    ostream_sink->set_level(spdlog::level::info);
 
+    auto logger = create_logger("Global");
+    spdlog::set_default_logger(logger);
+  }
+  std::string get_log_stream_string() {
+    std::lock_guard<std::mutex> lock(_mutex);
+    return log_stream->str();
+  }
+  std::shared_ptr<spdlog::logger> create_logger(char *name) {
+    std::lock_guard<std::mutex> lock(_mutex);
+    std::vector<spdlog::sink_ptr> sinks = {ostream_sink, console_sink};
+    auto logger =
+        std::make_shared<spdlog::logger>(name, sinks.begin(), sinks.end());
+    return logger;
+  }
+  // Sets the current project directory for use in serialization
   void set_project_root(std::filesystem::path path) {
     std::lock_guard<std::mutex> lock(_mutex);
     project_root = path;
@@ -37,6 +63,9 @@ private:
   Global(const Global &) = delete;
   Global &operator=(const Global &) = delete;
 
+  std::shared_ptr<std::ostringstream> log_stream;
+  std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> console_sink;
+  std::shared_ptr<spdlog::sinks::ostream_sink_mt> ostream_sink;
   std::mutex _mutex;
   std::filesystem::path project_root;
 };
