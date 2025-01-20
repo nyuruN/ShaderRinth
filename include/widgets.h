@@ -20,11 +20,13 @@
 // A stateful widget
 class Widget {
 public:
-  // Runs on the first frame when the Widget is loaded in
+  // Runs on the first frame when loaded
   virtual void onStartup() {};
+  // Runs on shutdown or otherwise destroyed
   virtual void onShutdown() {};
-  // Separates render code from state code
+  // Runs every frame
   virtual void onUpdate() {};
+  // Runs every frame if visible
   virtual void render() {};
   template <class Archive> void serialize(Archive &ar) {}
 };
@@ -144,6 +146,7 @@ class NodeEditorWidget : public Widget {
 private:
   std::shared_ptr<RenderGraph> graph = nullptr;
   ImNodesEditorContext *context = nullptr;
+  UndoContext history = UndoContext(50);
 
 public:
   NodeEditorWidget(std::shared_ptr<RenderGraph> graph) : graph(graph) {}
@@ -174,7 +177,23 @@ public:
     ImNodes::EditorContextSet(context);
     ImNodes::BeginNodeEditor();
 
+    Global::instance().set_undo_context(&history);
     graph.get()->render();
+
+    auto io = ImGui::GetIO();
+    bool pressed = false;
+    if (ImGui::IsWindowFocused()) {
+      // bool pressed = isKeyJustPressed(ImGuiKey_Z);
+      pressed = isKeyJustPressed(ImGuiKey_Z);
+      if (pressed && io.KeyCtrl && io.KeyShift) {
+        history.redo();
+      } else if (pressed && io.KeyCtrl) {
+        history.undo();
+      }
+    }
+    ImGui::Text("Is focused: %d\nIs Z just pressed: %d\nIO.KeyCtrl = "
+                "%d\nIO.KeyShift = %d\n",
+                ImGui::IsWindowFocused(), pressed, io.KeyCtrl, io.KeyShift);
 
     ImNodes::EndNodeEditor();
     ImGui::End();

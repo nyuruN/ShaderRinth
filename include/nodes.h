@@ -87,7 +87,8 @@ public:
 };
 class FloatNode : public Node {
   int output_pin;
-  float value = 0.0f;
+
+  Data::Float prev_value = 0.0f, value = 0.0f;
 
   float node_width = 80.0f;
 
@@ -102,6 +103,12 @@ public:
       ImNodes::BeginOutputAttribute(output_pin);
       ImGui::SetNextItemWidth(node_width);
       ImGui::InputFloat("Float", &value, 0, 0, "%.2f");
+      if (ImGui::IsItemDeactivatedAfterEdit()) {
+        getUndoContext()->do_action(
+            {[this, newvalue = value] { prev_value = value = newvalue; },
+             [this, oldvalue = prev_value] { prev_value = value = oldvalue; }});
+        prev_value = value;
+      }
       ImNodes::EndOutputAttribute();
     }
     ImGui::Dummy(ImVec2(node_width, 20));
@@ -122,7 +129,8 @@ public:
 };
 class Vec2Node : public Node {
   int output_pin;
-  std::array<float, 2> value = {0};
+
+  Data::Vec2 prev_value = {0}, value = {0};
 
   float node_width = 120.0f;
 
@@ -141,18 +149,14 @@ public:
     {
       ImNodes::BeginOutputAttribute(output_pin);
       ImGui::SetNextItemWidth(node_width);
-      // static float v[2] = {};
       ImGui::InputFloat2("##hidelabel", value.data(), "%.1f",
                          ImGuiInputTextFlags_NoUndoRedo);
-      // if (ImGui::IsItemDeactivatedAfterEdit()) {
-      //   auto b = value;
-      //   Action(
-      //       [this] {
-      //         value[0] = v[0];
-      //         value[1] = v[1];
-      //       },
-      //       [this, b] { value = b; });
-      // };
+      if (ImGui::IsItemDeactivatedAfterEdit()) {
+        getUndoContext()->do_action(
+            {[this, newvalue = value] { prev_value = value = newvalue; },
+             [this, oldvalue = prev_value] { prev_value = value = oldvalue; }});
+        prev_value = value;
+      }
       ImNodes::EndOutputAttribute();
     }
     ImGui::Dummy(ImVec2(node_width, 20));

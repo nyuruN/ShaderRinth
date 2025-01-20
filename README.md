@@ -31,16 +31,4 @@ faster.
 
 * ...
 
-## Config layout
-
-Global config
-  Recent files
-  Style information ??
-
-Project local config
-  Workspace widgets
-  Current Workspace
-  Shader & Geometry Assets
-  RenderGraph Assets
-
 
