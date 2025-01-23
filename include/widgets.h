@@ -180,23 +180,53 @@ public:
     Global::instance().set_undo_context(&history);
     graph.get()->render();
 
+    ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, 5);
+    if (ImGui::BeginPopup("Add Nodes")) {
+      ImGui::Dummy(ImVec2(100, 0)); // Min width
+      ImGui::Indent(5);
+      if (ImGui::Selectable("Vec2"))
+        graph->insert_node(std::make_shared<Vec2Node>());
+      if (ImGui::Selectable("Float"))
+        graph->insert_node(std::make_shared<FloatNode>());
+      if (ImGui::Selectable("Fragment Shader"))
+        graph->insert_node(std::make_shared<FragmentShaderNode>());
+      if (ImGui::Selectable("Time"))
+        graph->insert_node(std::make_shared<TimeNode>());
+      ImGui::Spacing();
+      ImGui::EndPopup();
+    }
+    ImGui::PopStyleVar();
+
     auto io = ImGui::GetIO();
     bool pressed = false;
-    if (ImGui::IsWindowFocused()) {
-      // bool pressed = isKeyJustPressed(ImGuiKey_Z);
+    bool focused = ImGui::IsWindowFocused();
+    if (focused) {
       pressed = isKeyJustPressed(ImGuiKey_Z);
-      if (pressed && io.KeyCtrl && io.KeyShift) {
+      if (pressed && io.KeyCtrl && io.KeyShift)
         history.redo();
-      } else if (pressed && io.KeyCtrl) {
+      else if (pressed && io.KeyCtrl)
         history.undo();
+      pressed = isKeyJustPressed(ImGuiKey_A);
+      if (pressed && io.KeyShift) {
+        ImGui::OpenPopup("Add Nodes");
       }
     }
-    ImGui::Text("Is focused: %d\nIs Z just pressed: %d\nIO.KeyCtrl = "
-                "%d\nIO.KeyShift = %d\n",
-                ImGui::IsWindowFocused(), pressed, io.KeyCtrl, io.KeyShift);
 
     ImNodes::EndNodeEditor();
     ImGui::End();
+
+    if (focused) {
+      if (isKeyJustPressed(ImGuiKey_X)) {
+        int length = ImNodes::NumSelectedNodes();
+        if (length > 0) {
+          int nodeids[length];
+          ImNodes::GetSelectedNodes(nodeids);
+          for (int i = 0; i < length; i++) {
+            graph->delete_node(nodeids[i]);
+          }
+        }
+      }
+    }
   }
 };
 

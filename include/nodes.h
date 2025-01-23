@@ -314,15 +314,21 @@ public:
   }
   void run(RenderGraph &graph) override {
     if (!shader) {
-      graph.should_stop = true;
+      graph.stop();
       return;
     }
 
     if (!shader->is_compiled()) {
+      static bool should_error = true;
       if (!shader->compile(graph.graph_geometry)) {
-        spdlog::error(shader->get_log());
-        graph.should_stop = true;
+        if (should_error)
+          spdlog::error(shader->get_log());
+        should_error = false; // Don't error next time
+        graph.stop();
         return;
+      } else { // If compiled
+        should_error = true;
+        spdlog::info("Shader compiled");
       }
     }
 
@@ -334,14 +340,16 @@ public:
 
     for (auto &pin : uniform_pins) {
       Data data = graph.get_pin_data(pin.pinid);
-      set_uniform(*shader.get(), pin.identifier, data);
+      if (data)
+        set_uniform(shader->get_uniform_loc(pin.identifier.data()),
+                    pin.identifier, data);
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, image_fbo);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                            image_colorbuffer, 0);
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-      graph.should_stop = true;
+      graph.stop();
       spdlog::error("Framebuffer is not complete!");
       return;
     }
@@ -363,8 +371,7 @@ public:
     bound_textures++;
     return GL_TEXTURE0 + unit;
   }
-  void set_uniform(Shader &shader, std::string identifier, Data data) {
-    GLuint loc = shader.get_uniform_loc(identifier.data());
+  void set_uniform(GLuint loc, std::string identifier, Data data) {
     // clang-format off
     switch (data.type) {
     case DataType::Int: {

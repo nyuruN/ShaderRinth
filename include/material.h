@@ -89,8 +89,6 @@ public:
     ar(VP(name), NVP("path", path.string()));
   }
   bool compile(std::shared_ptr<Geometry> geo) {
-    spdlog::info("Compiling shaders");
-
     int success;
     const char *src = source.c_str();
     GLuint frag = glCreateShader(GL_FRAGMENT_SHADER);
@@ -99,7 +97,6 @@ public:
     glGetShaderiv(frag, GL_COMPILE_STATUS, &success);
 
     if (!success) {
-      spdlog::error("Failed to compile fragment shader");
       glGetShaderInfoLog(frag, 512, NULL, log);
       return success;
     }
@@ -109,7 +106,6 @@ public:
     glGetShaderiv(vert, GL_COMPILE_STATUS, &success);
 
     if (!success) {
-      spdlog::error("Failed to compile vertex shader");
       glGetShaderInfoLog(frag, 512, NULL, log);
       return success;
     }
@@ -125,7 +121,6 @@ public:
     glDeleteShader(frag);
 
     if (!success) {
-      spdlog::error("Failed to link program");
       glGetProgramInfoLog(program, 512, NULL, log);
       return success;
     }

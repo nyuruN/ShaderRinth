@@ -61,9 +61,11 @@ struct Data {
   Data(DataType type = DataType(-1), std::any data = nullptr)
       : type(type), data(data) {}
   constexpr bool operator==(DataType t) { return type == t; }
+  operator bool() const { return data.has_value(); }
 
   template <typename T> T get() { return std::any_cast<T>(data); }
   void set(std::any d) { data = d; }
+  void reset() { data.reset(); }
   template <class Archive> void serialize(Archive &ar) { ar(CEREAL_NVP(type)); }
   constexpr static char *type_name(DataType type) {
     // clang-format off
@@ -131,17 +133,20 @@ struct RenderGraph {
       ar(VP(id), VP(from), VP(to));
     }
   };
-  std::map<int, std::unique_ptr<Node>> nodes = {};
+
+private:
+  std::map<int, std::shared_ptr<Node>> nodes = {};
   std::map<int, Edge> edges = {};
   std::map<int, Pin> pins = {};
+  std::vector<int> run_order = {};
 
+  int root_node = -1;
+  bool should_stop = false;
+
+public:
   std::shared_ptr<Assets<Shader>> shaders = nullptr;
   std::shared_ptr<Geometry> graph_geometry = nullptr;
   ImVec2 viewport_resolution = ImVec2(640, 480);
-  int root_node = -1;
-
-  std::vector<int> run_order = {};
-  bool should_stop = false;
 
   RenderGraph(
       std::shared_ptr<Assets<Shader>> shaders =
@@ -199,6 +204,9 @@ struct RenderGraph {
   }
   void set_resolution(ImVec2 res) { viewport_resolution = res; }
   void set_geometry(std::shared_ptr<Geometry> geo) { graph_geometry = geo; }
+  std::map<int, std::shared_ptr<Node>> &get_nodes() { return nodes; }
+  std::map<int, Edge> &get_edges() { return edges; }
+  std::map<int, Pin> &get_pins() { return pins; }
   int get_next_node_id() {
     static int id = 0;
     return id++;
@@ -211,16 +219,15 @@ struct RenderGraph {
     static int id = 0;
     return id++;
   };
-  int insert_root_node(std::unique_ptr<Node> node) {
-    int nodeid = insert_node(std::move(node));
-    root_node = nodeid;
-    return nodeid;
+  int insert_root_node(std::shared_ptr<Node> node) {
+    root_node = insert_node(node);
+    return root_node;
   };
-  int insert_node(std::unique_ptr<Node> node) {
+  int insert_node(std::shared_ptr<Node> node) {
     int nodeid = get_next_node_id();
     node->id = nodeid;
     node->onEnter(*this);
-    nodes.insert(std::make_pair(node->id, std::move(node)));
+    nodes.insert(std::make_pair(node->id, node));
     return nodeid;
   };
   void register_pin(int nodeid, DataType type, int *pinid) {
@@ -242,11 +249,12 @@ struct RenderGraph {
     edges.insert(std::make_pair(edge.id, edge));
     return edge.id;
   };
-  // Removes all traces of a node from graph including edges pins etc.
+  /// Removes a node from the graph
   void delete_node(int nodeid) {
     nodes.at(nodeid)->onExit(*this);
     nodes.erase(nodes.find(nodeid));
   };
+  /// Delete a pin from the graph including related edges
   void delete_pin(int pinid) {
     std::vector<int> marked;
     for (auto &pair : edges) {
@@ -257,6 +265,7 @@ struct RenderGraph {
     for (auto &edgeid : marked)
       delete_edge(edgeid);
   };
+  /// Delete an edge from the graph
   void delete_edge(int edgeid) { edges.erase(edges.find(edgeid)); };
   void render() {
     for (auto &pair : nodes) { // Render Nodes
@@ -309,6 +318,7 @@ struct RenderGraph {
     }
   }
   void topological_order() { traverse(run_order, root_node); };
+  void stop() { should_stop = true; }
   void evaluate() {
     topological_order();
     should_stop = false;
@@ -329,7 +339,7 @@ struct RenderGraph {
   void clear_graph_data() {
     run_order.clear();
     for (auto &pin : pins) {
-      pin.second.data.set(nullptr);
+      pin.second.data.reset();
     }
   };
   // Default node layout

@@ -1,10 +1,10 @@
 #include "nodes.h"
 
 void RenderGraph::default_layout(std::shared_ptr<Shader> shader) {
-  int out = insert_root_node(std::make_unique<OutputNode>());
-  int time = insert_node(std::make_unique<TimeNode>());
-  int vec = insert_node(std::make_unique<Vec2Node>());
-  int frag = insert_node(std::make_unique<FragmentShaderNode>());
+  int out = insert_root_node(std::make_shared<OutputNode>());
+  int time = insert_node(std::make_shared<TimeNode>());
+  int vec = insert_node(std::make_shared<Vec2Node>());
+  int frag = insert_node(std::make_shared<FragmentShaderNode>());
 
   auto f = dynamic_cast<FragmentShaderNode *>(get_node(frag));
   auto v = dynamic_cast<Vec2Node *>(get_node(vec));
