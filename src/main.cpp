@@ -54,7 +54,7 @@ int main(int, char **) {
 
     auto fontPath = std::filesystem::path(APP_ROOT) / "assets" / "fonts" /
                     "Cousine-Regular.ttf";
-    io.Fonts->AddFontFromFileTTF(fontPath.string().c_str(), 16);
+    io.Fonts->AddFontFromFileTTF(fontPath.string().c_str(), 15);
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);

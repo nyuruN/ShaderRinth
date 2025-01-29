@@ -17,17 +17,29 @@ faster.
 
 * Integrate more powerful code/text editor [done]
 
-* Create framework for shaders/materials/configurable uniforms etc. [wip]
+* Create framework for shaders/materials/configurable uniforms etc. [done]
 
-* Node based editor for shader passes / uniforms / textures [wip]
+* Ability to save/load renders and shader projects [done]
 
-* Ability to save/load renders and shader projects
+* Node based editor for shader passes / uniforms / textures [done]
 
-* Load textures & configure as uniforms
+* Load textures & configure as uniforms (needs image handling)
 
-* Manage multiple shader passes
+* Making renders to picture (e.g. Render Widget)
+
+* Properties widget: Selection system? control parameters
+
+* In-app file browser/file outliner (enhanced asset management)
+
+* Outliner widget: show execution flow if multiple graphs are present
+
+* Multiple graphs and render to texture if needed
+
+* Undo history for common actions
 
 * UI improvements
+
+* Finishing touches
 
 * ...
 

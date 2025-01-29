@@ -180,35 +180,55 @@ public:
     Global::instance().set_undo_context(&history);
     graph.get()->render();
 
-    ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, 5);
-    if (ImGui::BeginPopup("Add Nodes")) {
-      ImGui::Dummy(ImVec2(100, 0)); // Min width
-      ImGui::Indent(5);
-      if (ImGui::Selectable("Vec2"))
-        graph->insert_node(std::make_shared<Vec2Node>());
-      if (ImGui::Selectable("Float"))
-        graph->insert_node(std::make_shared<FloatNode>());
-      if (ImGui::Selectable("Fragment Shader"))
-        graph->insert_node(std::make_shared<FragmentShaderNode>());
-      if (ImGui::Selectable("Time"))
-        graph->insert_node(std::make_shared<TimeNode>());
-      ImGui::Spacing();
-      ImGui::EndPopup();
-    }
-    ImGui::PopStyleVar();
+    { // Add Nodes
+      ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, 4);
+      if (ImGui::BeginPopup("Add Nodes")) {
+        ImGui::Dummy(ImVec2(140, 0)); // Min width
+        ImGui::Indent(5);
 
-    auto io = ImGui::GetIO();
-    bool pressed = false;
+        if (ImGui::BeginMenu("Shader Nodes")) {
+          ImGui::Dummy(ImVec2(150, 0)); // Min width
+          ImGui::Indent(5);
+          if (ImGui::Selectable("Fragment Shader"))
+            graph->insert_node(std::make_shared<FragmentShaderNode>());
+          ImGui::Spacing();
+          ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Value Nodes")) {
+          ImGui::Dummy(ImVec2(150, 0)); // Min width
+          ImGui::Indent(5);
+          if (ImGui::Selectable("Vec2"))
+            graph->insert_node(std::make_shared<Vec2Node>());
+          if (ImGui::Selectable("Float"))
+            graph->insert_node(std::make_shared<FloatNode>());
+          if (ImGui::Selectable("Time"))
+            graph->insert_node(std::make_shared<TimeNode>());
+          ImGui::Spacing();
+          ImGui::EndMenu();
+        }
+
+        ImGui::Spacing();
+        ImGui::Dummy(ImVec2(0, 60));
+        ImGui::EndPopup();
+      }
+      ImGui::PopStyleVar();
+    }
+
     bool focused = ImGui::IsWindowFocused();
-    if (focused) {
-      pressed = isKeyJustPressed(ImGuiKey_Z);
-      if (pressed && io.KeyCtrl && io.KeyShift)
-        history.redo();
-      else if (pressed && io.KeyCtrl)
-        history.undo();
-      pressed = isKeyJustPressed(ImGuiKey_A);
-      if (pressed && io.KeyShift) {
-        ImGui::OpenPopup("Add Nodes");
+
+    { // Handle Input
+      auto io = ImGui::GetIO();
+      bool pressed = false;
+      if (focused) {
+        pressed = isKeyJustPressed(ImGuiKey_Z);
+        if (pressed && io.KeyCtrl && io.KeyShift)
+          history.redo();
+        else if (pressed && io.KeyCtrl)
+          history.undo();
+        pressed = isKeyJustPressed(ImGuiKey_A);
+        if (pressed && io.KeyShift) {
+          ImGui::OpenPopup("Add Nodes");
+        }
       }
     }
 
@@ -221,8 +241,16 @@ public:
         if (length > 0) {
           int nodeids[length];
           ImNodes::GetSelectedNodes(nodeids);
-          for (int i = 0; i < length; i++) {
-            graph->delete_node(nodeids[i]);
+          for (int id : nodeids) {
+            graph->delete_node(id);
+          }
+        }
+        length = ImNodes::NumSelectedLinks();
+        if (length > 0) {
+          int edgeids[length];
+          ImNodes::GetSelectedLinks(edgeids);
+          for (int id : edgeids) {
+            graph->delete_edge(id);
           }
         }
       }

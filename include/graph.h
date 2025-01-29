@@ -241,6 +241,16 @@ public:
       return -1;
     }
 
+    { // Handle existing edge to the same pin
+      int id = -1;
+      for (auto &pair : edges) {
+        if (pair.second.to == topin)
+          id = pair.second.id;
+      }
+      if (id != -1)
+        delete_edge(id);
+    }
+
     Edge edge;
     edge.id = get_next_edge_id();
     edge.from = frompin;
