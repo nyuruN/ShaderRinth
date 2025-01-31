@@ -64,35 +64,42 @@ struct App {
   void save_settings() {}
   // TODO: Load persistent preferences global to all instances
   void load_settings() {}
-  // Save everything related to a project
+  // Default save
   void save_project() {
     if (!project_root) {
-      auto dir = pfd::select_folder("Select a project directory").result();
-      if (dir.empty())
-        return;
-      project_root = dir;
-      Global::instance().set_project_root(project_root.value());
+      save_project_as();
+      return;
     }
+    save_project(project_root.value());
+  }
+  // Explicitly ask for project directory
+  void save_project_as() {
+    auto dir = pfd::select_folder("Select a project directory").result();
+    if (dir.empty())
+      return;
+    project_root = dir;
+    Global::instance().set_project_root(project_root.value());
+    save_project(project_root.value());
+  }
+  // Save everything related to a project
+  void save_project(std::filesystem::path project_directory) {
+    std::ofstream ofs(project_root.value() / "srproject.json");
+    cereal::JSONOutputArchive archive(ofs);
 
-    { // Serialize
-      std::ofstream ofs(project_root.value() / "srproject.json");
-      cereal::JSONOutputArchive archive(ofs);
-
-      archive(                  //
-          VP(shaders),          //
-          VP(geometries),       //
-          VP(textures),         //
-          VP(graph),            //
-          VP(workspaces),       //
-          VP(current_workspace) //
-      );
-    }
+    archive(                  //
+        VP(shaders),          //
+        VP(geometries),       //
+        VP(textures),         //
+        VP(graph),            //
+        VP(workspaces),       //
+        VP(current_workspace) //
+    );
 
     spdlog::info("Project saved in {}", project_root.value().string());
   }
   void open_project() {
     if (is_project_dirty) {
-      // Prompt the user to save the project first
+      // TODO: Prompt the user to save the project first
     }
 
     auto dir =
@@ -160,6 +167,8 @@ struct App {
           open_project();
         if (ImGui::MenuItem("Save"))
           save_project();
+        if (ImGui::MenuItem("Save as"))
+          save_project_as();
         ImGui::EndMenu();
       }
       if (ImGui::BeginMenu("Edit")) {

@@ -359,11 +359,6 @@ public:
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     shader->use();
-
-    for (auto &t : bound_textures) {
-      glBindTexture(GL_TEXTURE_2D, t);
-    }
-
     graph.graph_geometry->draw_geometry();
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
