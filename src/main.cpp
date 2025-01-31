@@ -1,11 +1,8 @@
 #include "app.h"
 #include "config_app.h"
-#include "editor.h"
 #include <GL/gl.h>
 #include <GLES3/gl3.h>
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
-#include <cereal/archives/json.hpp>
-#include <cereal/cereal.hpp>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -16,7 +13,6 @@
 static void glfw_error_callback(int error, const char *description) {
   spdlog::error("GLFW Error %d: %s\n", error, description);
 }
-void processInput(GLFWwindow *window);
 
 // Main code
 int main(int, char **) {
@@ -67,7 +63,6 @@ int main(int, char **) {
   bool first_frame = true;
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
-    processInput(window);
 
     // Sleep if minimized
     if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0) {
@@ -113,16 +108,4 @@ int main(int, char **) {
   glfwTerminate();
 
   return 0;
-}
-
-void processInput(GLFWwindow *window) {
-  if (isKeyJustPressed(window, GLFW_KEY_F1)) {
-    static bool wireframe = false;
-    wireframe = !wireframe;
-    spdlog::info("toggle wireframe: {}", wireframe);
-    if (wireframe)
-      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    else
-      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-  }
 }

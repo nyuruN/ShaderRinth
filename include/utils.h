@@ -148,8 +148,7 @@ inline void setUndoContext(UndoContext *ptr) {
   Global::instance().set_undo_context(ptr);
 }
 
+// Should be called per frame
+void updateKeyStates();
 // Return true only if the key transitioned from RELEASE to PRESS
-bool isKeyJustPressed(GLFWwindow *window, int key);
-// Return true only if the key transitioned from RELEASE to PRESS
-// (ImGui version)
 bool isKeyJustPressed(ImGuiKey key);

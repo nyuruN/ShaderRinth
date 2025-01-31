@@ -155,6 +155,8 @@ struct App {
     }
   }
   void update() {
+    updateKeyStates();
+    process_input();
     for (auto &widget : workspaces[current_workspace].second)
       widget->onUpdate();
   }
@@ -221,5 +223,16 @@ struct App {
                      ImGuiDockNodeFlags_PassthruCentralNode);
 
     ImGui::End();
+  }
+  void process_input() {
+    if (isKeyJustPressed(ImGuiKey_F1)) {
+      static bool wireframe = false;
+      wireframe = !wireframe;
+      spdlog::info("toggle wireframe: {}", wireframe);
+      if (wireframe)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+      else
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
   }
 };

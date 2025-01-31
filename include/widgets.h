@@ -227,12 +227,10 @@ public:
     ImNodes::EndNodeEditor();
 
     // Handle Input
-    bool pressed = false;
     if (focused && !io.WantTextInput) {
-      pressed = isKeyJustPressed(ImGuiKey_Z);
-      if (pressed && io.KeyCtrl && io.KeyShift)
+      if (isKeyJustPressed(ImGuiKey_Z) && io.KeyCtrl && io.KeyShift)
         history.redo();
-      else if (pressed && io.KeyCtrl)
+      else if (isKeyJustPressed(ImGuiKey_Z) && io.KeyCtrl)
         history.undo();
       if (isKeyJustPressed(ImGuiKey_X)) {
         int length = ImNodes::NumSelectedNodes();

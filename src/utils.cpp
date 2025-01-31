@@ -3,24 +3,14 @@
 #include <map>
 #include <spdlog/spdlog.h>
 
-// Return true only if the key transitioned from RELEASE to PRESS
-bool isKeyJustPressed(GLFWwindow *window, int key) {
-  static std::map<int, bool> keyPrevState;
-  int currentState = glfwGetKey(window, key);
-  bool prevState = keyPrevState[key];
+static std::map<ImGuiKey, bool> previousStates;
+static std::map<ImGuiKey, bool> currentStates;
 
-  keyPrevState[key] = (currentState == GLFW_PRESS);
-
-  return !prevState && (currentState == GLFW_PRESS);
-}
+// Should be called per frame
+void updateKeyStates() { previousStates.swap(currentStates); }
 // Return true only if the key transitioned from RELEASE to PRESS
-// (ImGui version)
 bool isKeyJustPressed(ImGuiKey key) {
-  static std::map<ImGuiKey, bool> keyPrevState;
-  bool currentState = ImGui::IsKeyDown(key);
-  bool prevState = keyPrevState[key];
-
-  keyPrevState[key] = currentState;
-
-  return !prevState && currentState;
+  bool current = ImGui::IsKeyDown(key);
+  currentStates[key] = current;
+  return !previousStates[key] && current;
 }
