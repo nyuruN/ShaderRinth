@@ -32,10 +32,39 @@ struct Shader {
   std::filesystem::path path; //  is RELATIVE to project_root
   std::string source;
   std::string name;
-  GLuint program;
+  GLuint program = 0;
   bool compiled = false;
 
 public:
+  ~Shader() {
+    if (program != 0)
+      glDeleteProgram(program);
+  }
+  // No copy
+  Shader(const Shader &) = delete;
+  Shader &operator=(const Shader &) = delete;
+  // Enable moving
+  Shader(Shader &&other) noexcept
+      : program(other.program), path(std::move(other.path)),
+        source(std::move(other.source)), name(std::move(other.name)),
+        compiled(other.compiled) {
+    other.program = 0; // Prevent double deletion
+  }
+  Shader &operator=(Shader &&other) noexcept {
+    if (this != &other) { // Avoid self assign
+      if (program != 0) { // Delete current
+        glDeleteProgram(program);
+      }
+      program = other.program;
+      path = std::move(other.path);
+      source = std::move(other.source);
+      name = std::move(other.name);
+      compiled = other.compiled;
+      other.program = 0; // Prevent double deletion
+    }
+    return *this;
+  }
+
   Shader(std::string name) {
     std::ifstream file(DEFAULT_FRAG_PATH);
     if (!file)
@@ -110,7 +139,8 @@ public:
       return success;
     }
 
-    glDeleteProgram(program);
+    if (program != 0)
+      glDeleteProgram(program);
     program = glCreateProgram();
     glAttachShader(program, frag);
     glAttachShader(program, vert);

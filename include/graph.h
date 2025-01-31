@@ -2,6 +2,7 @@
 
 #include "imnodes.h"
 #include "material.h"
+#include "texture.h"
 #include "utils.h"
 #include <GLES3/gl3.h>
 #include <any>
@@ -145,15 +146,19 @@ private:
 
 public:
   std::shared_ptr<Assets<Shader>> shaders = nullptr;
+  std::shared_ptr<Assets<Texture>> textures = nullptr;
   std::shared_ptr<Geometry> graph_geometry = nullptr;
   ImVec2 viewport_resolution = ImVec2(640, 480);
 
   RenderGraph(
       std::shared_ptr<Assets<Shader>> shaders =
           std::make_shared<Assets<Shader>>(),
+      std::shared_ptr<Assets<Texture>> textures =
+          std::make_shared<Assets<Texture>>(),
       std::shared_ptr<Geometry> geo = std::make_shared<ScreenQuadGeometry>()) {
     this->shaders = shaders;
     this->graph_geometry = geo;
+    this->textures = textures;
   };
   template <class Archive> void load(Archive &ar) {
     Data::Vec2 resolution;

@@ -197,6 +197,8 @@ public:
         if (ImGui::BeginMenu("Value Nodes")) {
           ImGui::Dummy(ImVec2(150, 0)); // Min width
           ImGui::Indent(5);
+          if (ImGui::Selectable("Texture"))
+            graph->insert_node(std::make_shared<Texture2DNode>());
           if (ImGui::Selectable("Vec2"))
             graph->insert_node(std::make_shared<Vec2Node>());
           if (ImGui::Selectable("Float"))

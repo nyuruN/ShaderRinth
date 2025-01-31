@@ -20,6 +20,7 @@ using Workspace = std::pair<std::string, std::vector<std::shared_ptr<Widget>>>;
 
 struct App {
   // clang-format off
+  std::shared_ptr<Assets<Texture>>      textures = std::make_shared<Assets<Texture>>();
   std::shared_ptr<Assets<Shader>>       shaders = std::make_shared<Assets<Shader>>();
   std::shared_ptr<Assets<Geometry>>     geometries = std::make_shared<Assets<Geometry>>();
   std::shared_ptr<RenderGraph>          graph;
@@ -35,9 +36,16 @@ struct App {
     Global::instance().init();
     auto shader = std::make_shared<Shader>(Shader("Default"));
     auto geo = std::make_shared<ScreenQuadGeometry>();
+    auto texture = std::make_shared<Texture>(
+        "Cat", std::filesystem::path(APP_ROOT) / "assets/textures/cat.png");
+
+    if (!texture)
+      spdlog::error("Failed to load texture assets/textures/cat.png");
+
     shaders->insert(std::make_pair(shader->name, shader));
     geometries->insert(std::make_pair(geo->name, geo));
-    graph = std::make_shared<RenderGraph>(shaders, geo);
+    textures->insert(std::make_pair(texture->get_name(), texture));
+    graph = std::make_shared<RenderGraph>(shaders, textures, geo);
     graph->default_layout(shader);
 
     // clang-format off
@@ -73,6 +81,7 @@ struct App {
       archive(                  //
           VP(shaders),          //
           VP(geometries),       //
+          VP(textures),         //
           VP(graph),            //
           VP(workspaces),       //
           VP(current_workspace) //
@@ -101,10 +110,14 @@ struct App {
 
     { // Safely clear all resources
       shutdown();
+      for (auto &pair : *textures) {
+        pair.second->destroy();
+      }
       workspaces = {};
       graph = nullptr;
       geometries = nullptr;
       shaders = nullptr;
+      textures = nullptr;
     }
 
     {
@@ -112,6 +125,7 @@ struct App {
       archive(                  //
           VP(shaders),          //
           VP(geometries),       //
+          VP(textures),         //
           VP(graph),            //
           VP(workspaces),       //
           VP(current_workspace) //

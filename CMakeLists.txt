@@ -20,6 +20,7 @@ add_executable(
   src/editor.cpp
   src/utils.cpp
   src/graph.cpp
+  src/texture.cpp
   
   extern/imnodes/imnodes.cpp
 )
@@ -41,6 +42,8 @@ find_package(spdlog CONFIG REQUIRED)
 target_link_libraries(${EXECUTABLE} PRIVATE spdlog::spdlog)
 find_package(cereal CONFIG REQUIRED)
 target_link_libraries(${EXECUTABLE} PRIVATE cereal::cereal)
+find_package(Stb REQUIRED)
+target_include_directories(${EXECUTABLE} PRIVATE ${Stb_INCLUDE_DIR})
 find_package(OpenGL REQUIRED)
 target_link_libraries(${EXECUTABLE} PRIVATE OpenGL::GL)
 

@@ -192,7 +192,7 @@ class FragmentShaderNode : public Node {
 
   GLuint image_fbo;
   GLuint image_colorbuffer;
-  GLuint bound_textures = 0;
+  std::vector<GLuint> bound_textures = {};
 
   const float node_width = 240.0f;
 
@@ -359,16 +359,21 @@ public:
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     shader->use();
+
+    for (auto &t : bound_textures) {
+      glBindTexture(GL_TEXTURE_2D, t);
+    }
+
     graph.graph_geometry->draw_geometry();
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    bound_textures = 0;
+    bound_textures.clear();
 
     graph.set_pin_data(output_pin, (Data::Texture2D)image_colorbuffer);
   }
-  unsigned int get_next_texture_unit() {
-    unsigned int unit = bound_textures;
-    bound_textures++;
+  unsigned int get_next_texture_unit(GLuint texture) {
+    unsigned int unit = bound_textures.size();
+    bound_textures.push_back(texture);
     return GL_TEXTURE0 + unit;
   }
   void set_uniform(GLuint loc, std::string identifier, Data data) {
@@ -412,10 +417,10 @@ public:
     };
     case DataType::Texture2D: {
       GLuint texture = data.get<Data::Texture2D>();
-      int unit = get_next_texture_unit();
+      int unit = get_next_texture_unit(texture);
       glActiveTexture(unit);
       glBindTexture(GL_TEXTURE_2D, texture);
-      glUniform1i(loc, texture);
+      glUniform1i(loc, bound_textures.size() - 1);
       break;
     };
     }
@@ -424,6 +429,61 @@ public:
   template <class Archive> void serialize(Archive &ar) {
     ar(cereal::base_class<Node>(this));
     ar(output_pin, uniform_pins, shader);
+  }
+};
+class Texture2DNode : public Node {
+  int output_pin;
+
+  std::shared_ptr<Texture> texture;
+
+  float node_width = 120.0f;
+
+public:
+  void set_texture(std::shared_ptr<Texture> texture) {
+    this->texture = texture;
+  }
+  int get_output_pin() { return output_pin; }
+  void render(RenderGraph &graph) override {
+    ImNodes::BeginNode(id);
+
+    ImNodes::BeginNodeTitleBar();
+    ImGui::Text("Texture Node");
+    ImNodes::EndNodeTitleBar();
+    {
+      ImNodes::BeginOutputAttribute(output_pin);
+      ImGui::SetNextItemWidth(node_width);
+
+      if (ImGui::BeginCombo("##hidelabel",
+                            bool(texture) ? texture->get_name().c_str() : "")) {
+        for (auto const &pair : *graph.textures) {
+          bool is_selected =
+              (texture) && (texture->get_name() == pair.second->get_name());
+          if (ImGui::Selectable(pair.first.c_str(), is_selected))
+            set_texture(pair.second);
+          // Set the initial focus when opening the combo (scrolling + keyboard
+          // navigation focus)
+          if (is_selected)
+            ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+      }
+      ImNodes::EndOutputAttribute();
+    }
+
+    ImGui::Dummy(ImVec2(node_width, 20));
+
+    ImNodes::EndNode();
+  }
+  void onEnter(RenderGraph &graph) override {
+    graph.register_pin(id, DataType::Texture2D, &output_pin);
+  }
+  void onExit(RenderGraph &graph) override { graph.delete_pin(output_pin); }
+  void run(RenderGraph &graph) override {
+    graph.set_pin_data(output_pin, (Data::Texture2D)texture->get_texture());
+  }
+  template <class Archive> void serialize(Archive &ar) {
+    ar(cereal::base_class<Node>(this));
+    ar(output_pin, texture);
   }
 };
 
@@ -435,3 +495,4 @@ CEREAL_REGISTER_TYPE(TimeNode)
 CEREAL_REGISTER_TYPE(FloatNode)
 CEREAL_REGISTER_TYPE(Vec2Node)
 CEREAL_REGISTER_TYPE(FragmentShaderNode)
+CEREAL_REGISTER_TYPE(Texture2DNode)
