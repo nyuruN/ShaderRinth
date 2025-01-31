@@ -125,8 +125,4 @@ void processInput(GLFWwindow *window) {
     else
       glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   }
-  if (isKeyJustPressed(window, GLFW_KEY_F3)) {
-    auto buffer = zep_get_editor().GetBuffers()[0];
-    spdlog::info("Name: {}, {}", buffer->GetName(), buffer->GetDisplayName());
-  }
 }

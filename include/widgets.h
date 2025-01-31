@@ -217,27 +217,23 @@ public:
     }
 
     bool focused = ImGui::IsWindowFocused();
-
-    { // Handle Input
-      auto io = ImGui::GetIO();
-      bool pressed = false;
-      if (focused) {
-        pressed = isKeyJustPressed(ImGuiKey_Z);
-        if (pressed && io.KeyCtrl && io.KeyShift)
-          history.redo();
-        else if (pressed && io.KeyCtrl)
-          history.undo();
-        pressed = isKeyJustPressed(ImGuiKey_A);
-        if (pressed && io.KeyShift) {
-          ImGui::OpenPopup("Add Nodes");
-        }
+    auto io = ImGui::GetIO();
+    if (focused && !io.WantTextInput) {
+      if (isKeyJustPressed(ImGuiKey_A) && io.KeyShift) {
+        ImGui::OpenPopup("Add Nodes");
       }
     }
 
     ImNodes::EndNodeEditor();
-    ImGui::End();
 
-    if (focused) {
+    // Handle Input
+    bool pressed = false;
+    if (focused && !io.WantTextInput) {
+      pressed = isKeyJustPressed(ImGuiKey_Z);
+      if (pressed && io.KeyCtrl && io.KeyShift)
+        history.redo();
+      else if (pressed && io.KeyCtrl)
+        history.undo();
       if (isKeyJustPressed(ImGuiKey_X)) {
         int length = ImNodes::NumSelectedNodes();
         if (length > 0) {
@@ -257,6 +253,8 @@ public:
         }
       }
     }
+
+    ImGui::End();
   }
 };
 
