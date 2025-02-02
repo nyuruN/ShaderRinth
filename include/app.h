@@ -142,6 +142,21 @@ struct App {
 
     spdlog::info("Project loaded {}", project_root.value().string());
   }
+  void import_texture() {
+    auto res = pfd::open_file("Select a texture file", "",
+                              {"Images", "*.png; *.jpeg; *.jpg; *.tiff"})
+                   .result();
+    if (res.empty() || res[0].empty())
+      return;
+    std::filesystem::path path(res[0]);
+
+    Texture texture(path.filename(), path);
+    if (!texture)
+      spdlog::error("Failed to load texture: {}", path.c_str());
+
+    textures->insert(
+        std::make_pair(texture.get_name(), std::make_shared<Texture>(texture)));
+  }
   void startup() {
     for (auto &pair : workspaces) {
       for (auto &widget : pair.second)
@@ -163,7 +178,6 @@ struct App {
   // Render the application
   void render() {
     if (ImGui::BeginMainMenuBar()) {
-      // Dummy items
       if (ImGui::BeginMenu("File")) {
         if (ImGui::MenuItem("Open"))
           open_project();
@@ -171,6 +185,8 @@ struct App {
           save_project();
         if (ImGui::MenuItem("Save as"))
           save_project_as();
+        if (ImGui::MenuItem("Import texture"))
+          import_texture();
         ImGui::EndMenu();
       }
       if (ImGui::BeginMenu("Edit")) {

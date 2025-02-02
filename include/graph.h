@@ -157,8 +157,8 @@ public:
           std::make_shared<Assets<Texture>>(),
       std::shared_ptr<Geometry> geo = std::make_shared<ScreenQuadGeometry>()) {
     this->shaders = shaders;
-    this->graph_geometry = geo;
     this->textures = textures;
+    this->graph_geometry = geo;
   };
   template <class Archive> void load(Archive &ar) {
     Data::Vec2 resolution;
@@ -168,6 +168,7 @@ public:
         VP(edges),                              //
         VP(pins),                               //
         VP(shaders),                            //
+        VP(textures),                           //
         VP(graph_geometry),                     //
         NVP("viewport_resolution", resolution), //
         VP(root_node)                           //
@@ -194,6 +195,7 @@ public:
         VP(edges),                              //
         VP(pins),                               //
         VP(shaders),                            //
+        VP(textures),                           //
         VP(graph_geometry),                     //
         NVP("viewport_resolution", resolution), //
         VP(root_node)                           //
