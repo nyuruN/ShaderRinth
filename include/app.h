@@ -177,16 +177,21 @@ struct App {
   }
   // Render the application
   void render() {
+    static ExportImagePopup export_image(graph);
+
     if (ImGui::BeginMainMenuBar()) {
       if (ImGui::BeginMenu("File")) {
         if (ImGui::MenuItem("Open"))
           open_project();
         if (ImGui::MenuItem("Save"))
           save_project();
-        if (ImGui::MenuItem("Save as"))
+        if (ImGui::MenuItem("Save As"))
           save_project_as();
-        if (ImGui::MenuItem("Import texture"))
+        if (ImGui::MenuItem("Import Texture"))
           import_texture();
+        if (ImGui::MenuItem("Export Image"))
+          export_image.open_popup();
+
         ImGui::EndMenu();
       }
       if (ImGui::BeginMenu("Edit")) {
@@ -209,6 +214,8 @@ struct App {
       }
       ImGui::EndMainMenuBar();
     }
+
+    export_image.render();
 
     renderDockspace();
     for (auto &widget : workspaces[current_workspace].second)
@@ -244,7 +251,6 @@ struct App {
     if (isKeyJustPressed(ImGuiKey_F1)) {
       static bool wireframe = false;
       wireframe = !wireframe;
-      spdlog::info("toggle wireframe: {}", wireframe);
       if (wireframe)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
       else

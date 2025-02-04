@@ -255,6 +255,84 @@ public:
     ImGui::End();
   }
 };
+class ExportImagePopup : public Widget {
+private:
+  enum Format { PNG, JPEG };
+
+  std::shared_ptr<RenderGraph> graph;
+
+  int resolution[2] = {1920, 1080};
+  int format = PNG;
+  int quality = 90;
+
+  bool is_open = false;
+
+public:
+  ExportImagePopup(std::shared_ptr<RenderGraph> graph) : graph(graph) {}
+  void open_popup() { is_open = true; }
+  virtual void render() override {
+    if (is_open && !ImGui::IsPopupOpen("Export Image"))
+      ImGui::OpenPopup("Export Image");
+
+    // Always center this window when appearing
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+    if (ImGui::BeginPopupModal("Export Image", NULL,
+                               ImGuiWindowFlags_AlwaysAutoResize)) {
+
+      ImGui::Text("Default Graph Selected");
+
+      ImGui::InputInt2("Image Resolution", resolution);
+
+      ImGui::RadioButton("PNG", &format, PNG);
+      ImGui::SameLine();
+      ImGui::RadioButton("JPEG", &format, JPEG);
+
+      if (format == JPEG) {
+        ImGui::DragInt("Image Quality", &quality, 1, 0, 100, "%d%%");
+      }
+
+      if (ImGui::Button("Export", ImVec2(120, 0))) {
+        graph->clear_graph_data();
+        graph->set_resolution(
+            ImVec2({float(resolution[0]), float(resolution[1])}));
+        graph->evaluate();
+        auto out = dynamic_cast<OutputNode *>(graph->get_root_node());
+        GLuint img = out->get_image();
+
+        unsigned char data[resolution[0] * resolution[1] * 4];
+        glBindTexture(GL_TEXTURE_2D, img);
+        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+        bool success = false;
+
+        switch (format) {
+        case PNG: {
+          success = stbi_write_png("test.png", resolution[0], resolution[1], 4,
+                                   data, resolution[0] * 4);
+          break;
+        }
+        case JPEG: {
+          success = stbi_write_jpg("test.jpg", resolution[0], resolution[1], 4,
+                                   data, quality);
+          break;
+        }
+        }
+
+        ImGui::CloseCurrentPopup();
+        is_open = false;
+      }
+      ImGui::SameLine();
+      if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+        ImGui::CloseCurrentPopup();
+        is_open = false;
+      }
+
+      ImGui::EndPopup();
+    }
+  }
+};
 
 // Type registration
 #include <cereal/archives/binary.hpp>
