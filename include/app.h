@@ -60,6 +60,87 @@ struct App {
     });
     // clang-format on
   }
+  // Render the application
+  void render() {
+    static ExportImagePopup export_image(graph);
+
+    if (ImGui::BeginMainMenuBar()) {
+      if (ImGui::BeginMenu("File")) {
+        if (ImGui::MenuItem("Open", "Ctrl+O"))
+          open_project();
+        if (ImGui::MenuItem("Save", "Ctrl+S"))
+          save_project();
+        if (ImGui::MenuItem("Save As"))
+          save_project_as();
+        if (ImGui::MenuItem("Import Texture"))
+          import_texture();
+        if (ImGui::MenuItem("Export Image"))
+          export_image.open_popup();
+
+        ImGui::EndMenu();
+      }
+      if (ImGui::BeginMenu("Edit")) {
+        ImGui::EndMenu();
+      }
+      if (ImGui::BeginMenu("View")) {
+        ImGui::EndMenu();
+      }
+      ImGui::Indent(165);
+      if (ImGui::BeginTabBar("Workspaces", ImGuiTabBarFlags_Reorderable)) {
+        int idx = 0;
+        for (auto &pair : workspaces) {
+          if (ImGui::BeginTabItem(pair.first.c_str())) {
+            current_workspace = idx;
+            ImGui::EndTabItem();
+          }
+          idx++;
+        }
+        ImGui::EndTabBar();
+      }
+      ImGui::EndMainMenuBar();
+    }
+
+    export_image.render();
+
+    renderDockspace();
+    for (auto &widget : workspaces[current_workspace].second)
+      widget->render();
+  }
+  void startup() {
+    for (auto &pair : workspaces) {
+      for (auto &widget : pair.second)
+        widget->onStartup();
+    }
+  }
+  void shutdown() {
+    for (auto &pair : workspaces) {
+      for (auto &widget : pair.second)
+        widget->onShutdown();
+    }
+  }
+  void update() {
+    updateKeyStates();
+    process_input();
+    for (auto &widget : workspaces[current_workspace].second)
+      widget->onUpdate();
+  }
+  void process_input() {
+    auto io = ImGui::GetIO();
+    if (isKeyJustPressed(ImGuiKey_F1)) {
+      static bool wireframe = false;
+      wireframe = !wireframe;
+      if (wireframe)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+      else
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+    if (isKeyJustPressed(ImGuiKey_O) && io.KeyCtrl) {
+      open_project();
+    }
+    if (isKeyJustPressed(ImGuiKey_S) && io.KeyCtrl) {
+      save_project();
+    }
+  }
   // TODO: Save persistent preferences global to all instances
   void save_settings() {}
   // TODO: Load persistent preferences global to all instances
@@ -157,70 +238,6 @@ struct App {
     textures->insert(
         std::make_pair(texture.get_name(), std::make_shared<Texture>(texture)));
   }
-  void startup() {
-    for (auto &pair : workspaces) {
-      for (auto &widget : pair.second)
-        widget->onStartup();
-    }
-  }
-  void shutdown() {
-    for (auto &pair : workspaces) {
-      for (auto &widget : pair.second)
-        widget->onShutdown();
-    }
-  }
-  void update() {
-    updateKeyStates();
-    process_input();
-    for (auto &widget : workspaces[current_workspace].second)
-      widget->onUpdate();
-  }
-  // Render the application
-  void render() {
-    static ExportImagePopup export_image(graph);
-
-    if (ImGui::BeginMainMenuBar()) {
-      if (ImGui::BeginMenu("File")) {
-        if (ImGui::MenuItem("Open"))
-          open_project();
-        if (ImGui::MenuItem("Save"))
-          save_project();
-        if (ImGui::MenuItem("Save As"))
-          save_project_as();
-        if (ImGui::MenuItem("Import Texture"))
-          import_texture();
-        if (ImGui::MenuItem("Export Image"))
-          export_image.open_popup();
-
-        ImGui::EndMenu();
-      }
-      if (ImGui::BeginMenu("Edit")) {
-        ImGui::EndMenu();
-      }
-      if (ImGui::BeginMenu("View")) {
-        ImGui::EndMenu();
-      }
-      ImGui::Indent(165);
-      if (ImGui::BeginTabBar("Workspaces", ImGuiTabBarFlags_Reorderable)) {
-        int idx = 0;
-        for (auto &pair : workspaces) {
-          if (ImGui::BeginTabItem(pair.first.c_str())) {
-            current_workspace = idx;
-            ImGui::EndTabItem();
-          }
-          idx++;
-        }
-        ImGui::EndTabBar();
-      }
-      ImGui::EndMainMenuBar();
-    }
-
-    export_image.render();
-
-    renderDockspace();
-    for (auto &widget : workspaces[current_workspace].second)
-      widget->render();
-  }
   void renderDockspace() {
     // Create a window just below the menu to host the docking space
     float menu_height = ImGui::GetFrameHeight();
@@ -246,15 +263,5 @@ struct App {
                      ImGuiDockNodeFlags_PassthruCentralNode);
 
     ImGui::End();
-  }
-  void process_input() {
-    if (isKeyJustPressed(ImGuiKey_F1)) {
-      static bool wireframe = false;
-      wireframe = !wireframe;
-      if (wireframe)
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-      else
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    }
   }
 };
