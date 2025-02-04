@@ -168,8 +168,8 @@ public:
   void onUpdate() override {
     int from_pin, to_pin;
     if (ImNodes::IsLinkCreated(&from_pin, &to_pin)) {
-      graph->insert_edge(from_pin, to_pin);
-      spdlog::info("Link created from {} to {}", from_pin, to_pin);
+      if (graph->insert_edge(from_pin, to_pin) != -1)
+        spdlog::info("Link created from {} to {}", from_pin, to_pin);
     }
   }
   void render() override {
@@ -186,25 +186,22 @@ public:
         ImGui::Dummy(ImVec2(140, 0)); // Min width
         ImGui::Indent(5);
 
-        if (ImGui::BeginMenu("Shader Nodes")) {
-          ImGui::Dummy(ImVec2(150, 0)); // Min width
-          ImGui::Indent(5);
-          if (ImGui::Selectable("Fragment Shader"))
-            graph->insert_node(std::make_shared<FragmentShaderNode>());
-          ImGui::Spacing();
-          ImGui::EndMenu();
-        }
+        if (ImGui::Selectable("Fragment Shader"))
+          graph->insert_node(std::make_shared<FragmentShaderNode>());
+        if (ImGui::Selectable("Time"))
+          graph->insert_node(std::make_shared<TimeNode>());
+        if (ImGui::Selectable("Viewport"))
+          graph->insert_node(std::make_shared<ViewportNode>());
+        if (ImGui::Selectable("Texture"))
+          graph->insert_node(std::make_shared<Texture2DNode>());
+
         if (ImGui::BeginMenu("Value Nodes")) {
           ImGui::Dummy(ImVec2(150, 0)); // Min width
           ImGui::Indent(5);
-          if (ImGui::Selectable("Texture"))
-            graph->insert_node(std::make_shared<Texture2DNode>());
           if (ImGui::Selectable("Vec2"))
             graph->insert_node(std::make_shared<Vec2Node>());
           if (ImGui::Selectable("Float"))
             graph->insert_node(std::make_shared<FloatNode>());
-          if (ImGui::Selectable("Time"))
-            graph->insert_node(std::make_shared<TimeNode>());
           ImGui::Spacing();
           ImGui::EndMenu();
         }
@@ -255,6 +252,7 @@ public:
     ImGui::End();
   }
 };
+/// Popup widget, should not be serialized
 class ExportImagePopup : public Widget {
 private:
   enum Format { PNG, JPEG };
@@ -335,9 +333,7 @@ public:
 };
 
 // Type registration
-#include <cereal/archives/binary.hpp>
 #include <cereal/archives/json.hpp>
-#include <cereal/archives/xml.hpp>
 
 CEREAL_REGISTER_TYPE(EditorWidget)
 CEREAL_REGISTER_TYPE(ViewportWidget)

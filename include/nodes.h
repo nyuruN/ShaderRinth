@@ -10,6 +10,7 @@
 // ============
 
 class OutputNode : public Node {
+private:
   int input_pin;
   GLuint out_texture;
 
@@ -40,7 +41,7 @@ public:
   void run(RenderGraph &graph) override {
     Data data = graph.get_pin_data(input_pin);
     try {
-      out_texture = data.get<GLuint>();
+      out_texture = data.get<Data::Texture2D>();
     } catch (std::bad_any_cast) {
       spdlog::error("Nothing is connected!");
     }
@@ -79,6 +80,42 @@ public:
   void onExit(RenderGraph &graph) override { graph.delete_pin(output_pin); }
   void run(RenderGraph &graph) override {
     graph.set_pin_data(output_pin, (Data::Float)glfwGetTime());
+  }
+  template <class Archive> void serialize(Archive &ar) {
+    ar(cereal::base_class<Node>(this));
+    ar(output_pin);
+  }
+};
+class ViewportNode : public Node {
+private:
+  int output_pin;
+
+  float node_width = 100.0f;
+
+public:
+  int get_output_pin() { return output_pin; }
+  void render(RenderGraph &graph) override {
+    ImNodes::BeginNode(id);
+
+    ImNodes::BeginNodeTitleBar();
+    ImGui::Text("Viewport");
+    ImNodes::EndNodeTitleBar();
+    {
+      ImNodes::BeginOutputAttribute(output_pin);
+      ImGui::Text("Resolution");
+      ImNodes::EndOutputAttribute();
+    }
+    ImGui::Dummy(ImVec2(node_width, 20.0f));
+
+    ImNodes::EndNode();
+  }
+  void onEnter(RenderGraph &graph) override {
+    graph.register_pin(id, DataType::Vec2, &output_pin);
+  }
+  void onExit(RenderGraph &graph) override { graph.delete_pin(output_pin); }
+  void run(RenderGraph &graph) override {
+    ImVec2 res = graph.viewport_resolution;
+    graph.set_pin_data(output_pin, Data::Vec2({res.x, res.y}));
   }
   template <class Archive> void serialize(Archive &ar) {
     ar(cereal::base_class<Node>(this));
@@ -375,7 +412,7 @@ public:
     // clang-format off
     switch (data.type) {
     case DataType::Int: {
-      auto val = data.get<int>(); glUniform1iv(loc, 1, &val); break;
+      auto val = data.get<Data::Int>(); glUniform1iv(loc, 1, &val); break;
     };
     case DataType::IVec2: {
       auto val = data.get<Data::IVec2>().data(); glUniform2iv(loc, 1, val); break;
@@ -386,18 +423,18 @@ public:
     case DataType::IVec4: {
       auto val = data.get<Data::IVec4>().data(); glUniform4iv(loc, 1, val); break;
     };
-    case DataType::UInt: {
-      auto val = data.get<Data::UInt>(); glUniform1uiv(loc, 1, &val); break;
-    };
-    case DataType::UVec2: {
-      auto val = data.get<Data::UVec2>().data(); glUniform2uiv(loc, 1, val); break;
-    };
-    case DataType::UVec3: {
-      auto val = data.get<Data::UVec3>().data(); glUniform3uiv(loc, 1, val); break;
-    };
-    case DataType::UVec4: {
-      auto val = data.get<Data::UVec4>().data(); glUniform4uiv(loc, 1, val); break;
-    };
+    // case DataType::UInt: {
+    //   auto val = data.get<Data::UInt>(); glUniform1uiv(loc, 1, &val); break;
+    // };
+    // case DataType::UVec2: {
+    //   auto val = data.get<Data::UVec2>().data(); glUniform2uiv(loc, 1, val); break;
+    // };
+    // case DataType::UVec3: {
+    //   auto val = data.get<Data::UVec3>().data(); glUniform3uiv(loc, 1, val); break;
+    // };
+    // case DataType::UVec4: {
+    //   auto val = data.get<Data::UVec4>().data(); glUniform4uiv(loc, 1, val); break;
+    // };
     case DataType::Float: {
       auto val = data.get<Data::Float>(); glUniform1fv(loc, 1, &val); break;
     };
@@ -427,6 +464,7 @@ public:
   }
 };
 class Texture2DNode : public Node {
+private:
   int output_pin;
 
   std::shared_ptr<Texture> texture;
@@ -487,6 +525,7 @@ public:
 
 CEREAL_REGISTER_TYPE(OutputNode)
 CEREAL_REGISTER_TYPE(TimeNode)
+CEREAL_REGISTER_TYPE(ViewportNode)
 CEREAL_REGISTER_TYPE(FloatNode)
 CEREAL_REGISTER_TYPE(Vec2Node)
 CEREAL_REGISTER_TYPE(FragmentShaderNode)

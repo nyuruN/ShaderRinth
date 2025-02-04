@@ -14,19 +14,20 @@
 #include <cereal/types/vector.hpp>
 #include <map>
 #include <memory>
+#include <optional>
 #include <spdlog/spdlog.h>
 
 // DataType:
 // Type of the data transferred between nodes
 enum DataType {
-  Int,       // int
-  IVec2,     // std::array<int, 2>
-  IVec3,     // std::array<int, 2>
-  IVec4,     // std::array<int, 2>
-  UInt,      // uint
-  UVec2,     // std::array<uint, 2>
-  UVec3,     // std::array<uint, 2>
-  UVec4,     // std::array<uint, 2>
+  Int,   // int
+  IVec2, // std::array<int, 2>
+  IVec3, // std::array<int, 2>
+  IVec4, // std::array<int, 2>
+  // UInt,      // uint
+  // UVec2,     // std::array<uint, 2>
+  // UVec3,     // std::array<uint, 2>
+  // UVec4,     // std::array<uint, 2>
   Float,     // float
   Vec2,      // std::array<float, 2>
   Vec3,      // std::array<float, 2>
@@ -39,22 +40,24 @@ struct Data {
   using IVec2 = std::array<int, 2>;
   using IVec3 = std::array<int, 2>;
   using IVec4 = std::array<int, 2>;
-  using UInt = uint;
-  using UVec2 = std::array<uint, 2>;
-  using UVec3 = std::array<uint, 2>;
-  using UVec4 = std::array<uint, 2>;
+  // using UInt = uint;
+  // using UVec2 = std::array<uint, 2>;
+  // using UVec3 = std::array<uint, 2>;
+  // using UVec4 = std::array<uint, 2>;
   using Float = float;
   using Vec2 = std::array<float, 2>;
   using Vec3 = std::array<float, 2>;
   using Vec4 = std::array<float, 2>;
   using Texture2D = GLuint;
 
+  // clang-format off
   constexpr static DataType ALL[] = {
       DataType::Int,       DataType::IVec2, DataType::IVec3, DataType::IVec4,
-      DataType::UInt,      DataType::UVec2, DataType::UVec3, DataType::UVec4,
+      //DataType::UInt,      DataType::UVec2, DataType::UVec3, DataType::UVec4,
       DataType::Float,     DataType::Vec2,  DataType::Vec3,  DataType::Vec4,
       DataType::Texture2D,
   };
+  // clang-format on
 
   DataType type;
   std::any data;
@@ -65,6 +68,13 @@ struct Data {
   operator bool() const { return data.has_value(); }
 
   template <typename T> T get() { return std::any_cast<T>(data); }
+  template <typename T> std::optional<T> try_get() {
+    try {
+      return std::optional(get<T>());
+    } catch (std::bad_any_cast) {
+      return std::optional<T>();
+    }
+  }
   void set(std::any d) { data = d; }
   void reset() { data.reset(); }
   template <class Archive> void serialize(Archive &ar) { ar(CEREAL_NVP(type)); }
@@ -75,10 +85,10 @@ struct Data {
       case DataType::IVec2:     return "IVec2";
     	case DataType::IVec3:     return "IVec3";
     	case DataType::IVec4:     return "IVec4";
-    	case DataType::UInt:      return "UInt";
-    	case DataType::UVec2:     return "UVec2";
-    	case DataType::UVec3:     return "UVec3";
-    	case DataType::UVec4:     return "UVec4";
+    	// case DataType::UInt:      return "UInt";
+    	// case DataType::UVec2:     return "UVec2";
+    	// case DataType::UVec3:     return "UVec3";
+    	// case DataType::UVec4:     return "UVec4";
     	case DataType::Float:     return "Float";
     	case DataType::Vec2:      return "Vec2";
     	case DataType::Vec3:      return "Vec3";
@@ -143,6 +153,9 @@ private:
 
   int root_node = -1;
   bool should_stop = false;
+  int next_node_id = 0;
+  int next_edge_id = 0;
+  int next_pin_id = 0;
 
 public:
   std::shared_ptr<Assets<Shader>> shaders = nullptr;
@@ -171,7 +184,10 @@ public:
         VP(textures),                           //
         VP(graph_geometry),                     //
         NVP("viewport_resolution", resolution), //
-        VP(root_node)                           //
+        VP(root_node),                          //
+        VP(next_node_id),                       //
+        VP(next_edge_id),                       //
+        VP(next_pin_id)                         //
     );
 
     viewport_resolution.x = resolution[0];
@@ -198,7 +214,10 @@ public:
         VP(textures),                           //
         VP(graph_geometry),                     //
         NVP("viewport_resolution", resolution), //
-        VP(root_node)                           //
+        VP(root_node),                          //
+        VP(next_node_id),                       //
+        VP(next_edge_id),                       //
+        VP(next_pin_id)                         //
     );
   }
   // Sets up node position once an editor context is present
@@ -214,18 +233,9 @@ public:
   std::map<int, std::shared_ptr<Node>> &get_nodes() { return nodes; }
   std::map<int, Edge> &get_edges() { return edges; }
   std::map<int, Pin> &get_pins() { return pins; }
-  int get_next_node_id() {
-    static int id = 0;
-    return id++;
-  };
-  int get_next_edge_id() {
-    static int id = 0;
-    return id++;
-  };
-  int get_next_pin_id() {
-    static int id = 0;
-    return id++;
-  };
+  int get_next_node_id() { return next_node_id++; };
+  int get_next_edge_id() { return next_edge_id++; };
+  int get_next_pin_id() { return next_pin_id++; };
   int insert_root_node(std::shared_ptr<Node> node) {
     root_node = insert_node(node);
     return root_node;
@@ -262,7 +272,6 @@ public:
     edge.id = get_next_edge_id();
     edge.from = frompin;
     edge.to = topin;
-    spdlog::debug("link created from {} to {}", frompin, topin);
     edges.insert(std::make_pair(edge.id, edge));
     return edge.id;
   };
