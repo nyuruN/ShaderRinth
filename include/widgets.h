@@ -13,6 +13,7 @@
 #include <cereal/types/polymorphic.hpp>
 #include <cereal/types/string.hpp>
 #include <cereal/types/vector.hpp>
+#include <imgui.h>
 #include <memory>
 #include <spdlog/spdlog.h>
 #include <zep.h>
@@ -118,7 +119,7 @@ public:
 /// Add custom colors to console output
 class ConsoleWidget : public Widget {
 private:
-  bool sticky = false;
+  bool sticky = true;
 
 public:
   template <class Archive> void serialize(Archive &ar) { ar(sticky); }
@@ -257,7 +258,7 @@ class ExportImagePopup : public Widget {
 private:
   enum Format { PNG, JPEG };
 
-  std::shared_ptr<RenderGraph> graph;
+  std::shared_ptr<RenderGraph> graph = nullptr;
 
   int resolution[2] = {1920, 1080};
   int format = PNG;
@@ -266,8 +267,45 @@ private:
   bool is_open = false;
 
 public:
-  ExportImagePopup(std::shared_ptr<RenderGraph> graph) : graph(graph) {}
+  ExportImagePopup() {}
+  ExportImagePopup(std::shared_ptr<RenderGraph> graph) { this->graph = graph; }
   void open_popup() { is_open = true; }
+  void set_graph(std::shared_ptr<RenderGraph> graph) { this->graph = graph; }
+  void export_image() {
+    graph->clear_graph_data();
+    graph->set_resolution(ImVec2({float(resolution[0]), float(resolution[1])}));
+    graph->evaluate();
+    auto out = dynamic_cast<OutputNode *>(graph->get_root_node());
+    GLuint img = out->get_image();
+
+    unsigned char data[resolution[0] * resolution[1] * 4];
+    glBindTexture(GL_TEXTURE_2D, img);
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+    bool success = false;
+
+    stbi_flip_vertically_on_write(true);
+
+    switch (format) {
+    case PNG: {
+      success = stbi_write_png("test.png", resolution[0], resolution[1], 4,
+                               data, resolution[0] * 4);
+      break;
+    }
+    case JPEG: {
+      success = stbi_write_jpg("test.jpg", resolution[0], resolution[1], 4,
+                               data, quality);
+      break;
+    }
+    }
+
+    if (success) {
+      spdlog::info("Image Saved!");
+    } else {
+      spdlog::error("Failed to write image!");
+    }
+  }
+  virtual void onShutdown() override { graph.reset(); }
   virtual void render() override {
     if (is_open && !ImGui::IsPopupOpen("Export Image"))
       ImGui::OpenPopup("Export Image");
@@ -291,36 +329,13 @@ public:
         ImGui::DragInt("Image Quality", &quality, 1, 0, 100, "%d%%");
       }
 
+      ImGui::BeginDisabled(!graph); // Disable if graph is NULL
       if (ImGui::Button("Export", ImVec2(120, 0))) {
-        graph->clear_graph_data();
-        graph->set_resolution(
-            ImVec2({float(resolution[0]), float(resolution[1])}));
-        graph->evaluate();
-        auto out = dynamic_cast<OutputNode *>(graph->get_root_node());
-        GLuint img = out->get_image();
-
-        unsigned char data[resolution[0] * resolution[1] * 4];
-        glBindTexture(GL_TEXTURE_2D, img);
-        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-        bool success = false;
-
-        switch (format) {
-        case PNG: {
-          success = stbi_write_png("test.png", resolution[0], resolution[1], 4,
-                                   data, resolution[0] * 4);
-          break;
-        }
-        case JPEG: {
-          success = stbi_write_jpg("test.jpg", resolution[0], resolution[1], 4,
-                                   data, quality);
-          break;
-        }
-        }
-
+        export_image();
         ImGui::CloseCurrentPopup();
         is_open = false;
       }
+      ImGui::EndDisabled();
       ImGui::SameLine();
       if (ImGui::Button("Cancel", ImVec2(120, 0))) {
         ImGui::CloseCurrentPopup();

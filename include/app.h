@@ -29,6 +29,7 @@ struct App {
   std::optional<std::filesystem::path>  project_root;
   // clang-format on
 
+  ExportImagePopup export_image = ExportImagePopup();
   bool is_project_dirty = false;
 
   // Setup App Logic
@@ -47,6 +48,7 @@ struct App {
     textures->insert(std::make_pair(texture->get_name(), texture));
     graph = std::make_shared<RenderGraph>(shaders, textures, geo);
     graph->default_layout(shader);
+    export_image.set_graph(graph);
 
     // clang-format off
     workspaces = std::vector<Workspace>({
@@ -62,8 +64,6 @@ struct App {
   }
   // Render the application
   void render() {
-    static ExportImagePopup export_image(graph);
-
     if (ImGui::BeginMainMenuBar()) {
       if (ImGui::BeginMenu("File")) {
         if (ImGui::MenuItem("Open", "Ctrl+O"))
@@ -117,6 +117,15 @@ struct App {
       for (auto &widget : pair.second)
         widget->onShutdown();
     }
+    for (auto &pair : *textures) {
+      pair.second->destroy();
+    }
+    export_image.onShutdown();
+    workspaces.clear();
+    graph.reset();
+    geometries.reset();
+    shaders.reset();
+    textures.reset();
   }
   void update() {
     updateKeyStates();
@@ -196,17 +205,8 @@ struct App {
     project_root = dir;
     Global::instance().set_project_root(project_root.value());
 
-    { // Safely clear all resources
-      shutdown();
-      for (auto &pair : *textures) {
-        pair.second->destroy();
-      }
-      workspaces = {};
-      graph = nullptr;
-      geometries = nullptr;
-      shaders = nullptr;
-      textures = nullptr;
-    }
+    // Safely clear all resources
+    shutdown();
 
     {
       cereal::JSONInputArchive archive(file);
@@ -218,8 +218,10 @@ struct App {
           VP(workspaces),       //
           VP(current_workspace) //
       );
-      startup();
     }
+
+    startup();
+    export_image.set_graph(graph);
 
     spdlog::info("Project loaded {}", project_root.value().string());
   }
