@@ -41,6 +41,7 @@ public:
     ostream_sink =
         std::make_shared<spdlog::sinks::ostream_sink_mt>(*log_stream);
     ostream_sink->set_level(spdlog::level::info);
+    ostream_sink->set_pattern("[%n] [%l] %v");
 
     auto logger = create_logger("Global");
     spdlog::set_default_logger(logger);

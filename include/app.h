@@ -111,6 +111,7 @@ struct App {
       for (auto &widget : pair.second)
         widget->onStartup();
     }
+    export_image.onStartup();
   }
   void shutdown() {
     for (auto &pair : workspaces) {
@@ -227,7 +228,7 @@ struct App {
   }
   void import_texture() {
     auto res = pfd::open_file("Select a texture file", "",
-                              {"Images", "*.png; *.jpeg; *.jpg; *.tiff"})
+                              {"Images", "*.png; *.jpg; *.jpg; *.tiff"})
                    .result();
     if (res.empty() || res[0].empty())
       return;
