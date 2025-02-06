@@ -35,6 +35,8 @@ struct App {
   // Setup App Logic
   App() {
     Global::instance().init();
+    load_settings();
+
     auto shader = std::make_shared<Shader>(Shader("Default"));
     auto geo = std::make_shared<ScreenQuadGeometry>();
     auto texture = std::make_shared<Texture>(
@@ -136,6 +138,10 @@ struct App {
   }
   void process_input() {
     auto io = ImGui::GetIO();
+    if (isKeyJustPressed(ImGuiKey_O) && io.KeyCtrl)
+      open_project();
+    if (isKeyJustPressed(ImGuiKey_S) && io.KeyCtrl)
+      save_project();
     if (isKeyJustPressed(ImGuiKey_F1)) {
       static bool wireframe = false;
       wireframe = !wireframe;
@@ -144,17 +150,14 @@ struct App {
       else
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
-    if (isKeyJustPressed(ImGuiKey_O) && io.KeyCtrl) {
-      open_project();
-    }
-    if (isKeyJustPressed(ImGuiKey_S) && io.KeyCtrl) {
-      save_project();
-    }
+    if (isKeyJustPressed(ImGuiKey_F2) && io.KeyCtrl)
+      save_settings();
   }
-  // TODO: Save persistent preferences global to all instances
-  void save_settings() {}
-  // TODO: Load persistent preferences global to all instances
-  void load_settings() {}
+  void save_settings() { ImGui::LoadIniSettingsFromDisk("imgui.ini"); }
+  void load_settings() {
+    ImGui::LoadIniSettingsFromDisk(
+        (std::filesystem::path(APP_ROOT) / "assets/imgui.ini").c_str());
+  }
   // Default save
   void save_project() {
     if (!project_root) {
