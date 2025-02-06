@@ -56,10 +56,14 @@ public:
   }
   void onStartup() override {
     zep_init(Zep::NVec2f(1.0f, 1.0f));
-    auto path = shader->get_path();
-    zep_get_editor().InitWithText(path.filename().string(),
-                                  shader->get_source());
-    last_update = zep_get_editor().GetBuffers()[0]->GetUpdateCount();
+    Zep::ZepEditor &zep = zep_get_editor();
+    zep.InitWithText(shader->get_path().filename().string(),
+                     shader->get_source());
+
+    // zep.GetConfig().autoHideCommandRegion = false;
+    zep.GetBuffers()[0]->SetFileFlags(Zep::FileFlags::SoftTabTwo, true);
+
+    last_update = zep.GetBuffers()[0]->GetUpdateCount();
   };
   void onShutdown() override { zep_destroy(); }
   void onUpdate() override {
