@@ -1,5 +1,9 @@
 # ShaderRinth
 
+A Shadertoy-like GLSL Editor written in C++
+
+## Design philosophy
+
 This program should fulfill the purpose of quickly
 generating various procedural textures per written
 shader code.
@@ -15,6 +19,13 @@ faster.
 
 ## Goal posts
 
+The program is currently *viable* for testing
+purposes.
+
+---
+
+### VERSION 0.0.1
+
 * Integrate more powerful code/text editor [done]
 
 * Create framework for shaders/materials/configurable uniforms etc. [done]
@@ -23,13 +34,15 @@ faster.
 
 * Node based editor for shader passes / uniforms / textures [done]
 
-* Load textures & configure as uniforms (needs image handling)
+* Load textures & configure as uniforms (needs image handling) [done]
 
-* Making renders to picture (e.g. Render Widget)
-
-* Properties widget: Selection system? control parameters
+* Making renders to picture (e.g. Render Widget) [done -> file option]
 
 * In-app file browser/file outliner (enhanced asset management)
+
+### VERSION 0.1.0
+
+* Properties widget: Selection system? control parameters
 
 * Outliner widget: show execution flow if multiple graphs are present
 
@@ -37,7 +50,9 @@ faster.
 
 * Undo history for common actions
 
-* UI improvements
+* UI improvements [wip]
+  * Custom theme [done]
+  * Advanced windowing e.g. Splitters, Widgets etc. 
 
 * Finishing touches
 

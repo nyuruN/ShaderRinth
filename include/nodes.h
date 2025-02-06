@@ -358,6 +358,9 @@ public:
     if (!shader->is_compiled()) {
       static bool should_error = true;
       if (!shader->compile(graph.graph_geometry)) {
+        // TODO: Likewise find a better way to delegate
+        // error messages to the user -> interaction with
+        // editor?
         if (should_error)
           spdlog::error(shader->get_log());
         should_error = false; // Don't error next time

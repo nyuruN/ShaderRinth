@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.31.0)
 
 # Other arguments
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 add_definitions(-w)
@@ -8,11 +9,11 @@ add_definitions(-w)
 project(
   ShaderRinth
   VERSION 0.0.1
-  DESCRIPTION "Placeholder"
+  DESCRIPTION "A Shadertoy-like GLSL Editor written in C++"
   LANGUAGES CXX
 )
 
-set(EXECUTABLE app)
+set(EXECUTABLE ShaderRinth)
 
 add_executable(
   ${EXECUTABLE}
