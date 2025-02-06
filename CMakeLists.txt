@@ -21,6 +21,7 @@ add_executable(
   src/utils.cpp
   src/graph.cpp
   src/texture.cpp
+  src/theme.cpp
   
   extern/imnodes/imnodes.cpp
 )

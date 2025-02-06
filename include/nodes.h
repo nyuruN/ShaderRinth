@@ -365,7 +365,8 @@ public:
         return;
       } else { // If compiled
         should_error = true;
-        spdlog::info("Shader compiled");
+        // TODO: Find a better way to display status
+        // spdlog::info("Shader compiled");
       }
     }
 

@@ -40,7 +40,7 @@ int main(int, char **) {
     // Setup Dear ImGui
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGui::StyleColorsDark();
+    ImGui::StyleColorsCinder();
     ImGuiIO &io = ImGui::GetIO();
     // Enable standard controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard |

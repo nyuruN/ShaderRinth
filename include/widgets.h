@@ -3,6 +3,7 @@
 #include "editor.h"
 #include "graph.h"
 #include "nodes.h"
+#include "theme.h"
 #include "utils.h"
 #include <GLES3/gl3.h>
 #include <GLFW/glfw3.h>
@@ -62,6 +63,7 @@ public:
 
     // zep.GetConfig().autoHideCommandRegion = false;
     zep.GetBuffers()[0]->SetFileFlags(Zep::FileFlags::SoftTabTwo, true);
+    ZepStyleColorsCinder();
 
     last_update = zep.GetBuffers()[0]->GetUpdateCount();
   };

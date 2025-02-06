@@ -88,6 +88,8 @@ struct App {
         ImGui::EndMenu();
       }
       ImGui::Indent(165);
+
+      ImGui::PushStyleVar(ImGuiStyleVar_TabBarBorderSize, 0.0f);
       if (ImGui::BeginTabBar("Workspaces", ImGuiTabBarFlags_Reorderable)) {
         int idx = 0;
         for (auto &pair : workspaces) {
@@ -99,6 +101,8 @@ struct App {
         }
         ImGui::EndTabBar();
       }
+      ImGui::PopStyleVar();
+
       ImGui::EndMainMenuBar();
     }
 
