@@ -39,11 +39,16 @@ public:
   }
   void onExit(RenderGraph &graph) override { graph.delete_pin(input_pin); }
   void run(RenderGraph &graph) override {
+    static bool logged = false;
     Data data = graph.get_pin_data(input_pin);
     try {
       out_texture = data.get<Data::Texture2D>();
+      logged = false;
     } catch (std::bad_any_cast) {
-      spdlog::error("Nothing is connected!");
+      if (!logged) {
+        spdlog::error("Nothing is connected!");
+        logged = true;
+      }
     }
   }
   template <class Archive> void serialize(Archive &ar) {
