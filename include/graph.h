@@ -20,14 +20,10 @@
 // DataType:
 // Type of the data transferred between nodes
 enum DataType {
-  Int,   // int
-  IVec2, // std::array<int, 2>
-  IVec3, // std::array<int, 2>
-  IVec4, // std::array<int, 2>
-  // UInt,      // uint
-  // UVec2,     // std::array<uint, 2>
-  // UVec3,     // std::array<uint, 2>
-  // UVec4,     // std::array<uint, 2>
+  Int,       // int
+  IVec2,     // std::array<int, 2>
+  IVec3,     // std::array<int, 2>
+  IVec4,     // std::array<int, 2>
   Float,     // float
   Vec2,      // std::array<float, 2>
   Vec3,      // std::array<float, 2>
@@ -40,10 +36,6 @@ struct Data {
   using IVec2 = std::array<int, 2>;
   using IVec3 = std::array<int, 2>;
   using IVec4 = std::array<int, 2>;
-  // using UInt = uint;
-  // using UVec2 = std::array<uint, 2>;
-  // using UVec3 = std::array<uint, 2>;
-  // using UVec4 = std::array<uint, 2>;
   using Float = float;
   using Vec2 = std::array<float, 2>;
   using Vec3 = std::array<float, 2>;
@@ -53,9 +45,32 @@ struct Data {
   // clang-format off
   constexpr static DataType ALL[] = {
       DataType::Int,       DataType::IVec2, DataType::IVec3, DataType::IVec4,
-      //DataType::UInt,      DataType::UVec2, DataType::UVec3, DataType::UVec4,
       DataType::Float,     DataType::Vec2,  DataType::Vec3,  DataType::Vec4,
       DataType::Texture2D,
+  };
+  // Pin + Link colors
+  constexpr static unsigned int COLORS[] = {
+      IM_COL32(136*.7, 194*.7, 115*.7, 255), // Int       
+      IM_COL32(136*.7, 194*.7, 115*.7, 255), // IVec2     
+    	IM_COL32(136*.7, 194*.7, 115*.7, 255), // IVec3     
+    	IM_COL32(136*.7, 194*.7, 115*.7, 255), // IVec4     
+    	IM_COL32(162*.7, 210*.7, 223*.7, 255), // Float     
+    	IM_COL32(162*.7, 210*.7, 223*.7, 255), // Vec2      
+    	IM_COL32(162*.7, 210*.7, 223*.7, 255), // Vec3      
+    	IM_COL32(162*.7, 210*.7, 223*.7, 255), // Vec4      
+    	IM_COL32(246*.7, 239*.7, 189*.7, 255), // Texture2D 
+  };
+  // Pin + Link colors
+  constexpr static unsigned int COLORS_HOVER[] = {
+      IM_COL32(136,194,115, 255), // Int       
+      IM_COL32(136,194,115, 255), // IVec2     
+    	IM_COL32(136,194,115, 255), // IVec3     
+    	IM_COL32(136,194,115, 255), // IVec4     
+    	IM_COL32(162,210,223, 255), // Float     
+    	IM_COL32(162,210,223, 255), // Vec2      
+    	IM_COL32(162,210,223, 255), // Vec3      
+    	IM_COL32(162,210,223, 255), // Vec4      
+    	IM_COL32(246,239,189, 255), // Texture2D 
   };
   // clang-format on
 
@@ -85,10 +100,6 @@ struct Data {
       case DataType::IVec2:     return "IVec2";
     	case DataType::IVec3:     return "IVec3";
     	case DataType::IVec4:     return "IVec4";
-    	// case DataType::UInt:      return "UInt";
-    	// case DataType::UVec2:     return "UVec2";
-    	// case DataType::UVec3:     return "UVec3";
-    	// case DataType::UVec4:     return "UVec4";
     	case DataType::Float:     return "Float";
     	case DataType::Vec2:      return "Vec2";
     	case DataType::Vec3:      return "Vec3";
@@ -301,7 +312,16 @@ public:
       pair.second->render(*this);
     }
     for (auto &pair : edges) { // Render Edges
+      DataType type = pins.at(pair.second.from).data.type;
+
+      ImNodes::PushColorStyle(ImNodesCol_Link, Data::COLORS[type]);
+      ImNodes::PushColorStyle(ImNodesCol_LinkHovered, Data::COLORS_HOVER[type]);
+      ImNodes::PushColorStyle(ImNodesCol_LinkSelected,
+                              Data::COLORS_HOVER[type]);
       ImNodes::Link(pair.first, pair.second.from, pair.second.to);
+      ImNodes::PopColorStyle();
+      ImNodes::PopColorStyle();
+      ImNodes::PopColorStyle();
     }
   };
   Data get_pin_data(int pinid) { return pins.at(pinid).data; };

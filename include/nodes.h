@@ -5,6 +5,24 @@
 #include <cereal/types/polymorphic.hpp>
 #include <imgui_stdlib.h>
 
+#define BEGIN_INPUT_PIN(id, type)                                              \
+  ImNodes::PushColorStyle(ImNodesCol_Pin, Data::COLORS[type]);                 \
+  ImNodes::PushColorStyle(ImNodesCol_PinHovered, Data::COLORS_HOVER[type]);    \
+  ImNodes::BeginInputAttribute(id);                                            \
+  ImNodes::PopColorStyle();                                                    \
+  ImNodes::PopColorStyle();
+
+#define END_INPUT_PIN() ImNodes::EndInputAttribute();
+
+#define BEGIN_OUTPUT_PIN(id, type)                                             \
+  ImNodes::PushColorStyle(ImNodesCol_Pin, Data::COLORS[type]);                 \
+  ImNodes::PushColorStyle(ImNodesCol_PinHovered, Data::COLORS_HOVER[type]);    \
+  ImNodes::BeginOutputAttribute(id);                                           \
+  ImNodes::PopColorStyle();                                                    \
+  ImNodes::PopColorStyle();
+
+#define END_OUTPUT_PIN() ImNodes::EndOutputAttribute();
+
 // ============
 // Custom Nodes
 // ============
@@ -26,9 +44,9 @@ public:
     ImGui::Text("Output");
     ImNodes::EndNodeTitleBar();
     {
-      ImNodes::BeginInputAttribute(input_pin);
+      BEGIN_INPUT_PIN(input_pin, DataType::Texture2D);
       ImGui::Text("Image");
-      ImNodes::EndInputAttribute();
+      END_INPUT_PIN();
     }
     ImGui::Dummy(ImVec2(node_width, 20.0f));
 
@@ -70,10 +88,10 @@ public:
     ImGui::Text("Time");
     ImNodes::EndNodeTitleBar();
     {
-      ImNodes::BeginOutputAttribute(output_pin);
+      BEGIN_OUTPUT_PIN(output_pin, DataType::Float);
       ImGui::Indent(node_width - ImGui::CalcTextSize("Float").x);
       ImGui::Text("Float");
-      ImNodes::EndOutputAttribute();
+      END_OUTPUT_PIN();
     }
     ImGui::Dummy(ImVec2(node_width, 10.0f));
 
@@ -95,7 +113,7 @@ class ViewportNode : public Node {
 private:
   int output_pin;
 
-  float node_width = 100.0f;
+  float node_width = 120.0f;
 
 public:
   int get_output_pin() { return output_pin; }
@@ -106,9 +124,10 @@ public:
     ImGui::Text("Viewport");
     ImNodes::EndNodeTitleBar();
     {
-      ImNodes::BeginOutputAttribute(output_pin);
+      BEGIN_OUTPUT_PIN(output_pin, DataType::Vec2);
+      ImGui::Indent(node_width - ImGui::CalcTextSize("Resolution").x);
       ImGui::Text("Resolution");
-      ImNodes::EndOutputAttribute();
+      END_OUTPUT_PIN();
     }
     ImGui::Dummy(ImVec2(node_width, 20.0f));
 
@@ -142,7 +161,8 @@ public:
     ImGui::Text("Float");
     ImNodes::EndNodeTitleBar();
     {
-      ImNodes::BeginOutputAttribute(output_pin);
+      // ImNodes::BeginOutputAttribute(output_pin);
+      BEGIN_OUTPUT_PIN(output_pin, DataType::Float);
       ImGui::SetNextItemWidth(node_width);
       ImGui::InputFloat("Float", &value, 0, 0, "%.2f");
       if (ImGui::IsItemDeactivatedAfterEdit()) {
@@ -151,7 +171,7 @@ public:
              [this, oldvalue = prev_value] { prev_value = value = oldvalue; }});
         prev_value = value;
       }
-      ImNodes::EndOutputAttribute();
+      END_OUTPUT_PIN();
     }
     ImGui::Dummy(ImVec2(node_width, 20));
 
@@ -189,7 +209,7 @@ public:
     ImGui::Text("Vec2");
     ImNodes::EndNodeTitleBar();
     {
-      ImNodes::BeginOutputAttribute(output_pin);
+      BEGIN_OUTPUT_PIN(output_pin, DataType::Vec2);
       ImGui::SetNextItemWidth(node_width);
       ImGui::InputFloat2("##hidelabel", value.data(), "%.1f",
                          ImGuiInputTextFlags_NoUndoRedo);
@@ -199,7 +219,7 @@ public:
              [this, oldvalue = prev_value] { prev_value = value = oldvalue; }});
         prev_value = value;
       }
-      ImNodes::EndOutputAttribute();
+      END_OUTPUT_PIN();
     }
     ImGui::Dummy(ImVec2(node_width, 20));
 
@@ -282,10 +302,10 @@ public:
     }
 
     {
-      ImNodes::BeginOutputAttribute(output_pin);
+      BEGIN_OUTPUT_PIN(output_pin, DataType::Texture2D);
       ImGui::Indent(node_width - ImGui::CalcTextSize("Image").x);
       ImGui::Text("Image");
-      ImNodes::EndOutputAttribute();
+      END_OUTPUT_PIN();
     }
 
     if (ImGui::BeginPopup("add_uniform_popup")) { // Creation logic
@@ -303,9 +323,8 @@ public:
       std::vector<int> marked;
       int idx = 0;
       for (auto &pin : uniform_pins) {
-        ImNodes::BeginInputAttribute(pin.pinid, (pin.type == DataType::Float)
-                                                    ? ImNodesPinShape_Quad
-                                                    : ImNodesPinShape_Circle);
+        BEGIN_INPUT_PIN(pin.pinid, pin.type)
+
         ImGui::Text(Data::type_name(pin.type));
         ImGui::SameLine();
 
@@ -319,7 +338,8 @@ public:
         if (ImGui::Button(" - ")) {
           marked.push_back(idx);
         }
-        ImNodes::EndInputAttribute();
+
+        END_INPUT_PIN();
         idx++;
       }
       for (auto &i : marked) {
@@ -432,18 +452,6 @@ public:
     case DataType::IVec4: {
       auto val = data.get<Data::IVec4>().data(); glUniform4iv(loc, 1, val); break;
     };
-    // case DataType::UInt: {
-    //   auto val = data.get<Data::UInt>(); glUniform1uiv(loc, 1, &val); break;
-    // };
-    // case DataType::UVec2: {
-    //   auto val = data.get<Data::UVec2>().data(); glUniform2uiv(loc, 1, val); break;
-    // };
-    // case DataType::UVec3: {
-    //   auto val = data.get<Data::UVec3>().data(); glUniform3uiv(loc, 1, val); break;
-    // };
-    // case DataType::UVec4: {
-    //   auto val = data.get<Data::UVec4>().data(); glUniform4uiv(loc, 1, val); break;
-    // };
     case DataType::Float: {
       auto val = data.get<Data::Float>(); glUniform1fv(loc, 1, &val); break;
     };
@@ -510,9 +518,9 @@ public:
     ImNodes::EndNodeTitleBar();
 
     if (texture) {
-      ImNodes::BeginOutputAttribute(output_pin);
+      BEGIN_OUTPUT_PIN(output_pin, DataType::Texture2D);
       render_combobox(graph);
-      ImNodes::EndOutputAttribute();
+      END_OUTPUT_PIN();
     } else {
       render_combobox(graph);
     }

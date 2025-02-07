@@ -205,6 +205,8 @@ private:
   ImNodesEditorContext *context = ImNodes::EditorContextCreate();
   UndoContext history = UndoContext(50);
 
+  // Start with a default type
+  DataType current_link_type = DataType(0);
   bool add_nodes = false;
   bool focused = false;
 
@@ -229,6 +231,9 @@ public:
       if (ImNodes::IsLinkCreated(&from_pin, &to_pin)) {
         if (graph->insert_edge(from_pin, to_pin) != -1)
           spdlog::info("Link created from {} to {}", from_pin, to_pin);
+      }
+      if (ImNodes::IsLinkStarted(&from_pin)) {
+        current_link_type = graph->get_pin_data(from_pin).type;
       }
     }
 
@@ -267,6 +272,8 @@ public:
 
     ImGui::Begin("Node Editor");
     ImNodes::EditorContextSet(context);
+    ImNodes::PushColorStyle(ImNodesCol_Link,
+                            Data::COLORS_HOVER[current_link_type]);
     ImNodes::BeginNodeEditor();
 
     Global::instance().set_undo_context(&history);
@@ -315,6 +322,7 @@ public:
     focused = ImGui::IsWindowFocused();
 
     ImNodes::EndNodeEditor();
+    ImNodes::PopColorStyle();
     ImGui::End();
 
     auto io = ImGui::GetIO();
