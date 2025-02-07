@@ -161,8 +161,11 @@ public:
 class NodeEditorWidget : public Widget {
 private:
   std::shared_ptr<RenderGraph> graph = nullptr;
-  ImNodesEditorContext *context = nullptr;
+  ImNodesEditorContext *context = ImNodes::EditorContextCreate();
   UndoContext history = UndoContext(50);
+
+  bool add_nodes = false;
+  bool focused = false;
 
 public:
   NodeEditorWidget(std::shared_ptr<RenderGraph> graph) : graph(graph) {}
@@ -175,69 +178,18 @@ public:
     construct(graph);
   }
   template <class Archive> void serialize(Archive &ar) { ar(VP(graph)); }
-  void onStartup() override {
-    context = ImNodes::EditorContextCreate();
-    ImNodes::EditorContextSet(context);
-    graph->set_node_positions();
-  };
+  void onStartup() override { graph->set_node_positions(context); };
   void onShutdown() override { ImNodes::EditorContextFree(context); }
   void onUpdate() override {
-    int from_pin, to_pin;
-    if (ImNodes::IsLinkCreated(&from_pin, &to_pin)) {
-      if (graph->insert_edge(from_pin, to_pin) != -1)
-        spdlog::info("Link created from {} to {}", from_pin, to_pin);
-    }
-  }
-  void render() override {
-    ImGui::Begin("Node Editor");
-    ImNodes::EditorContextSet(context);
-    ImNodes::BeginNodeEditor();
-
-    Global::instance().set_undo_context(&history);
-    graph.get()->render();
-
-    { // Add Nodes
-      ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, 4);
-      if (ImGui::BeginPopup("Add Nodes")) {
-        ImGui::Dummy(ImVec2(140, 0)); // Min width
-        ImGui::Indent(5);
-
-        if (ImGui::Selectable("Fragment Shader"))
-          graph->insert_node(std::make_shared<FragmentShaderNode>());
-        if (ImGui::Selectable("Time"))
-          graph->insert_node(std::make_shared<TimeNode>());
-        if (ImGui::Selectable("Viewport"))
-          graph->insert_node(std::make_shared<ViewportNode>());
-        if (ImGui::Selectable("Texture"))
-          graph->insert_node(std::make_shared<Texture2DNode>());
-
-        if (ImGui::BeginMenu("Value Nodes")) {
-          ImGui::Dummy(ImVec2(150, 0)); // Min width
-          ImGui::Indent(5);
-          if (ImGui::Selectable("Vec2"))
-            graph->insert_node(std::make_shared<Vec2Node>());
-          if (ImGui::Selectable("Float"))
-            graph->insert_node(std::make_shared<FloatNode>());
-          ImGui::Spacing();
-          ImGui::EndMenu();
-        }
-
-        ImGui::Spacing();
-        ImGui::Dummy(ImVec2(0, 60));
-        ImGui::EndPopup();
-      }
-      ImGui::PopStyleVar();
-    }
-
-    bool focused = ImGui::IsWindowFocused();
     auto io = ImGui::GetIO();
-    if (focused && !io.WantTextInput) {
-      if (isKeyJustPressed(ImGuiKey_A) && io.KeyShift) {
-        ImGui::OpenPopup("Add Nodes");
+
+    { // ImNodes events
+      int from_pin, to_pin;
+      if (ImNodes::IsLinkCreated(&from_pin, &to_pin)) {
+        if (graph->insert_edge(from_pin, to_pin) != -1)
+          spdlog::info("Link created from {} to {}", from_pin, to_pin);
       }
     }
-
-    ImNodes::EndNodeEditor();
 
     // Handle Input
     if (focused && !io.WantTextInput) {
@@ -245,6 +197,9 @@ public:
         history.redo();
       else if (isKeyJustPressed(ImGuiKey_Z) && io.KeyCtrl)
         history.undo();
+      if (isKeyJustPressed(ImGuiKey_A) && io.KeyShift) {
+        add_nodes = true;
+      }
       if (isKeyJustPressed(ImGuiKey_X)) {
         int length = ImNodes::NumSelectedNodes();
         if (length > 0) {
@@ -264,8 +219,68 @@ public:
         }
       }
     }
+  }
+  void render() override {
+    // Do not mutate EditorContext inside NodeEditor
+    std::vector<std::shared_ptr<Node>> insert_nodes = {};
 
+    ImGui::Begin("Node Editor");
+    ImNodes::EditorContextSet(context);
+    ImNodes::BeginNodeEditor();
+
+    Global::instance().set_undo_context(&history);
+    graph.get()->render();
+
+    { // Add Nodes
+      if (add_nodes && !ImGui::IsPopupOpen("Add Nodes"))
+        ImGui::OpenPopup("Add Nodes");
+      else
+        add_nodes = false;
+
+      ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, 4);
+      if (ImGui::BeginPopup("Add Nodes")) {
+        ImGui::Dummy(ImVec2(140, 0)); // Min width
+        ImGui::Indent(5);
+
+        Data::Vec2 pos = {ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y};
+
+        if (ImGui::Selectable("Fragment Shader"))
+          insert_nodes.push_back(std::make_shared<FragmentShaderNode>());
+        if (ImGui::Selectable("Time"))
+          insert_nodes.push_back(std::make_shared<TimeNode>());
+        if (ImGui::Selectable("Viewport"))
+          insert_nodes.push_back(std::make_shared<ViewportNode>());
+        if (ImGui::Selectable("Texture"))
+          insert_nodes.push_back(std::make_shared<Texture2DNode>());
+
+        if (ImGui::BeginMenu("Value Nodes")) {
+          ImGui::Dummy(ImVec2(150, 0)); // Min width
+          ImGui::Indent(5);
+          if (ImGui::Selectable("Vec2"))
+            graph->insert_node(std::make_shared<Vec2Node>());
+          if (ImGui::Selectable("Float"))
+            graph->insert_node(std::make_shared<FloatNode>());
+          ImGui::Spacing();
+          ImGui::EndMenu();
+        }
+
+        ImGui::Spacing();
+        ImGui::Dummy(ImVec2(0, 60));
+        ImGui::EndPopup();
+      }
+      ImGui::PopStyleVar();
+    }
+
+    focused = ImGui::IsWindowFocused();
+
+    ImNodes::EndNodeEditor();
     ImGui::End();
+
+    auto io = ImGui::GetIO();
+    for (auto node : insert_nodes) {
+      int id = graph->insert_node(node);
+      ImNodes::SetNodeScreenSpacePos(id, {io.MousePos.x, io.MousePos.y});
+    }
   }
 };
 /// Popup widget, should not be serialized

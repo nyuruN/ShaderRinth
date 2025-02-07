@@ -58,6 +58,10 @@ target_include_directories(${EXECUTABLE} PRIVATE
   ${CMAKE_BINARY_DIR} # config_app.h
 )
 
+# target_precompile_headers(${EXECUTABLE} PRIVATE
+#   include/pch.h
+# )
+
 # compile options
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
   target_compile_options(${EXECUTABLE} PRIVATE /W4)

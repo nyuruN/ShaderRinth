@@ -220,9 +220,12 @@ public:
         VP(next_pin_id)                         //
     );
   }
-  // Sets up node position once an editor context is present
-  // Used for loading only!
-  void set_node_positions() {
+  // Sets up node position for ImNodesEditorContext
+  void set_node_positions(ImNodesEditorContext *context) {
+    if (!context)
+      return;
+    ImNodes::EditorContextSet(context);
+
     for (auto &pair : nodes) {
       ImVec2 pos = {pair.second->pos[0], pair.second->pos[1]};
       ImNodes::SetNodeGridSpacePos(pair.second->id, pos);
