@@ -57,6 +57,7 @@ int main(int, char **) {
     ImGui_ImplOpenGL3_Init(glsl_version);
   }
 
+  Global::instance().init();
   App app = App();
 
   // Main loop
@@ -97,6 +98,7 @@ int main(int, char **) {
   }
 
   app.shutdown();
+  Global::instance().shutdown();
 
   ImNodes::DestroyContext();
 

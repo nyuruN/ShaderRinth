@@ -7,7 +7,9 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <spdlog/sinks/callback_sink.h>
 #include <spdlog/sinks/ostream_sink.h>
+#include <spdlog/sinks/ringbuffer_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 #include <string>
@@ -35,27 +37,22 @@ public:
     return instance;
   }
   void init() {
-    log_stream = std::make_shared<std::ostringstream>();
     console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     console_sink->set_level(spdlog::level::debug);
-    ostream_sink =
-        std::make_shared<spdlog::sinks::ostream_sink_mt>(*log_stream);
-    ostream_sink->set_level(spdlog::level::info);
-    ostream_sink->set_pattern("[%n] [%l] %v");
+    ringbuffer_sink = std::make_shared<spdlog::sinks::ringbuffer_sink_mt>(512);
+    ringbuffer_sink->set_level(spdlog::level::info);
+    ringbuffer_sink->set_pattern("[%n] [%l] %v");
 
     auto logger = create_logger("Global");
-    spdlog::set_default_logger(logger);
+    spdlog::set_default_logger(std::make_shared<spdlog::logger>(logger));
   }
-  std::string get_log_stream_string() {
-    std::lock_guard<std::mutex> lock(_mutex);
-    return log_stream->str();
+  void shutdown() { spdlog::shutdown(); }
+  spdlog::logger create_logger(char *name) {
+    std::vector<spdlog::sink_ptr> sinks = {ringbuffer_sink, console_sink};
+    return spdlog::logger(name, sinks.begin(), sinks.end());
   }
-  std::shared_ptr<spdlog::logger> create_logger(char *name) {
-    std::lock_guard<std::mutex> lock(_mutex);
-    std::vector<spdlog::sink_ptr> sinks = {ostream_sink, console_sink};
-    auto logger =
-        std::make_shared<spdlog::logger>(name, sinks.begin(), sinks.end());
-    return logger;
+  std::shared_ptr<spdlog::sinks::ringbuffer_sink_mt> get_ringbuffer_sink() {
+    return ringbuffer_sink;
   }
   // Sets the current project directory for use in serialization
   void set_project_root(std::filesystem::path path) {
@@ -75,9 +72,8 @@ private:
   Global(const Global &) = delete;
   Global &operator=(const Global &) = delete;
 
-  std::shared_ptr<std::ostringstream> log_stream;
   std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> console_sink;
-  std::shared_ptr<spdlog::sinks::ostream_sink_mt> ostream_sink;
+  std::shared_ptr<spdlog::sinks::ringbuffer_sink_mt> ringbuffer_sink;
   std::mutex _mutex;
   std::filesystem::path project_root;
   UndoContext *undo_context;

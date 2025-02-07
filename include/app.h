@@ -34,7 +34,6 @@ struct App {
 
   // Setup App Logic
   App() {
-    Global::instance().init();
     load_settings();
 
     auto shader = std::make_shared<Shader>(Shader("Default"));
