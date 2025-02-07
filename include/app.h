@@ -44,8 +44,8 @@ struct App {
     if (!texture)
       spdlog::error("Failed to load texture assets/textures/cat.png");
 
-    shaders->insert(std::make_pair(shader->name, shader));
-    geometries->insert(std::make_pair(geo->name, geo));
+    shaders->insert(std::make_pair(shader->get_name(), shader));
+    geometries->insert(std::make_pair(geo->get_name(), geo));
     textures->insert(std::make_pair(texture->get_name(), texture));
     graph = std::make_shared<RenderGraph>(shaders, textures, geo);
     graph->default_layout(shader);
@@ -126,6 +126,9 @@ struct App {
     for (auto &pair : *textures) {
       pair.second->destroy();
     }
+    for (auto &pair : *shaders) {
+      pair.second->destroy();
+    }
     export_image.onShutdown();
     workspaces.clear();
     graph.reset();
@@ -175,7 +178,7 @@ struct App {
     if (dir.empty())
       return;
     project_root = dir;
-    Global::instance().set_project_root(project_root.value());
+    Global::instance().project_root = project_root.value();
     save_project(project_root.value());
   }
   // Save everything related to a project
@@ -210,7 +213,7 @@ struct App {
       return;
     }
     project_root = dir;
-    Global::instance().set_project_root(project_root.value());
+    Global::instance().project_root = project_root.value();
 
     // Safely clear all resources
     shutdown();

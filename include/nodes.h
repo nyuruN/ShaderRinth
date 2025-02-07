@@ -1,6 +1,10 @@
 #pragma once
 
+#include "geometry.h"
 #include "graph.h"
+#include "shader.h"
+#include "texture.h"
+#include <GLFW/glfw3.h>
 #include <cereal/types/base_class.hpp>
 #include <cereal/types/polymorphic.hpp>
 #include <imgui_stdlib.h>
@@ -22,6 +26,26 @@
   ImNodes::PopColorStyle();
 
 #define END_OUTPUT_PIN() ImNodes::EndOutputAttribute();
+
+// Nodes:
+// This base class defines function required for
+// integration within the RenderGraph
+class Node {
+public:
+  int id = -1;
+  Data::Vec2 pos = {};
+
+  // Renders the Node
+  virtual void render(RenderGraph &) {}
+  virtual void onEnter(RenderGraph &) {}
+  virtual void onExit(RenderGraph &) {}
+  // Called when the Node is serialized and needs RenderGraph to setup
+  virtual void onLoad(RenderGraph &) {}
+  // Runs the Node and writes to output pins
+  virtual void run(RenderGraph &) {}
+
+  template <class Archive> void serialize(Archive &ar) { ar(id, pos); }
+};
 
 // ============
 // Custom Nodes
@@ -166,7 +190,7 @@ public:
       ImGui::SetNextItemWidth(node_width);
       ImGui::InputFloat("Float", &value, 0, 0, "%.2f");
       if (ImGui::IsItemDeactivatedAfterEdit()) {
-        getUndoContext()->do_action(
+        Global::getUndoContext()->do_action(
             {[this, newvalue = value] { prev_value = value = newvalue; },
              [this, oldvalue = prev_value] { prev_value = value = oldvalue; }});
         prev_value = value;
@@ -214,7 +238,7 @@ public:
       ImGui::InputFloat2("##hidelabel", value.data(), "%.1f",
                          ImGuiInputTextFlags_NoUndoRedo);
       if (ImGui::IsItemDeactivatedAfterEdit()) {
-        getUndoContext()->do_action(
+        Global::getUndoContext()->do_action(
             {[this, newvalue = value] { prev_value = value = newvalue; },
              [this, oldvalue = prev_value] { prev_value = value = oldvalue; }});
         prev_value = value;

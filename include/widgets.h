@@ -5,6 +5,7 @@
 #include "nodes.h"
 #include "theme.h"
 #include "utils.h"
+#include <GL/gl.h> // For glGetTexImage
 #include <GLES3/gl3.h>
 #include <GLFW/glfw3.h>
 #include <cereal/cereal.hpp>
@@ -276,7 +277,7 @@ public:
                             Data::COLORS_HOVER[current_link_type]);
     ImNodes::BeginNodeEditor();
 
-    Global::instance().set_undo_context(&history);
+    Global::setUndoContext(&history);
     graph.get()->render();
 
     { // Add Nodes
@@ -332,6 +333,10 @@ public:
     }
   }
 };
+
+#include <stb_image.h>
+#include <stb_image_write.h>
+
 /// Popup widget, should not be serialized
 class ExportImagePopup : public Widget {
 private:

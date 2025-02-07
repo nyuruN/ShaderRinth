@@ -1,14 +1,10 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
 #include <filesystem>
 #include <functional>
 #include <imgui.h>
 #include <map>
 #include <memory>
-#include <mutex>
-#include <spdlog/sinks/callback_sink.h>
-#include <spdlog/sinks/ostream_sink.h>
 #include <spdlog/sinks/ringbuffer_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
@@ -20,7 +16,7 @@
 
 template <typename T> using Assets = std::map<std::string, std::shared_ptr<T>>;
 
-// TODO: Create a smart pointer that...
+// TODO: Undo: Create a smart pointer that...
 // Is used by both ImNodes and Self: Swap<T>.data()
 // Keeps track of previous value: Swap<T>.prev()
 // Is Generic: Swap<T>
@@ -32,39 +28,32 @@ struct UndoContext;
 
 struct Global {
 public:
+  std::filesystem::path project_root;
+  UndoContext *undo_context;
+
+  // Access a static instance of Global
   static Global &instance() {
     static Global instance;
     return instance;
   }
-  void init() {
-    console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-    console_sink->set_level(spdlog::level::debug);
-    ringbuffer_sink = std::make_shared<spdlog::sinks::ringbuffer_sink_mt>(512);
-    ringbuffer_sink->set_level(spdlog::level::info);
-    ringbuffer_sink->set_pattern("[%n] [%l] %v");
-
-    auto logger = create_logger("Global");
-    spdlog::set_default_logger(std::make_shared<spdlog::logger>(logger));
-  }
+  // Initializes spdlog loggers
+  void init();
+  // Shuts down spdlog
   void shutdown() { spdlog::shutdown(); }
-  spdlog::logger create_logger(char *name) {
-    std::vector<spdlog::sink_ptr> sinks = {ringbuffer_sink, console_sink};
-    return spdlog::logger(name, sinks.begin(), sinks.end());
-  }
+  // Create a logger with a custom name
+  spdlog::logger create_logger(char *name);
+  // Gets the ringbuffer sink object for use in ConsoleWidget
   std::shared_ptr<spdlog::sinks::ringbuffer_sink_mt> get_ringbuffer_sink() {
     return ringbuffer_sink;
   }
-  // Sets the current project directory for use in serialization
-  void set_project_root(std::filesystem::path path) {
-    std::lock_guard<std::mutex> lock(_mutex);
-    project_root = path;
+  // Gets the current global undo context
+  static inline UndoContext *getUndoContext() {
+    return Global::instance().undo_context;
   }
-  std::filesystem::path get_project_root() {
-    std::lock_guard<std::mutex> lock(_mutex);
-    return project_root;
+  // Sets the current global undo context
+  static inline void setUndoContext(UndoContext *ptr) {
+    Global::instance().undo_context = ptr;
   }
-  void set_undo_context(UndoContext *context) { undo_context = context; }
-  UndoContext *get_undo_context() { return undo_context; };
 
 private:
   Global() = default;
@@ -74,9 +63,6 @@ private:
 
   std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> console_sink;
   std::shared_ptr<spdlog::sinks::ringbuffer_sink_mt> ringbuffer_sink;
-  std::mutex _mutex;
-  std::filesystem::path project_root;
-  UndoContext *undo_context;
 };
 
 // TODO: Placeholder undo action
@@ -103,49 +89,17 @@ private:
 
 public:
   UndoContext(uint max_history) { this->max_history = max_history; }
-  void do_action(Action a) {
-    if (history.size() - 1 > idx) // Truncate redos
-      history.resize(idx + 1);
-    if (history.size() > max_history + delete_interval) {
-      // Delete history in bulk
-      history.erase(history.begin(), history.begin() + delete_interval);
-      idx -= delete_interval;
-    }
-    a.Do();
-    history.push_back(a);
-    idx++;
-  };
-  void undo() {
-    if (history.empty() || idx == 0)
-      return;
-    spdlog::info("[Undo] History size: {}, Index: {}--", history.size(), idx);
-    history.at(idx).Undo();
-    idx--;
-  };
-  void redo() {
-    if (history.empty() || history.size() - 1 <= idx)
-      return;
-    spdlog::info("[Redo] History size: {}, Index: {}++", history.size(), idx);
-    idx++;
-    history.at(idx).Do();
-  };
-  void clear() {
-    if (history.empty())
-      return;
-    Action a = std::move(history.at(idx));
-    history.clear();
-    history.push_back(a);
-  };
+  // Executes given action and updates UndoContext
+  void do_action(Action a);
+  // Undo an action if available
+  void undo();
+  // Redo an action if available
+  void redo();
+  // Resets undo history, keeping last action
+  void clear();
 };
 
-inline UndoContext *getUndoContext() {
-  return Global::instance().get_undo_context();
-}
-inline void setUndoContext(UndoContext *ptr) {
-  Global::instance().set_undo_context(ptr);
-}
-
-// Should be called per frame
+// Should be called once per frame
 void updateKeyStates();
-// Return true only if the key transitioned from RELEASE to PRESS
+// Return true if the key transitioned from RELEASE to PRESS
 bool isKeyJustPressed(ImGuiKey key);

@@ -20,9 +20,12 @@ add_executable(
   src/main.cpp
   src/editor.cpp
   src/utils.cpp
+  src/data.cpp
   src/graph.cpp
   src/texture.cpp
   src/theme.cpp
+  src/geometry.cpp
+  src/shader.cpp
   
   extern/imnodes/imnodes.cpp
 )
