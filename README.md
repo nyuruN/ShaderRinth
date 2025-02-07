@@ -24,7 +24,7 @@ purposes.
 
 ---
 
-### VERSION 0.0.1
+### VERSION 0.0.1 (Prototype)
 
 * Integrate more powerful code/text editor [done]
 
@@ -40,7 +40,11 @@ purposes.
 
 * In-app file browser/file outliner (enhanced asset management)
 
-### VERSION 0.1.0
+### VERSION 0.1.0 (Miniminal Viable Product)
+
+* Enhanced error highlighting
+
+* Help page?
 
 * Properties widget: Selection system? control parameters
 

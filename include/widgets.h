@@ -80,6 +80,13 @@ public:
       shader->should_recompile();
       is_dirty = false;
     }
+
+    if (isKeyJustPressed(ImGuiKey_F5)) {
+      if (!shader->is_compiled())
+        spdlog::error(shader->get_log());
+      else
+        shader->should_recompile();
+    }
   };
   void render() override {
     zep_show(Zep::NVec2i(0, 0), shader->get_name().c_str());
