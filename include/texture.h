@@ -25,6 +25,7 @@ public:
       glDeleteTextures(1, &texture);
   }
   GLuint get_texture() { return texture; }
+  bool is_loaded() { return loaded; }
   std::string &get_name() { return name; }
   template <class Archive>
   static void load_and_construct(Archive &ar,

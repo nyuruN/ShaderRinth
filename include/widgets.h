@@ -5,9 +5,7 @@
 #include "nodes.h"
 #include "theme.h"
 #include "utils.h"
-#include <GL/gl.h> // For glGetTexImage
-#include <GLES3/gl3.h>
-#include <GLFW/glfw3.h>
+#include <GL/gl.h> // For glGetTexImage otherwise GLES/gl3.h
 #include <cereal/cereal.hpp>
 #include <cereal/types/array.hpp>
 #include <cereal/types/base_class.hpp>
@@ -77,8 +75,7 @@ public:
 
     if (is_dirty) {
       std::string text = get_buffer_text();
-      shader->set_source(text);
-      shader->should_recompile();
+      shader->recompile_with_source(text);
       is_dirty = false;
     }
 
@@ -86,7 +83,7 @@ public:
       if (!shader->is_compiled())
         spdlog::error(shader->get_log());
       else
-        shader->should_recompile();
+        shader->recompile();
     }
   };
   void render() override {

@@ -31,7 +31,7 @@ void ScreenQuadGeometry::draw_geometry() {
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
 }
-void ScreenQuadGeometry::destroy_geometry() {
+void ScreenQuadGeometry::destroy() {
   glDeleteBuffers(1, &vbo);
   glDeleteBuffers(1, &ebo);
   glDeleteVertexArrays(1, &vao);

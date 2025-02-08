@@ -278,7 +278,6 @@ class FragmentShaderNode : public Node {
 
   GLuint image_fbo;
   GLuint image_colorbuffer;
-  std::vector<GLuint> bound_textures = {};
 
   const float node_width = 240.0f;
 
@@ -431,8 +430,7 @@ public:
     for (auto &pin : uniform_pins) {
       Data data = graph.get_pin_data(pin.pinid);
       if (data)
-        set_uniform(shader->get_uniform_loc(pin.identifier.data()),
-                    pin.identifier, data);
+        shader->set_uniform(pin.identifier.c_str(), data);
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, image_fbo);
@@ -450,54 +448,11 @@ public:
 
     shader->use();
     graph.graph_geometry->draw_geometry();
+    shader->clear_textures();
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    bound_textures.clear();
 
     graph.set_pin_data(output_pin, (Data::Texture2D)image_colorbuffer);
-  }
-  unsigned int get_next_texture_unit(GLuint texture) {
-    unsigned int unit = bound_textures.size();
-    bound_textures.push_back(texture);
-    return GL_TEXTURE0 + unit;
-  }
-  void set_uniform(GLuint loc, std::string identifier, Data data) {
-    // clang-format off
-    switch (data.type) {
-    case DataType::Int: {
-      auto val = data.get<Data::Int>(); glUniform1iv(loc, 1, &val); break;
-    };
-    case DataType::IVec2: {
-      auto val = data.get<Data::IVec2>().data(); glUniform2iv(loc, 1, val); break;
-    };
-    case DataType::IVec3: {
-      auto val = data.get<Data::IVec3>().data(); glUniform3iv(loc, 1, val); break;
-    };
-    case DataType::IVec4: {
-      auto val = data.get<Data::IVec4>().data(); glUniform4iv(loc, 1, val); break;
-    };
-    case DataType::Float: {
-      auto val = data.get<Data::Float>(); glUniform1fv(loc, 1, &val); break;
-    };
-    case DataType::Vec2: {
-      auto val = data.get<Data::Vec2>().data(); glUniform2fv(loc, 1, val); break;
-    };
-    case DataType::Vec3: {
-      auto val = data.get<Data::Vec3>().data(); glUniform3fv(loc, 1, val); break;
-    };
-    case DataType::Vec4: {
-      auto val = data.get<Data::Vec4>().data(); glUniform4fv(loc, 1, val); break;
-    };
-    case DataType::Texture2D: {
-      GLuint texture = data.get<Data::Texture2D>();
-      int unit = get_next_texture_unit(texture);
-      glActiveTexture(unit);
-      glBindTexture(GL_TEXTURE_2D, texture);
-      glUniform1i(loc, bound_textures.size() - 1);
-      break;
-    };
-    }
-    // clang-format on
   }
   template <class Archive> void serialize(Archive &ar) {
     ar(cereal::base_class<Node>(this));

@@ -1,7 +1,21 @@
 #include "shader.h"
+#include "data.h"
 #include "geometry.h"
 
-//! Shader
+// Uniform setters
+static const std::function<void(GLint, Data)> SET_UNIFORM[] = {
+    // clang-format off
+  [](GLint l, Data v) { glUniform1i(l, v.get<Data::Int>()); },
+  [](GLint l, Data v) { glUniform2iv(l, 1, v.get<Data::IVec2>().data()); },
+  [](GLint l, Data v) { glUniform3iv(l, 1, v.get<Data::IVec3>().data()); },
+  [](GLint l, Data v) { glUniform4iv(l, 1, v.get<Data::IVec4>().data()); },
+  [](GLint l, Data v) { glUniform1f(l, v.get<Data::Float>()); },
+  [](GLint l, Data v) { glUniform2fv(l, 1, v.get<Data::Vec2>().data()); },
+  [](GLint l, Data v) { glUniform3fv(l, 1, v.get<Data::Vec3>().data()); },
+  [](GLint l, Data v) { glUniform4fv(l, 1, v.get<Data::Vec4>().data()); },
+  [](GLint l, Data v) { /* Data::Texture2D */ },
+    // clang-format on
+};
 
 Shader::Shader(std::string name) {
   std::ifstream file(DEFAULT_FRAG_PATH);
@@ -55,4 +69,21 @@ bool Shader::compile(std::shared_ptr<Geometry> geo) {
 
   compiled = true;
   return success;
+}
+void Shader::set_uniform(const char *name, Data data) {
+  GLuint loc = get_uniform_loc(name);
+
+  if (data.type == DataType::Texture2D) {
+    GLuint texture = data.get<Data::Texture2D>();
+
+    // Gets next texture unit
+    int offset = bound_textures.size();
+    bound_textures.push_back(texture);
+    GLenum unit = GL_TEXTURE0 + unit;
+
+    glActiveTexture(unit);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glUniform1i(loc, bound_textures.size() - 1);
+  } else
+    SET_UNIFORM[data.type](loc, data);
 }

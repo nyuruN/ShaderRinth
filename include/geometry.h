@@ -4,16 +4,22 @@
 #include <string>
 
 class Geometry {
-public:
+protected:
   std::string name;
 
+public:
+  // Compiles a vertex shader, implementation should guarantee success
   virtual void compile_vertex_shader(unsigned int &vert_shader) {};
+  // Calls the corresponding draw functions
   virtual void draw_geometry() {};
-  virtual void destroy_geometry() {};
+  // Release resources allocated by Geometry
+  virtual void destroy() {};
+  std::string &get_name() { return name; }
 
   template <class Archive> void serialize(Archive &ar) { ar(name); }
 };
 
+// Geometry covering the entire viewport
 class ScreenQuadGeometry : public Geometry {
 private:
   inline static constexpr float VERTICES[12] = {
@@ -39,10 +45,10 @@ void main()
   GLuint ebo;
 
 public:
+  // Creates a new ScreenQuadGeometry
   ScreenQuadGeometry(std::string name = "FullscreenQuad");
-  std::string &get_name() { return name; }
   void compile_vertex_shader(GLuint &vert_shader) override;
   void draw_geometry() override;
-  void destroy_geometry() override;
+  void destroy() override;
   template <class Archive> void serialize(Archive &ar);
 };

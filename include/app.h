@@ -41,7 +41,7 @@ struct App {
     auto texture = std::make_shared<Texture>(
         "Cat", std::filesystem::path(APP_ROOT) / "assets/textures/cat.png");
 
-    if (!texture)
+    if (!*texture)
       spdlog::error("Failed to load texture assets/textures/cat.png");
 
     shaders->insert(std::make_pair(shader->get_name(), shader));

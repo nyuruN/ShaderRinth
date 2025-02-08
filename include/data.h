@@ -10,15 +10,15 @@
 // DataType:
 // Type of the data transferred between nodes
 enum DataType {
-  Int,       // int
-  IVec2,     // std::array<int, 2>
-  IVec3,     // std::array<int, 2>
-  IVec4,     // std::array<int, 2>
-  Float,     // float
-  Vec2,      // std::array<float, 2>
-  Vec3,      // std::array<float, 2>
-  Vec4,      // std::array<float, 2>
-  Texture2D, // GLuint
+  Int = 0,       // int
+  IVec2 = 1,     // std::array<int, 2>
+  IVec3 = 2,     // std::array<int, 2>
+  IVec4 = 3,     // std::array<int, 2>
+  Float = 4,     // float
+  Vec2 = 5,      // std::array<float, 2>
+  Vec3 = 6,      // std::array<float, 2>
+  Vec4 = 7,      // std::array<float, 2>
+  Texture2D = 8, // GLuint
 };
 
 struct Data {
