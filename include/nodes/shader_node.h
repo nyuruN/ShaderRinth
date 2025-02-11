@@ -125,6 +125,14 @@ public:
   }
   void onEnter(RenderGraph &graph) override {
     graph.register_pin(id, DataType::Texture2D, &this->output_pin);
+
+    // If preconfigured using clone()
+    if (!uniform_pins.empty()) {
+      for (auto &pin : uniform_pins) {
+        graph.register_pin(id, pin.type, &pin.pinid);
+      }
+    }
+
     onLoad(graph);
   }
   void onLoad(RenderGraph &graph) override {
@@ -203,6 +211,9 @@ public:
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     graph.set_pin_data(output_pin, (Data::Texture2D)image_colorbuffer);
+  }
+  std::shared_ptr<Node> clone() const override {
+    return std::make_shared<FragmentShaderNode>(*this);
   }
   template <class Archive> void serialize(Archive &ar) {
     ar(cereal::base_class<Node>(this));

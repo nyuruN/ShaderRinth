@@ -64,6 +64,9 @@ public:
   void run(RenderGraph &graph) override {
     graph.set_pin_data(output_pin, (Data::Texture2D)texture->get_texture());
   }
+  std::shared_ptr<Node> clone() const override {
+    return std::make_shared<Texture2DNode>(*this);
+  }
   template <class Archive> void serialize(Archive &ar) {
     ar(cereal::base_class<Node>(this));
     ar(output_pin, texture);

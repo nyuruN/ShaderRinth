@@ -49,6 +49,9 @@ public:
       }
     }
   }
+  std::shared_ptr<Node> clone() const override {
+    return std::make_shared<OutputNode>(*this);
+  }
   template <class Archive> void serialize(Archive &ar) {
     ar(cereal::base_class<Node>(this));
     ar(input_pin, out_texture);

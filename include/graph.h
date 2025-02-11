@@ -179,8 +179,9 @@ public:
   void topological_order() { traverse(run_order, root_node); };
   void stop() { should_stop = true; }
   void evaluate();
-  Node *get_node(int nodeid) { return nodes.at(nodeid).get(); }
   Node *get_root_node() { return nodes.at(root_node).get(); }
+  Node *get_node(int nodeid) { return nodes.at(nodeid).get(); }
+  Edge get_edge(int edgeid) { return edges.at(edgeid); }
   // Prevents nodes from reusing previous data
   void clear_graph_data();
   // Default node layout

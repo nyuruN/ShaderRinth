@@ -45,6 +45,9 @@ public:
   void run(RenderGraph &graph) override {
     graph.set_pin_data(output_pin, (Data::Float)value);
   }
+  std::shared_ptr<Node> clone() const override {
+    return std::make_shared<FloatNode>(*this);
+  }
   template <class Archive> void serialize(Archive &ar) {
     ar(cereal::base_class<Node>(this));
     ar(output_pin, value);
@@ -93,6 +96,9 @@ public:
   void onExit(RenderGraph &graph) override { graph.delete_pin(output_pin); }
   void run(RenderGraph &graph) override {
     graph.set_pin_data(output_pin, (Data::Vec2)value);
+  }
+  std::shared_ptr<Node> clone() const override {
+    return std::make_shared<Vec2Node>(*this);
   }
   template <class Archive> void serialize(Archive &ar) {
     ar(cereal::base_class<Node>(this));

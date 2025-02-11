@@ -39,6 +39,9 @@ public:
     ImVec2 res = graph.viewport_resolution;
     graph.set_pin_data(output_pin, Data::Vec2({res.x, res.y}));
   }
+  std::shared_ptr<Node> clone() const override {
+    return std::make_shared<ViewportNode>(*this);
+  }
   template <class Archive> void serialize(Archive &ar) {
     ar(cereal::base_class<Node>(this));
     ar(output_pin);

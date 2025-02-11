@@ -1,6 +1,7 @@
 #pragma once
 
 #include "data.h"
+#include "memory"
 
 #define BEGIN_INPUT_PIN(id, type)                                              \
   ImNodes::PushColorStyle(ImNodesCol_Pin, Data::COLORS[type]);                 \
@@ -31,9 +32,14 @@ public:
   int id = -1;
   Data::Vec2 pos = {};
 
+  // Creates a copy of the object to be inserted in a graph
+  virtual std::shared_ptr<Node> clone() const = 0;
+
   // Renders the Node
   virtual void render(RenderGraph &) {}
+  // Called when the Node enters the graph for the first time
   virtual void onEnter(RenderGraph &) {}
+  // Called when the Node is deleted from the graph
   virtual void onExit(RenderGraph &) {}
   // Called when the Node is serialized and needs RenderGraph to setup
   virtual void onLoad(RenderGraph &) {}

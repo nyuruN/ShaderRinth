@@ -26,6 +26,8 @@ add_executable(
   src/theme.cpp
   src/geometry.cpp
   src/shader.cpp
+
+  src/widgets/node_editor_widget.cpp
   
   extern/imnodes/imnodes.cpp
 )

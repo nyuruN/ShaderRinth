@@ -38,6 +38,9 @@ public:
   void run(RenderGraph &graph) override {
     graph.set_pin_data(output_pin, (Data::Float)glfwGetTime());
   }
+  std::shared_ptr<Node> clone() const override {
+    return std::make_shared<TimeNode>(*this);
+  }
   template <class Archive> void serialize(Archive &ar) {
     ar(cereal::base_class<Node>(this));
     ar(output_pin);
