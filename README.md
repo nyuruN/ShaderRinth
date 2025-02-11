@@ -38,6 +38,8 @@ purposes.
 
 * Making renders to picture (e.g. Render Widget) [done -> file option]
 
+* Copy and paste in NodeEditorWidget [wip]
+
 * In-app file browser/file outliner (enhanced asset management)
 
 ### VERSION 0.1.0 (Miniminal Viable Product)
@@ -54,7 +56,7 @@ purposes.
 
 * Undo history for common actions
 
-* UI improvements [wip]
+* UI improvements
   * Custom theme [done]
   * Advanced windowing e.g. Splitters, Widgets etc. 
 

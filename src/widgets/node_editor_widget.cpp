@@ -69,6 +69,8 @@ void NodeEditorWidget::process_input() {
     history.undo();
   if (isKeyJustPressed(ImGuiKey_A) && io.KeyShift)
     add_nodes.open_popup();
+  if (io.MouseClicked[1]) // Right-click
+    add_nodes.open_popup();
   if (isKeyJustPressed(ImGuiKey_X))
     delete_selected();
   if (isKeyJustPressed(ImGuiKey_C) && io.KeyCtrl) {

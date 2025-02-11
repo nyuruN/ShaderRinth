@@ -9,20 +9,23 @@
 
 struct AddNodes {
 private:
-  const float widget_width = 480;
-  bool is_open = false;
   std::vector<std::shared_ptr<Node>> insert_nodes = {};
+  bool is_open = false;
+  ImVec2 spawn_position = {};
 
 public:
   AddNodes() {}
   // Opens the popup
-  void open_popup() { is_open = true; }
+  void open_popup() {
+    is_open = true;
+    spawn_position = ImGui::GetIO().MousePos;
+  }
   // Apply changes to RenderGraph
   void commit(RenderGraph *graph) {
     auto io = ImGui::GetIO();
     for (auto node : insert_nodes) {
       int id = graph->insert_node(node);
-      ImNodes::SetNodeScreenSpacePos(id, {io.MousePos.x, io.MousePos.y});
+      ImNodes::SetNodeScreenSpacePos(id, spawn_position);
     }
     insert_nodes.clear();
   }
