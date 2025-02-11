@@ -62,9 +62,13 @@ target_include_directories(${EXECUTABLE} PRIVATE
 )
 
 # Precompile headers
-target_precompile_headers(${EXECUTABLE} PRIVATE
-  cmake/pch.h
-)
+option(USE_PCH "Enable precompiled headers" ON)
+if(USE_PCH)
+    message(STATUS "Using precompiled headers")
+    target_precompile_headers(${EXECUTABLE} PRIVATE cmake/pch.h)
+else()
+    message(STATUS "Building without precompiled headers")
+endif()
 
 # compile options
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")

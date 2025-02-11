@@ -1,10 +1,11 @@
 #pragma once
 
 #include <GLES3/gl3.h>
-#include <cereal/cereal.hpp> // for static load_and_construct
-#include <cereal/types/string.hpp>
 #include <filesystem>
 #include <string>
+
+#include <cereal/cereal.hpp> // for static load_and_construct
+#include <cereal/types/string.hpp>
 
 struct Texture {
 private:

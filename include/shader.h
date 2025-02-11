@@ -1,14 +1,14 @@
 #pragma once
 
 #include "config_app.h"
+#include "utils.h"
 #include <GLES3/gl3.h>
 #include <filesystem>
+#include <fstream>
+#include <spdlog/spdlog.h>
 #include <string>
 
 #include <cereal/cereal.hpp>
-#include <fstream>
-#include <spdlog/spdlog.h>
-#include <utils.h>
 
 static const std::filesystem::path DEFAULT_FRAG_PATH =
     std::filesystem::path(APP_ROOT) / "assets" / "shaders" /

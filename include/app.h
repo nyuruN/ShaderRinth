@@ -1,20 +1,25 @@
 #pragma once
 
 #include "config_app.h"
-#include "portable-file-dialogs.h"
-#include "widgets.h" // Will all other headers
-#include <GL/gl.h>
-#include <GLES3/gl3.h>
-#include <GLFW/glfw3.h> // Will drag system OpenGL headers
+#include "geometry.h"
+#include "graph.h"
+#include "shader.h"
+#include "texture.h"
+#include "widgets.h"
+#include <GLFW/glfw3.h> // OpenGL headers
+#include <filesystem>
+#include <fstream>
+#include <imgui.h>
+#include <optional>
+#include <portable-file-dialogs.h>
+#include <vector>
+
 #include <cereal/cereal.hpp>
 #include <cereal/types/map.hpp>
 #include <cereal/types/memory.hpp>
 #include <cereal/types/string.hpp>
 #include <cereal/types/utility.hpp>
 #include <cereal/types/vector.hpp>
-#include <imgui.h>
-#include <optional>
-#include <vector>
 
 using Workspace = std::pair<std::string, std::vector<std::shared_ptr<Widget>>>;
 

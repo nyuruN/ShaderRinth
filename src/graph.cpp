@@ -1,6 +1,8 @@
 #include "graph.h"
 #include "nodes.h"
 
+#include <imnodes.h>
+
 //! RenderGraph
 
 void RenderGraph::render() {

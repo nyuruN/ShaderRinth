@@ -4,21 +4,22 @@
 #include "utils.h"
 #include <GLES3/gl3.h>
 #include <any>
+#include <map>
+#include <memory>
+
 #include <cereal/cereal.hpp>
 #include <cereal/types/array.hpp>
 #include <cereal/types/map.hpp>
 #include <cereal/types/memory.hpp>
 #include <cereal/types/string.hpp>
 #include <cereal/types/vector.hpp>
-#include <imnodes.h>
-#include <map>
-#include <memory>
 
 // Forward declares
 class Node;
 class Geometry;
 struct Shader;
 struct Texture;
+struct ImNodesEditorContext;
 
 // Represents a pin of a node
 struct Pin {

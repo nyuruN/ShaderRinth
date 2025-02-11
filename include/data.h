@@ -1,11 +1,8 @@
 #pragma once
 
-#include <GLES3/gl3.h>
 #include <any>
 #include <array>
 #include <optional>
-
-#include <cereal/cereal.hpp>
 
 // DataType:
 // Type of the data transferred between nodes
@@ -22,6 +19,10 @@ enum DataType {
 };
 
 struct Data {
+private:
+  using GLuint = unsigned int;
+
+public:
   using Int = int;
   using IVec2 = std::array<int, 2>;
   using IVec3 = std::array<int, 2>;
