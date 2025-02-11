@@ -215,6 +215,13 @@ public:
   std::shared_ptr<Node> clone() const override {
     return std::make_shared<FragmentShaderNode>(*this);
   }
+  std::vector<int> layout() const override {
+    std::vector<int> l = {output_pin};
+    l.reserve(uniform_pins.size() + 1);
+    for (auto &pin : uniform_pins)
+      l.push_back(pin.pinid);
+    return l;
+  }
   template <class Archive> void serialize(Archive &ar) {
     ar(cereal::base_class<Node>(this));
     ar(output_pin, uniform_pins, shader);

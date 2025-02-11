@@ -48,6 +48,7 @@ public:
   std::shared_ptr<Node> clone() const override {
     return std::make_shared<FloatNode>(*this);
   }
+  std::vector<int> layout() const override { return {output_pin}; }
   template <class Archive> void serialize(Archive &ar) {
     ar(cereal::base_class<Node>(this));
     ar(output_pin, value);
@@ -100,6 +101,7 @@ public:
   std::shared_ptr<Node> clone() const override {
     return std::make_shared<Vec2Node>(*this);
   }
+  std::vector<int> layout() const override { return {output_pin}; }
   template <class Archive> void serialize(Archive &ar) {
     ar(cereal::base_class<Node>(this));
     ar(output_pin, value);

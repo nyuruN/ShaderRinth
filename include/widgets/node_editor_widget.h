@@ -33,6 +33,11 @@ public:
   void show();
 };
 
+struct ClipboardEdge {
+  int from_node_idx, to_node_idx;
+  int from_layout_idx, to_layout_idx;
+};
+
 class NodeEditorWidget : public Widget {
 private:
   std::shared_ptr<RenderGraph> graph = nullptr;
@@ -44,7 +49,7 @@ private:
   bool focused = false;
 
   std::vector<std::shared_ptr<Node>> clipboard_nodes = {};
-  std::vector<std::pair<int, int>> clipboard_edges = {};
+  std::vector<ClipboardEdge> clipboard_edges = {};
   // Call SelectNode after an object is created
   std::vector<int> deferred_node_selection = {};
   std::vector<int> deferred_edge_selection = {};

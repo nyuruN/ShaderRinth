@@ -182,6 +182,7 @@ public:
   Node *get_root_node() { return nodes.at(root_node).get(); }
   Node *get_node(int nodeid) { return nodes.at(nodeid).get(); }
   Edge get_edge(int edgeid) { return edges.at(edgeid); }
+  Pin get_pin(int pinid) { return pins.at(pinid); }
   // Prevents nodes from reusing previous data
   void clear_graph_data();
   // Default node layout

@@ -67,6 +67,7 @@ public:
   std::shared_ptr<Node> clone() const override {
     return std::make_shared<Texture2DNode>(*this);
   }
+  std::vector<int> layout() const override { return {output_pin}; }
   template <class Archive> void serialize(Archive &ar) {
     ar(cereal::base_class<Node>(this));
     ar(output_pin, texture);

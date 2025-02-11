@@ -1,7 +1,8 @@
 #pragma once
 
 #include "data.h"
-#include "memory"
+#include <memory>
+#include <vector>
 
 #define BEGIN_INPUT_PIN(id, type)                                              \
   ImNodes::PushColorStyle(ImNodesCol_Pin, Data::COLORS[type]);                 \
@@ -33,7 +34,20 @@ public:
   Data::Vec2 pos = {};
 
   // Creates a copy of the object to be inserted in a graph
+  //
+  // Example implementation:
+  // std::shared_ptr<Node> clone() const override {
+  //   return std::make_shared<DerivedNode>(*this)
+  // }
   virtual std::shared_ptr<Node> clone() const = 0;
+  // Returns a layout of the node's attributes (pins)
+  // Used for matching edges when copying
+  //
+  // Example implementation:
+  // std::vector<int> layout() const override {
+  //   return { my_output_pin };
+  // }
+  virtual std::vector<int> layout() const = 0;
 
   // Renders the Node
   virtual void render(RenderGraph &) {}

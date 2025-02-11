@@ -1,4 +1,5 @@
 #include "widgets/node_editor_widget.h"
+#include <algorithm>
 
 //! AddNodes
 
@@ -92,7 +93,48 @@ void NodeEditorWidget::process_input() {
       int edgeids[length];
       ImNodes::GetSelectedLinks(edgeids);
       for (auto &id : edgeids) {
-        // TODO: Copy Logic
+        Edge edge = graph->get_edge(id);
+        Pin from = graph->get_pin(edge.from);
+        Pin to = graph->get_pin(edge.to);
+
+        // Break if only one or none of the connected nodes are selected
+        if (!(ImNodes::IsNodeSelected(from.node_id) &&
+              ImNodes::IsNodeSelected(to.node_id)))
+          break;
+
+        // Find the matching node index in clipboard_nodes
+        auto from_it =
+            std::find_if(clipboard_nodes.begin(), clipboard_nodes.end(),
+                         [from](std::shared_ptr<Node> node) {
+                           return node->id == from.node_id;
+                         });
+        auto to_it =
+            std::find_if(clipboard_nodes.begin(), clipboard_nodes.end(),
+                         [to](std::shared_ptr<Node> node) {
+                           return node->id == to.node_id;
+                         });
+
+        int from_node_idx = std::distance(clipboard_nodes.begin(), from_it);
+        int to_node_idx = std::distance(clipboard_nodes.begin(), to_it);
+
+        auto from_layout = clipboard_nodes[from_node_idx]->layout();
+        auto to_layout = clipboard_nodes[to_node_idx]->layout();
+
+        // Find matching layout index for our pins
+        auto from_layout_it =
+            std::find(from_layout.begin(), from_layout.end(), edge.from);
+        auto to_layout_it =
+            std::find(to_layout.begin(), to_layout.end(), edge.to);
+        int from_layout_idx =
+            std::distance(from_layout.begin(), from_layout_it);
+        int to_layout_idx = std::distance(to_layout.begin(), to_layout_it);
+
+        clipboard_edges.push_back(ClipboardEdge{
+            from_node_idx,
+            to_node_idx,
+            from_layout_idx,
+            to_layout_idx,
+        });
       }
     }
 
@@ -103,13 +145,33 @@ void NodeEditorWidget::process_input() {
     ImNodes::ClearNodeSelection();
     ImNodes::ClearLinkSelection();
 
+    // inserted_nodes should be the same as clipboard_nodes
+    // but initialized and integrated with a RenderGraph
+    std::vector<std::shared_ptr<Node>> inserted_nodes;
+
     for (auto &clipboard_node : clipboard_nodes) {
       auto node = clipboard_node->clone();
       graph->insert_node(node);
       ImNodes::SetNodeGridSpacePos(
           node->id, {node->pos[0] + OFFSET[0] * (paste_count + 1),
                      node->pos[1] + OFFSET[1] * (paste_count + 1)});
+
+      inserted_nodes.push_back(node);
       deferred_node_selection.push_back(node->id);
+    }
+    for (auto clipboard_edge : clipboard_edges) {
+      auto from = inserted_nodes[clipboard_edge.from_node_idx];
+      auto to = inserted_nodes[clipboard_edge.to_node_idx];
+
+      auto from_layout = from->layout();
+      auto to_layout = to->layout();
+
+      auto from_pin = from_layout[clipboard_edge.from_layout_idx];
+      auto to_pin = to_layout[clipboard_edge.to_layout_idx];
+
+      int id = graph->insert_edge(from_pin, to_pin);
+
+      deferred_edge_selection.push_back(id);
     }
 
     paste_count++;
