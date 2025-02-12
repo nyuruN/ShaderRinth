@@ -50,7 +50,7 @@ public:
         shader->recompile();
     }
   };
-  void render() override {
+  void render(bool *) override {
     zep_show(Zep::NVec2i(0, 0), shader->get_name().c_str());
   }
 

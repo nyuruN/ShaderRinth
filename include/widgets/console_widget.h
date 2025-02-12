@@ -27,9 +27,9 @@ public:
     title = fmt::format("Console##{}", id);
   }
   void set_colored(bool col) { colored = col; }
-  void render() override {
-    ImGui::SetNextWindowSize({600, 400}, ImGuiCond_FirstUseEver);
-    ImGui::Begin(title.c_str());
+  void render(bool *p_open) override {
+    ImGui::SetNextWindowSize({400, 200}, ImGuiCond_FirstUseEver);
+    ImGui::Begin(title.c_str(), p_open);
 
     if (colored) {
       auto buf = Global::instance().get_ringbuffer_sink()->last_raw();

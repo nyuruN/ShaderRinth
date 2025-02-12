@@ -88,7 +88,7 @@ public:
       process_input();
   }
   // Renders the widget
-  void render() override;
+  void render(bool *p_open) override;
   // Handles Input
   void process_input();
   // Deletes selected links and nodes

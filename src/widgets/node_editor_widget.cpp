@@ -43,7 +43,7 @@ void AddNodes::show() {
 
 //! NodeEditorWidget
 
-void NodeEditorWidget::render() {
+void NodeEditorWidget::render(bool *) {
   ImGui::Begin("Node Editor");
   ImNodes::EditorContextSet(context);
   ImNodes::PushColorStyle(ImNodesCol_Link,

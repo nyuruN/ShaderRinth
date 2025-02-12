@@ -81,7 +81,7 @@ public:
     }
   }
   virtual void onShutdown() override { graph.reset(); }
-  virtual void render() override {
+  virtual void render(bool *p_open = NULL) override {
     if (is_open && !ImGui::IsPopupOpen("Export Image"))
       ImGui::OpenPopup("Export Image");
 

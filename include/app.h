@@ -37,6 +37,7 @@ struct App {
   std::optional<std::filesystem::path> project_root;
   ExportImagePopup export_image = ExportImagePopup();
   std::vector<std::shared_ptr<Widget>> deferred_add_widget;
+  std::vector<std::shared_ptr<Widget>> deferred_remove_widget;
   bool is_project_dirty = false;
 
   // Setup App Logic
@@ -76,8 +77,12 @@ struct App {
     render_menubar();
 
     render_dockspace();
-    for (auto &widget : workspaces[current_workspace].second)
-      widget->render();
+    for (auto &widget : workspaces[current_workspace].second) {
+      bool open = true;
+      widget->render(&open);
+      if (!open)
+        deferred_remove_widget.push_back(widget);
+    }
 
     export_image.render();
   }
@@ -116,6 +121,15 @@ struct App {
         workspaces[current_workspace].second.push_back(widget);
       }
       deferred_add_widget.clear();
+    }
+    if (!deferred_remove_widget.empty()) {
+      for (auto &widget : deferred_remove_widget) {
+        widget->onShutdown();
+        auto it = std::find(workspaces[current_workspace].second.begin(),
+                            workspaces[current_workspace].second.end(), widget);
+        workspaces[current_workspace].second.erase(it);
+      }
+      deferred_remove_widget.clear();
     }
 
     for (auto &widget : workspaces[current_workspace].second)

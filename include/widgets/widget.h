@@ -13,7 +13,8 @@ public:
   // Runs every frame
   virtual void onUpdate() {};
   // Runs every frame if visible
-  virtual void render() {};
+  // Setting p_open to false will close the widget
+  virtual void render(bool *p_open) {};
 
   template <class Archive> void serialize(Archive &ar) {}
 };

@@ -20,8 +20,9 @@ public:
     title = fmt::format("Viewport##{}", id);
     viewgraph = graph;
   }
-  void render() override {
-    ImGui::Begin(title.c_str());
+  void render(bool *p_open) override {
+    ImGui::SetNextWindowSize({400, 400}, ImGuiCond_FirstUseEver);
+    ImGui::Begin(title.c_str(), p_open);
     ImGui::BeginChild("ViewportRender");
 
     wsize = ImGui::GetWindowSize();
