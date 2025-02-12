@@ -41,7 +41,8 @@ struct App {
 
   // Setup App Logic
   App() {
-    load_settings();
+    ImGui::LoadIniSettingsFromDisk(
+        (std::filesystem::path(APP_ROOT) / "assets/imgui.ini").c_str());
 
     auto shader = std::make_shared<Shader>(Shader("Default"));
     auto geo = std::make_shared<ScreenQuadGeometry>();
@@ -63,7 +64,7 @@ struct App {
         Workspace("Shading",
                   {
                       std::make_shared<EditorWidget>(shader),
-                      std::make_shared<ViewportWidget>(graph),
+                      std::make_shared<ViewportWidget>(next_widget_id++, graph),
                       std::make_shared<ConsoleWidget>(next_widget_id++),
                   }),
         Workspace("RenderGraph", {std::make_shared<NodeEditorWidget>(graph)}),
@@ -134,8 +135,6 @@ struct App {
       else
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
-    if (isKeyJustPressed(ImGuiKey_F2) && io.KeyCtrl)
-      save_settings();
   }
   void render_menubar() {
     if (ImGui::BeginMainMenuBar()) {
@@ -160,6 +159,9 @@ struct App {
         if (ImGui::MenuItem("Console"))
           deferred_add_widget.push_back(
               std::make_shared<ConsoleWidget>(next_widget_id++));
+        if (ImGui::MenuItem("Viewport"))
+          deferred_add_widget.push_back(
+              std::make_shared<ViewportWidget>(next_widget_id++, graph));
 
         ImGui::EndMenu();
       }
@@ -181,11 +183,6 @@ struct App {
 
       ImGui::EndMainMenuBar();
     }
-  }
-  void save_settings() { ImGui::SaveIniSettingsToDisk("imgui.ini"); }
-  void load_settings() {
-    ImGui::LoadIniSettingsFromDisk(
-        (std::filesystem::path(APP_ROOT) / "assets/imgui.ini").c_str());
   }
   // Default save
   void save_project() {
@@ -219,6 +216,9 @@ struct App {
         VP(next_widget_id)     //
     );
 
+    ImGui::SaveIniSettingsToDisk(
+        (project_root.value() / "sr_imgui.ini").c_str());
+
     spdlog::info("Project saved in {}", project_root.value().string());
   }
   void open_project() {
@@ -226,17 +226,17 @@ struct App {
       // TODO: Prompt the user to save the project first
     }
 
-    auto dir =
+    auto dir_str =
         pfd::select_folder("Select an existing project directory").result();
-    if (dir.empty())
+    if (dir_str.empty())
       return;
 
-    std::ifstream file(std::filesystem::path(dir) / "srproject.json");
+    std::ifstream file(std::filesystem::path(dir_str) / "srproject.json");
     if (!file) {
       spdlog::error("Unknown project directory format!");
       return;
     }
-    project_root = dir;
+    project_root = dir_str;
     Global::instance().project_root = project_root.value();
 
     // Safely clear all resources
@@ -253,6 +253,21 @@ struct App {
           VP(current_workspace), //
           VP(next_widget_id)     //
       );
+    }
+
+    // Load ImGui settings
+    auto imgui_filepath = project_root.value() / "sr_imgui.ini";
+    if (std::filesystem::exists(imgui_filepath)) {
+      std::ifstream imgui_file(imgui_filepath);
+
+      if (!imgui_file) {
+        spdlog::error("Failed to load ImGui layout!");
+      }
+
+      std::ostringstream buf;
+      buf << imgui_file.rdbuf();
+      std::string str = buf.str();
+      ImGui::LoadIniSettingsFromMemory(str.c_str(), str.size());
     }
 
     startup();

@@ -57,15 +57,6 @@ private:
 
 public:
   NodeEditorWidget(std::shared_ptr<RenderGraph> graph) : graph(graph) {}
-  template <class Archive>
-  static void
-  load_and_construct(Archive &ar,
-                     cereal::construct<NodeEditorWidget> &construct) {
-    std::shared_ptr<RenderGraph> graph;
-    ar(graph);
-    construct(graph);
-  }
-  template <class Archive> void serialize(Archive &ar) { ar(VP(graph)); }
   void onStartup() override { graph->set_node_positions(context); };
   void onShutdown() override { ImNodes::EditorContextFree(context); }
   void onUpdate() override {
@@ -102,6 +93,16 @@ public:
   void process_input();
   // Deletes selected links and nodes
   void delete_selected();
+
+  template <class Archive>
+  static void
+  load_and_construct(Archive &ar,
+                     cereal::construct<NodeEditorWidget> &construct) {
+    std::shared_ptr<RenderGraph> graph;
+    ar(graph);
+    construct(graph);
+  }
+  template <class Archive> void serialize(Archive &ar) { ar(VP(graph)); }
 };
 
 // Type registration

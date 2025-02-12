@@ -91,7 +91,8 @@ public:
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(5, 7));
 
     if (ImGui::BeginPopupModal("Export Image", NULL,
-                               ImGuiWindowFlags_AlwaysAutoResize)) {
+                               ImGuiWindowFlags_AlwaysAutoResize |
+                                   ImGuiWindowFlags_NoSavedSettings)) {
       ImGui::Text("Default Graph Selected");
 
       ImGui::SetNextItemWidth(widget_width - ImGui::CalcTextSize("Path ...").x);

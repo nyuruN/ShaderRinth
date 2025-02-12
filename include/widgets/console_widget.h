@@ -86,7 +86,7 @@ public:
     ar(id);
     construct(id);
   }
-  template <class Archive> void serialize(Archive &ar) { ar(id); }
+  template <class Archive> void serialize(Archive &ar) { ar(VP(id)); }
 };
 
 // Type registration
