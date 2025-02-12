@@ -31,10 +31,12 @@ struct App {
   std::shared_ptr<RenderGraph>          graph;
   std::vector<Workspace>                workspaces;
   int                                   current_workspace = 0;
-  std::optional<std::filesystem::path>  project_root;
+  int                                   next_widget_id = 0;
   // clang-format on
 
+  std::optional<std::filesystem::path> project_root;
   ExportImagePopup export_image = ExportImagePopup();
+  std::vector<std::shared_ptr<Widget>> deferred_add_widget;
   bool is_project_dirty = false;
 
   // Setup App Logic
@@ -62,7 +64,7 @@ struct App {
                   {
                       std::make_shared<EditorWidget>(shader),
                       std::make_shared<ViewportWidget>(graph),
-                      std::make_shared<ConsoleWidget>(),
+                      std::make_shared<ConsoleWidget>(next_widget_id++),
                   }),
         Workspace("RenderGraph", {std::make_shared<NodeEditorWidget>(graph)}),
     });
@@ -70,51 +72,13 @@ struct App {
   }
   // Render the application
   void render() {
-    if (ImGui::BeginMainMenuBar()) {
-      if (ImGui::BeginMenu("File")) {
-        if (ImGui::MenuItem("Open", "Ctrl+O"))
-          open_project();
-        if (ImGui::MenuItem("Save", "Ctrl+S"))
-          save_project();
-        if (ImGui::MenuItem("Save As"))
-          save_project_as();
-        if (ImGui::MenuItem("Import Texture"))
-          import_texture();
-        if (ImGui::MenuItem("Export Image"))
-          export_image.open_popup();
+    render_menubar();
 
-        ImGui::EndMenu();
-      }
-      if (ImGui::BeginMenu("Edit")) {
-        ImGui::EndMenu();
-      }
-      if (ImGui::BeginMenu("View")) {
-        ImGui::EndMenu();
-      }
-      ImGui::Indent(165);
-
-      ImGui::PushStyleVar(ImGuiStyleVar_TabBarBorderSize, 0.0f);
-      if (ImGui::BeginTabBar("Workspaces", ImGuiTabBarFlags_Reorderable)) {
-        int idx = 0;
-        for (auto &pair : workspaces) {
-          if (ImGui::BeginTabItem(pair.first.c_str())) {
-            current_workspace = idx;
-            ImGui::EndTabItem();
-          }
-          idx++;
-        }
-        ImGui::EndTabBar();
-      }
-      ImGui::PopStyleVar();
-
-      ImGui::EndMainMenuBar();
-    }
-
-    export_image.render();
-
-    renderDockspace();
+    render_dockspace();
     for (auto &widget : workspaces[current_workspace].second)
       widget->render();
+
+    export_image.render();
   }
   void startup() {
     for (auto &pair : workspaces) {
@@ -144,6 +108,15 @@ struct App {
   void update() {
     updateKeyStates();
     process_input();
+
+    if (!deferred_add_widget.empty()) {
+      for (auto &widget : deferred_add_widget) {
+        widget->onStartup();
+        workspaces[current_workspace].second.push_back(widget);
+      }
+      deferred_add_widget.clear();
+    }
+
     for (auto &widget : workspaces[current_workspace].second)
       widget->onUpdate();
   }
@@ -164,7 +137,52 @@ struct App {
     if (isKeyJustPressed(ImGuiKey_F2) && io.KeyCtrl)
       save_settings();
   }
-  void save_settings() { ImGui::LoadIniSettingsFromDisk("imgui.ini"); }
+  void render_menubar() {
+    if (ImGui::BeginMainMenuBar()) {
+      if (ImGui::BeginMenu("File")) {
+        if (ImGui::MenuItem("Open", "Ctrl+O"))
+          open_project();
+        if (ImGui::MenuItem("Save", "Ctrl+S"))
+          save_project();
+        if (ImGui::MenuItem("Save As"))
+          save_project_as();
+        if (ImGui::MenuItem("Import Texture"))
+          import_texture();
+        if (ImGui::MenuItem("Export Image"))
+          export_image.open_popup();
+
+        ImGui::EndMenu();
+      }
+      if (ImGui::BeginMenu("Edit")) {
+        ImGui::EndMenu();
+      }
+      if (ImGui::BeginMenu("View")) {
+        if (ImGui::MenuItem("Console"))
+          deferred_add_widget.push_back(
+              std::make_shared<ConsoleWidget>(next_widget_id++));
+
+        ImGui::EndMenu();
+      }
+      ImGui::Indent(165);
+
+      ImGui::PushStyleVar(ImGuiStyleVar_TabBarBorderSize, 0.0f);
+      if (ImGui::BeginTabBar("Workspaces", ImGuiTabBarFlags_Reorderable)) {
+        int idx = 0;
+        for (auto &pair : workspaces) {
+          if (ImGui::BeginTabItem(pair.first.c_str())) {
+            current_workspace = idx;
+            ImGui::EndTabItem();
+          }
+          idx++;
+        }
+        ImGui::EndTabBar();
+      }
+      ImGui::PopStyleVar();
+
+      ImGui::EndMainMenuBar();
+    }
+  }
+  void save_settings() { ImGui::SaveIniSettingsToDisk("imgui.ini"); }
   void load_settings() {
     ImGui::LoadIniSettingsFromDisk(
         (std::filesystem::path(APP_ROOT) / "assets/imgui.ini").c_str());
@@ -191,13 +209,14 @@ struct App {
     std::ofstream ofs(project_root.value() / "srproject.json");
     cereal::JSONOutputArchive archive(ofs);
 
-    archive(                  //
-        VP(shaders),          //
-        VP(geometries),       //
-        VP(textures),         //
-        VP(graph),            //
-        VP(workspaces),       //
-        VP(current_workspace) //
+    archive(                   //
+        VP(shaders),           //
+        VP(geometries),        //
+        VP(textures),          //
+        VP(graph),             //
+        VP(workspaces),        //
+        VP(current_workspace), //
+        VP(next_widget_id)     //
     );
 
     spdlog::info("Project saved in {}", project_root.value().string());
@@ -225,13 +244,14 @@ struct App {
 
     {
       cereal::JSONInputArchive archive(file);
-      archive(                  //
-          VP(shaders),          //
-          VP(geometries),       //
-          VP(textures),         //
-          VP(graph),            //
-          VP(workspaces),       //
-          VP(current_workspace) //
+      archive(                   //
+          VP(shaders),           //
+          VP(geometries),        //
+          VP(textures),          //
+          VP(graph),             //
+          VP(workspaces),        //
+          VP(current_workspace), //
+          VP(next_widget_id)     //
       );
     }
 
@@ -255,7 +275,7 @@ struct App {
     textures->insert(
         std::make_pair(texture.get_name(), std::make_shared<Texture>(texture)));
   }
-  void renderDockspace() {
+  void render_dockspace() {
     // Create a window just below the menu to host the docking space
     float menu_height = ImGui::GetFrameHeight();
     ImVec2 size = ImGui::GetWindowSize();

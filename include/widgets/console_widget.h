@@ -17,14 +17,19 @@ private:
   };
   constexpr static size_t colors_len = sizeof(colors) / sizeof(colors[0]);
 
+  std::string title;
   bool sticky = true;
   bool colored = true;
 
 public:
-  template <class Archive> void serialize(Archive &ar) { ar(sticky); }
+  ConsoleWidget(int id) {
+    this->id = id;
+    title = fmt::format("Console##{}", id);
+  }
   void set_colored(bool col) { colored = col; }
   void render() override {
-    ImGui::Begin("Console");
+    ImGui::SetNextWindowSize({600, 400}, ImGuiCond_FirstUseEver);
+    ImGui::Begin(title.c_str());
 
     if (colored) {
       auto buf = Global::instance().get_ringbuffer_sink()->last_raw();
@@ -73,6 +78,15 @@ public:
 
     ImGui::End();
   }
+
+  template <class Archive>
+  static void load_and_construct(Archive &ar,
+                                 cereal::construct<ConsoleWidget> &construct) {
+    int id;
+    ar(id);
+    construct(id);
+  }
+  template <class Archive> void serialize(Archive &ar) { ar(id); }
 };
 
 // Type registration

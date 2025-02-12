@@ -2,6 +2,9 @@
 
 // A stateful widget
 class Widget {
+protected:
+  int id = -1;
+
 public:
   // Runs on the first frame when loaded
   virtual void onStartup() {};
@@ -11,5 +14,6 @@ public:
   virtual void onUpdate() {};
   // Runs every frame if visible
   virtual void render() {};
+
   template <class Archive> void serialize(Archive &ar) {}
 };

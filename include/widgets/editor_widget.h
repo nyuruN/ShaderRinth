@@ -15,14 +15,6 @@ private:
 
 public:
   EditorWidget(std::shared_ptr<Shader> shader) : shader(shader) {}
-  template <class Archive>
-  static void load_and_construct(Archive &ar,
-                                 cereal::construct<EditorWidget> &construct) {
-    std::shared_ptr<Shader> shader;
-    ar(shader);
-    construct(shader);
-  }
-  template <class Archive> void serialize(Archive &ar) { ar(VP(shader)); }
   std::string get_buffer_text() {
     auto buffer = zep_get_editor().GetBuffers()[0];
     return buffer->GetBufferText(buffer->Begin(), buffer->End());
@@ -33,7 +25,6 @@ public:
     zep.InitWithText(shader->get_path().filename().string(),
                      shader->get_source());
 
-    // zep.GetConfig().autoHideCommandRegion = false;
     zep.GetBuffers()[0]->SetFileFlags(Zep::FileFlags::SoftTabTwo, true);
     ZepStyleColorsCinder();
 
@@ -62,6 +53,15 @@ public:
   void render() override {
     zep_show(Zep::NVec2i(0, 0), shader->get_name().c_str());
   }
+
+  template <class Archive>
+  static void load_and_construct(Archive &ar,
+                                 cereal::construct<EditorWidget> &construct) {
+    std::shared_ptr<Shader> shader;
+    ar(shader);
+    construct(shader);
+  }
+  template <class Archive> void serialize(Archive &ar) { ar(VP(shader)); }
 };
 
 // Type registration

@@ -11,21 +11,11 @@
 class ViewportWidget : public Widget {
 private:
   std::shared_ptr<RenderGraph> viewgraph;
+  std::string title;
   ImVec2 wsize = ImVec2(640, 480);
 
 public:
   ViewportWidget(std::shared_ptr<RenderGraph> graph) { viewgraph = graph; }
-  template <class Archive>
-  static void load_and_construct(Archive &ar,
-                                 cereal::construct<ViewportWidget> &construct) {
-    std::shared_ptr<RenderGraph> viewgraph;
-    ar(viewgraph);
-    construct(viewgraph);
-  }
-  template <class Archive> void serialize(Archive &ar) { ar(VP(viewgraph)); }
-  void onStartup() override {};
-  void onShutdown() override {}
-  void onUpdate() override {};
   void render() override {
     ImGui::Begin("Viewport");
     ImGui::BeginChild("ViewportRender");
@@ -43,6 +33,15 @@ public:
     ImGui::EndChild();
     ImGui::End();
   }
+
+  template <class Archive>
+  static void load_and_construct(Archive &ar,
+                                 cereal::construct<ViewportWidget> &construct) {
+    std::shared_ptr<RenderGraph> viewgraph;
+    ar(viewgraph);
+    construct(viewgraph);
+  }
+  template <class Archive> void serialize(Archive &ar) { ar(VP(viewgraph)); }
 };
 
 // Type registration
