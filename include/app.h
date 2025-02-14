@@ -42,13 +42,12 @@ struct App {
 
   // Setup App Logic
   App() {
-    ImGui::LoadIniSettingsFromDisk(
-        (std::filesystem::path(APP_ROOT) / "assets/imgui.ini").c_str());
+    ImGui::LoadIniSettingsFromDisk((std::filesystem::path(APP_ROOT) / "assets/imgui.ini").c_str());
 
     auto shader = std::make_shared<Shader>("Default");
     auto geo = std::make_shared<ScreenQuadGeometry>();
-    auto texture = std::make_shared<Texture>(
-        "Cat", std::filesystem::path(APP_ROOT) / "assets/textures/cat.png");
+    auto texture = std::make_shared<Texture>("Cat", std::filesystem::path(APP_ROOT) /
+                                                        "assets/textures/cat.png");
 
     if (!*texture)
       spdlog::error("Failed to load texture assets/textures/cat.png");
@@ -65,7 +64,7 @@ struct App {
     workspaces = std::vector<Workspace>({
         Workspace("Shading",
                   {
-                      std::make_shared<EditorWidget>(shader),
+                      std::make_shared<EditorWidget>(next_widget_id++, shader),
                       std::make_shared<ViewportWidget>(next_widget_id++, graph),
                       std::make_shared<ConsoleWidget>(next_widget_id++),
                   }),
@@ -172,11 +171,9 @@ struct App {
       }
       if (ImGui::BeginMenu("View")) {
         if (ImGui::MenuItem("Console"))
-          deferred_add_widget.push_back(
-              std::make_shared<ConsoleWidget>(next_widget_id++));
+          deferred_add_widget.push_back(std::make_shared<ConsoleWidget>(next_widget_id++));
         if (ImGui::MenuItem("Viewport"))
-          deferred_add_widget.push_back(
-              std::make_shared<ViewportWidget>(next_widget_id++, graph));
+          deferred_add_widget.push_back(std::make_shared<ViewportWidget>(next_widget_id++, graph));
         if (!shaders->empty())
           if (ImGui::BeginMenu("Editor")) {
             for (auto &pair : *shaders) {
@@ -193,7 +190,7 @@ struct App {
                 continue;
 
               deferred_add_widget.push_back(
-                  std::make_shared<EditorWidget>(pair.second));
+                  std::make_shared<EditorWidget>(next_widget_id++, pair.second));
             }
             ImGui::EndMenu();
           }
@@ -251,8 +248,7 @@ struct App {
         VP(next_widget_id)     //
     );
 
-    ImGui::SaveIniSettingsToDisk(
-        (project_root.value() / "sr_imgui.ini").c_str());
+    ImGui::SaveIniSettingsToDisk((project_root.value() / "sr_imgui.ini").c_str());
 
     spdlog::info("Project saved in {}", project_root.value().string());
   }
@@ -261,8 +257,7 @@ struct App {
       // TODO: Prompt the user to save the project first
     }
 
-    auto dir_str =
-        pfd::select_folder("Select an existing project directory").result();
+    auto dir_str = pfd::select_folder("Select an existing project directory").result();
     if (dir_str.empty())
       return;
 
@@ -311,9 +306,9 @@ struct App {
     spdlog::info("Project loaded {}", project_root.value().string());
   }
   void import_texture() {
-    auto res = pfd::open_file("Select a texture file", "",
-                              {"Images", "*.png; *.jpg; *.jpg; *.tiff"})
-                   .result();
+    auto res =
+        pfd::open_file("Select a texture file", "", {"Images", "*.png; *.jpg; *.jpg; *.tiff"})
+            .result();
     if (res.empty() || res[0].empty())
       return;
     std::filesystem::path path(res[0]);
@@ -322,8 +317,7 @@ struct App {
     if (!texture)
       spdlog::error("Failed to load texture: {}", path.c_str());
 
-    textures->insert(
-        std::make_pair(texture.get_name(), std::make_shared<Texture>(texture)));
+    textures->insert(std::make_pair(texture.get_name(), std::make_shared<Texture>(texture)));
   }
   void render_dockspace() {
     // Create a window just below the menu to host the docking space
@@ -334,10 +328,10 @@ struct App {
     ImGui::SetNextWindowSize(size); // Size matches display
 
     // Create a window for the docking space (no title bar, resize, or move)
-    ImGuiWindowFlags dockspace_flags =
-        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
-        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+    ImGuiWindowFlags dockspace_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+                                       ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                                       ImGuiWindowFlags_NoBringToFrontOnFocus |
+                                       ImGuiWindowFlags_NoNavFocus;
 
     // Disable padding and scrolling in the dockspace window
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
@@ -346,8 +340,7 @@ struct App {
 
     // Create a dock space
     ImGuiID dockspace_id = ImGui::GetID("DockSpace");
-    ImGui::DockSpace(dockspace_id, ImVec2(0, 0),
-                     ImGuiDockNodeFlags_PassthruCentralNode);
+    ImGui::DockSpace(dockspace_id, ImVec2(0, 0), ImGuiDockNodeFlags_PassthruCentralNode);
 
     ImGui::End();
   }

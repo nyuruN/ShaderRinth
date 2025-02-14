@@ -15,13 +15,15 @@ class ZepBuffer;
 class EditorWidget : public Widget {
 private:
   std::shared_ptr<Shader> shader;
+
+  std::string title;
   Zep::ZepBuffer *buffer;
   Zep::ZepTabWindow *tab;
   bool is_dirty = false;
   uint64_t last_update = 0;
 
 public:
-  EditorWidget(std::shared_ptr<Shader> shader) : shader(shader) {}
+  EditorWidget(int id, std::shared_ptr<Shader> shader);
   std::string get_buffer_text();
   std::shared_ptr<Shader> get_shader() { return shader; }
   void render(bool *) override;
@@ -32,10 +34,11 @@ public:
   template <class Archive>
   static void load_and_construct(Archive &ar, cereal::construct<EditorWidget> &construct) {
     std::shared_ptr<Shader> shader;
-    ar(shader);
-    construct(shader);
+    int id;
+    ar(id, shader);
+    construct(id, shader);
   }
-  template <class Archive> void serialize(Archive &ar) { ar(VP(shader)); }
+  template <class Archive> void serialize(Archive &ar) { ar(VP(id), VP(shader)); }
 };
 
 // Type registration

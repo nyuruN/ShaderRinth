@@ -3,6 +3,10 @@
 #include "editor.h"
 #include "shader.h"
 
+EditorWidget::EditorWidget(int id, std::shared_ptr<Shader> shader) : shader(shader) {
+  this->id = id;
+  title = fmt::format("{}##{}", shader->get_name().c_str(), id);
+}
 std::string EditorWidget::get_buffer_text() {
   return buffer->GetBufferText(buffer->Begin(), buffer->End());
 }
@@ -45,9 +49,9 @@ void EditorWidget::onUpdate() {
       shader->recompile();
   }
 };
-void EditorWidget::render(bool *) {
+void EditorWidget::render(bool *p_open) {
   ImGui::SetNextWindowSize({600, 400}, ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin(shader->get_name().c_str(), nullptr, ImGuiWindowFlags_NoScrollbar)) {
+  if (!ImGui::Begin(title.c_str(), p_open, ImGuiWindowFlags_NoScrollbar)) {
     ImGui::End();
     return;
   }
