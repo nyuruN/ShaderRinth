@@ -17,6 +17,15 @@ should be relatively easy to use and offer various
 presets so that the user can iterate on their ideas
 faster.
 
+## Known Issues
+
+* Adding a second viewport will only output the latter
+and may appear to be stretched
+
+* Many Zep Vim keybinds are not mapped nor integrated
+into ShaderRinth and may cause a crash in the worst case
+  * :q will crash the program
+
 ## Goal posts
 
 The program is currently *viable* for testing

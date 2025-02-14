@@ -28,6 +28,7 @@ add_executable(
   src/shader.cpp
 
   src/widgets/node_editor_widget.cpp
+  src/widgets/editor_widget.cpp
   
   extern/imnodes/imnodes.cpp
 )

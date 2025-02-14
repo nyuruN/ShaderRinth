@@ -1,62 +1,36 @@
 #pragma once
 
-#include "editor.h"
-#include "shader.h"
-#include "theme.h"
 #include "widget.h"
 
+#include "utils.h"
 #include <cereal/types/polymorphic.hpp>
+
+// Forward declares
+struct Shader;
+namespace Zep {
+class ZepTabWindow;
+class ZepBuffer;
+} // namespace Zep
 
 class EditorWidget : public Widget {
 private:
   std::shared_ptr<Shader> shader;
+  Zep::ZepBuffer *buffer;
+  Zep::ZepTabWindow *tab;
   bool is_dirty = false;
   uint64_t last_update = 0;
 
 public:
   EditorWidget(std::shared_ptr<Shader> shader) : shader(shader) {}
-  std::string get_buffer_text() {
-    auto buffer = zep_get_editor().GetBuffers()[0];
-    return buffer->GetBufferText(buffer->Begin(), buffer->End());
-  }
-  void onStartup() override {
-    zep_init(Zep::NVec2f(1.0f, 1.0f));
-    Zep::ZepEditor &zep = zep_get_editor();
-    zep.InitWithText(shader->get_path().filename().string(),
-                     shader->get_source());
-
-    zep.GetBuffers()[0]->SetFileFlags(Zep::FileFlags::SoftTabTwo, true);
-    ZepStyleColorsCinder();
-
-    last_update = zep.GetBuffers()[0]->GetUpdateCount();
-  };
-  void onShutdown() override { zep_destroy(); }
-  void onUpdate() override {
-    uint64_t new_update = zep_get_editor().GetBuffers()[0]->GetUpdateCount();
-    if (new_update != last_update)
-      this->is_dirty = true;
-    last_update = new_update;
-
-    if (is_dirty) {
-      std::string text = get_buffer_text();
-      shader->recompile_with_source(text);
-      is_dirty = false;
-    }
-
-    if (isKeyJustPressed(ImGuiKey_F5)) {
-      if (!shader->is_compiled())
-        spdlog::error(shader->get_log());
-      else
-        shader->recompile();
-    }
-  };
-  void render(bool *) override {
-    zep_show(Zep::NVec2i(0, 0), shader->get_name().c_str());
-  }
+  std::string get_buffer_text();
+  std::shared_ptr<Shader> get_shader() { return shader; }
+  void render(bool *) override;
+  void onUpdate() override;
+  void onStartup() override;
+  void onShutdown() override;
 
   template <class Archive>
-  static void load_and_construct(Archive &ar,
-                                 cereal::construct<EditorWidget> &construct) {
+  static void load_and_construct(Archive &ar, cereal::construct<EditorWidget> &construct) {
     std::shared_ptr<Shader> shader;
     ar(shader);
     construct(shader);

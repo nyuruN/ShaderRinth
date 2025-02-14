@@ -1,5 +1,7 @@
 #include "app.h"
 #include "config_app.h"
+#include "editor.h"
+#include "theme.h"
 #include <GL/gl.h>
 #include <GLES3/gl3.h>
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
@@ -18,7 +20,7 @@ static void glfw_error_callback(int error, const char *description) {
 // Main code
 int main(int, char **) {
   GLFWwindow *window;
-  { // Setup GLFW, ImGui etc.
+  { // Setup GLFW, ImGui Zep etc.
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
       return 1;
@@ -44,13 +46,12 @@ int main(int, char **) {
     ImGui::StyleColorsCinder();
     ImGuiIO &io = ImGui::GetIO();
     // Enable standard controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard |
-                      ImGuiConfigFlags_DockingEnable; // Enable docking
+    io.ConfigFlags |=
+        ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_DockingEnable; // Enable docking
 
     ImNodes::CreateContext();
 
-    auto fontPath = std::filesystem::path(APP_ROOT) / "assets" / "fonts" /
-                    "Cousine-Regular.ttf";
+    auto fontPath = std::filesystem::path(APP_ROOT) / "assets" / "fonts" / "Cousine-Regular.ttf";
     io.Fonts->AddFontFromFileTTF(fontPath.string().c_str(), 15);
 
     // Setup Platform/Renderer backends
@@ -79,6 +80,15 @@ int main(int, char **) {
 
     if (first_frame) {
       first_frame = false;
+
+      zep_init(Zep::NVec2f(1.0f, 1.0f));
+      ZepStyleColorsCinder();
+      auto &config = zep_get_editor().GetConfig();
+      config.showTabBar = false;
+      config.autoHideAirlineRegion = false;
+      config.autoHideCommandRegion = true;
+      config.searchGitRoot = false;
+
       app.startup();
     }
 
@@ -102,6 +112,7 @@ int main(int, char **) {
   Global::instance().shutdown();
 
   ImNodes::DestroyContext();
+  zep_destroy();
 
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplGlfw_Shutdown();

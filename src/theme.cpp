@@ -98,12 +98,11 @@ void ZepStyleColorsCinder() {
   //zep.SetColor(ThemeColor::Light, NVec4f(1.0f));
   zep.SetColor(ThemeColor::LineNumberActive, NVec4f(.4039*1.2, .4314*1.2, .4706*1.2, 1));
   zep.SetColor(ThemeColor::LineNumber, NVec4f(.4039, .4314, .4706, 1));
-  // zep.SetColor(ThemeColor::Mode, NVec4f(.2f, 0.4f, 0.7f, 1.0f));
+  zep.SetColor(ThemeColor::Mode, NVec4f(0.92f, 0.18f, 0.29f, 1.00f));
   zep.SetColor(ThemeColor::Number, NVec4f(.8196, .6039, .40, 1));
   zep.SetColor(ThemeColor::String, NVec4f(.5961, .7647, .4745, 1));
-  //zep.SetColor(ThemeColor::TabActive, NVec4f(.65f, .65f, .65f, 1.0f));
-  // zep.SetColor(ThemeColor::TabInactive, NVec4f(.4f, .4f, .4f, .55f));
-  zep.SetColor(ThemeColor::TabInactive, zep.GetColor(ThemeColor::Background) + NVec4f(.02f, .02f, .02f, 0.0f));
+  zep.SetColor(ThemeColor::TabActive, zep.GetColor(ThemeColor::Background) * 1.55);
+  zep.SetColor(ThemeColor::TabInactive, zep.GetColor(ThemeColor::Background) * 1.35);
   //zep.SetColor(ThemeColor::TabBorder, NVec4f(.55f, .55f, .55f, 1.0f));
   //zep.SetColor(ThemeColor::TextDim, NVec4f(.45f, .45f, .45f, 1.0f));
   zep.SetColor(ThemeColor::Text, NVec4f(0.87f, 0.94f, 0.9f, 1.0f));

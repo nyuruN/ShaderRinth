@@ -45,7 +45,7 @@ struct App {
     ImGui::LoadIniSettingsFromDisk(
         (std::filesystem::path(APP_ROOT) / "assets/imgui.ini").c_str());
 
-    auto shader = std::make_shared<Shader>(Shader("Default"));
+    auto shader = std::make_shared<Shader>("Default");
     auto geo = std::make_shared<ScreenQuadGeometry>();
     auto texture = std::make_shared<Texture>(
         "Cat", std::filesystem::path(APP_ROOT) / "assets/textures/cat.png");
@@ -53,9 +53,10 @@ struct App {
     if (!*texture)
       spdlog::error("Failed to load texture assets/textures/cat.png");
 
-    shaders->insert(std::make_pair(shader->get_name(), shader));
-    geometries->insert(std::make_pair(geo->get_name(), geo));
-    textures->insert(std::make_pair(texture->get_name(), texture));
+    shaders->insert({shader->get_name(), shader});
+    shaders->insert({"OtherDefault", std::make_shared<Shader>("OtherDefault")});
+    geometries->insert({geo->get_name(), geo});
+    textures->insert({texture->get_name(), texture});
     graph = std::make_shared<RenderGraph>(shaders, textures, geo);
     graph->default_layout(shader);
     export_image.set_graph(graph);
@@ -176,6 +177,26 @@ struct App {
         if (ImGui::MenuItem("Viewport"))
           deferred_add_widget.push_back(
               std::make_shared<ViewportWidget>(next_widget_id++, graph));
+        if (!shaders->empty())
+          if (ImGui::BeginMenu("Editor")) {
+            for (auto &pair : *shaders) {
+              if (!ImGui::MenuItem(pair.second->get_name().c_str()))
+                continue;
+
+              bool has_editor = false;
+              for (auto widget : workspaces[current_workspace].second) {
+                auto editor = dynamic_cast<EditorWidget *>(widget.get());
+                if (editor && editor->get_shader() == pair.second)
+                  has_editor = true;
+              }
+              if (has_editor)
+                continue;
+
+              deferred_add_widget.push_back(
+                  std::make_shared<EditorWidget>(pair.second));
+            }
+            ImGui::EndMenu();
+          }
 
         ImGui::EndMenu();
       }

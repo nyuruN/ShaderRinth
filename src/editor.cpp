@@ -5,14 +5,11 @@
 #define ZEP_SINGLE_HEADER_BUILD
 #endif
 
-// #define ZEP_CONSOLE
 #include "editor.h"
 #include "config_app.h"
 #include <filesystem>
 #include <functional>
-#ifdef ZEP_CONSOLE
-#include <zep\imgui\console_imgui.h>
-#endif
+
 namespace fs = std::filesystem;
 
 using namespace Zep;
@@ -58,21 +55,13 @@ struct ZepWrapper : public Zep::IZepComponent {
   std::function<void(std::shared_ptr<Zep::ZepMessage>)> Callback;
 };
 
-#ifdef ZEP_CONSOLE
-std::shared_ptr<ImGui::ZepConsole> spZep;
-#else
 std::shared_ptr<ZepWrapper> spZep;
-#endif
 
 void zep_init(const Zep::NVec2f &pixelScale) {
-#ifdef ZEP_CONSOLE
-  spZep = std::make_shared<ImGui::ZepConsole>(Zep::ZepPath(APP_ROOT));
-#else
   // Initialize the editor and watch for changes
   spZep = std::make_shared<ZepWrapper>(
       APP_ROOT, Zep::NVec2f(pixelScale.x, pixelScale.y),
       [](std::shared_ptr<ZepMessage> spMessage) -> void {});
-#endif
 
   // This is an example of adding different fonts for text styles.
   // If you ":e test.md" in the editor and type "# Heading 1" you will
@@ -107,24 +96,7 @@ void zep_destroy() { spZep.reset(); }
 
 ZepEditor &zep_get_editor() { return spZep->GetEditor(); }
 
-void zep_load(const fs::path &file) {
-#ifndef ZEP_CONSOLE
-  auto pBuffer = zep_get_editor().InitWithFileOrDir(file.string());
-#endif
-}
-
-void zep_show(const Zep::NVec2i &displaySize, const char *title) {
-#ifdef ZEP_CONSOLE
-  spZep->Draw("Console", &show, ImVec4(0, 0, 500, 400), true);
-  spZep->AddLog("Hello!");
-#else
-  ImGui::SetNextWindowSize(ImVec2(displaySize.x, displaySize.y),
-                           ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoScrollbar)) {
-    ImGui::End();
-    return;
-  }
-
+void zep_show() {
   auto min = ImGui::GetCursorScreenPos();
   auto max = ImGui::GetContentRegionAvail();
   if (max.x <= 0)
@@ -144,13 +116,4 @@ void zep_show(const Zep::NVec2i &displaySize, const char *title) {
   if (zep_focused) {
     spZep->zepEditor.HandleInput();
   }
-
-  // TODO: A Better solution for this; I think the audio graph is creating a new
-  // window and stealing focus
-  static int focus_count = 0;
-  if (focus_count++ < 2) {
-    ImGui::SetWindowFocus();
-  }
-  ImGui::End();
-#endif
 }
