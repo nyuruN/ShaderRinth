@@ -17,9 +17,7 @@ class FragmentShaderNode : public Node {
     DataType type;
     std::string identifier;
 
-    template <class Archive> void serialize(Archive &ar) {
-      ar(pinid, type, identifier);
-    }
+    template <class Archive> void serialize(Archive &ar) { ar(pinid, type, identifier); }
   };
 
   int output_pin;
@@ -59,12 +57,10 @@ public:
     ImGui::SameLine();
     ImGui::SetNextItemWidth(node_width - ImGui::CalcTextSize("Source").x);
 
-    if (ImGui::BeginCombo("##hidelabel",
-                          bool(shader) ? shader->get_name().c_str() : "")) {
+    if (ImGui::BeginCombo("##hidelabel", bool(shader) ? shader->get_name().c_str() : "")) {
       for (auto const &pair : *graph.shaders) {
-        bool is_selected =
-            (shader) && (shader->get_name() == pair.second->get_name());
-        if (ImGui::Selectable(pair.first.c_str(), is_selected))
+        bool is_selected = (shader) && (shader->get_name() == pair.second->get_name());
+        if (ImGui::Selectable(pair.second->get_name().c_str(), is_selected))
           set_shader(pair.second);
         // Set the initial focus when opening the combo (scrolling + keyboard
         // navigation focus)
@@ -85,8 +81,7 @@ public:
       ImGui::SeparatorText("Uniforms");
       for (auto &type : Data::ALL) {
         if (ImGui::MenuItem(Data::type_name(type))) {
-          add_uniform_pin(graph, type,
-                          fmt::format("u_{}", Data::type_name(type)));
+          add_uniform_pin(graph, type, fmt::format("u_{}", Data::type_name(type)));
         }
       }
       ImGui::EndPopup();
@@ -101,9 +96,8 @@ public:
         ImGui::Text(Data::type_name(pin.type));
         ImGui::SameLine();
 
-        ImGui::SetNextItemWidth(
-            node_width - 20 - ImGui::CalcTextSize(" - ").x -
-            ImGui::CalcTextSize(Data::type_name(pin.type)).x);
+        ImGui::SetNextItemWidth(node_width - 20 - ImGui::CalcTextSize(" - ").x -
+                                ImGui::CalcTextSize(Data::type_name(pin.type)).x);
         ImGui::InputText("##hidelabel", &pin.identifier);
 
         ImGui::SameLine();
@@ -140,9 +134,8 @@ public:
     glGenTextures(1, &image_colorbuffer);
 
     glBindTexture(GL_TEXTURE_2D, image_colorbuffer);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, graph.viewport_resolution.x,
-                 graph.viewport_resolution.y, 0, GL_RGB, GL_UNSIGNED_BYTE,
-                 NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, graph.viewport_resolution.x, graph.viewport_resolution.y,
+                 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -180,9 +173,8 @@ public:
     }
 
     glBindTexture(GL_TEXTURE_2D, image_colorbuffer);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, graph.viewport_resolution.x,
-                 graph.viewport_resolution.y, 0, GL_RGB, GL_UNSIGNED_BYTE,
-                 NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, graph.viewport_resolution.x, graph.viewport_resolution.y,
+                 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     for (auto &pin : uniform_pins) {
@@ -192,8 +184,8 @@ public:
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, image_fbo);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                           image_colorbuffer, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, image_colorbuffer,
+                           0);
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
       graph.stop();
       spdlog::error("Framebuffer is not complete!");

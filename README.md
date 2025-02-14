@@ -47,17 +47,19 @@ purposes.
 
 * Making renders to picture (e.g. Render Widget) [done -> file option]
 
-* Copy and paste in NodeEditorWidget [wip]
+* Copy and paste in NodeEditorWidget [done]
 
-* In-app file browser/file outliner (enhanced asset management)
+* Enhanced asset management
 
 ### VERSION 0.1.0 (Miniminal Viable Product)
+
+* Serialize project data in toml file
 
 * Enhanced error highlighting
 
 * Help page?
 
-* Properties widget: Selection system? control parameters
+* Inspector widget: Selection system? control parameters
 
 * Outliner widget: show execution flow if multiple graphs are present
 

@@ -1,5 +1,7 @@
 #include "utils.h"
 
+#include <map>
+
 //! Global
 
 void Global::init() {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "assets.h"
 #include "data.h"
 #include "utils.h"
 #include <GLES3/gl3.h>
@@ -27,9 +28,7 @@ struct Pin {
   int node_id = -1;
   Data data;
 
-  template <class Archive> void serialize(Archive &ar) {
-    ar(VP(id), VP(node_id), VP(data));
-  }
+  template <class Archive> void serialize(Archive &ar) { ar(VP(id), VP(node_id), VP(data)); }
 };
 
 // Represents a connection between nodes
@@ -37,9 +36,7 @@ struct Edge {
   int id = -1;
   int from = -1, to = -1;
 
-  template <class Archive> void serialize(Archive &ar) {
-    ar(VP(id), VP(from), VP(to));
-  }
+  template <class Archive> void serialize(Archive &ar) { ar(VP(id), VP(from), VP(to)); }
 };
 
 // RenderGraph
@@ -65,13 +62,10 @@ public:
   std::shared_ptr<Geometry> graph_geometry = nullptr;
   ImVec2 viewport_resolution = ImVec2(640, 480);
 
-  RenderGraph(std::shared_ptr<Assets<Shader>> shaders =
-                  std::make_shared<Assets<Shader>>(),
-              std::shared_ptr<Assets<Texture>> textures =
-                  std::make_shared<Assets<Texture>>(),
+  RenderGraph(std::shared_ptr<AssetManager> assets = std::make_shared<AssetManager>(),
               std::shared_ptr<Geometry> geo = NULL) {
-    this->shaders = shaders;
-    this->textures = textures;
+    this->shaders = assets->shaders;
+    this->textures = assets->textures;
     this->graph_geometry = geo;
   };
   template <class Archive> void load(Archive &ar) {

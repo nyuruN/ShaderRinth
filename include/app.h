@@ -24,16 +24,13 @@
 using Workspace = std::pair<std::string, std::vector<std::shared_ptr<Widget>>>;
 
 struct App {
-  // clang-format off
-  std::shared_ptr<Assets<Texture>>      textures = std::make_shared<Assets<Texture>>();
-  std::shared_ptr<Assets<Shader>>       shaders = std::make_shared<Assets<Shader>>();
-  std::shared_ptr<Assets<Geometry>>     geometries = std::make_shared<Assets<Geometry>>();
-  std::shared_ptr<RenderGraph>          graph;
-  std::vector<Workspace>                workspaces;
-  int                                   current_workspace = 0;
-  int                                   next_widget_id = 0;
-  // clang-format on
+  std::shared_ptr<AssetManager> assets = std::make_shared<AssetManager>();
+  AssetId<RenderGraph> graph_id;
+  std::vector<Workspace> workspaces;
+  int current_workspace = 0;
+  int next_widget_id = 0;
 
+  std::shared_ptr<RenderGraph> graph;
   std::optional<std::filesystem::path> project_root;
   ExportImagePopup export_image = ExportImagePopup();
   std::vector<std::shared_ptr<Widget>> deferred_add_widget;
@@ -52,12 +49,15 @@ struct App {
     if (!*texture)
       spdlog::error("Failed to load texture assets/textures/cat.png");
 
-    shaders->insert({shader->get_name(), shader});
-    shaders->insert({"OtherDefault", std::make_shared<Shader>("OtherDefault")});
-    geometries->insert({geo->get_name(), geo});
-    textures->insert({texture->get_name(), texture});
-    graph = std::make_shared<RenderGraph>(shaders, textures, geo);
+    assets->insert_shader(shader);
+    assets->insert_shader(std::make_shared<Shader>("OtherDefault"));
+    assets->insert_geometry(geo);
+    assets->insert_texture(texture);
+
+    graph_id = assets->insert_graph(std::make_shared<RenderGraph>(assets, geo));
+    graph = assets->get_graph(graph_id);
     graph->default_layout(shader);
+
     export_image.set_graph(graph);
 
     // clang-format off
@@ -98,18 +98,10 @@ struct App {
       for (auto &widget : pair.second)
         widget->onShutdown();
     }
-    for (auto &pair : *textures) {
-      pair.second->destroy();
-    }
-    for (auto &pair : *shaders) {
-      pair.second->destroy();
-    }
+    assets->destroy();
     export_image.onShutdown();
     workspaces.clear();
     graph.reset();
-    geometries.reset();
-    shaders.reset();
-    textures.reset();
   }
   void update() {
     updateKeyStates();
@@ -174,9 +166,9 @@ struct App {
           deferred_add_widget.push_back(std::make_shared<ConsoleWidget>(next_widget_id++));
         if (ImGui::MenuItem("Viewport"))
           deferred_add_widget.push_back(std::make_shared<ViewportWidget>(next_widget_id++, graph));
-        if (!shaders->empty())
+        if (!assets->shaders->empty())
           if (ImGui::BeginMenu("Editor")) {
-            for (auto &pair : *shaders) {
+            for (auto &pair : *assets->shaders) {
               if (!ImGui::MenuItem(pair.second->get_name().c_str()))
                 continue;
 
@@ -239,10 +231,8 @@ struct App {
     cereal::JSONOutputArchive archive(ofs);
 
     archive(                   //
-        VP(shaders),           //
-        VP(geometries),        //
-        VP(textures),          //
-        VP(graph),             //
+        VP(assets),            //
+        VP(graph_id),          //
         VP(workspaces),        //
         VP(current_workspace), //
         VP(next_widget_id)     //
@@ -275,10 +265,8 @@ struct App {
     {
       cereal::JSONInputArchive archive(file);
       archive(                   //
-          VP(shaders),           //
-          VP(geometries),        //
-          VP(textures),          //
-          VP(graph),             //
+          VP(assets),            //
+          VP(graph_id),          //
           VP(workspaces),        //
           VP(current_workspace), //
           VP(next_widget_id)     //
@@ -317,7 +305,7 @@ struct App {
     if (!texture)
       spdlog::error("Failed to load texture: {}", path.c_str());
 
-    textures->insert(std::make_pair(texture.get_name(), std::make_shared<Texture>(texture)));
+    assets->insert_texture(std::make_shared<Texture>(texture));
   }
   void render_dockspace() {
     // Create a window just below the menu to host the docking space

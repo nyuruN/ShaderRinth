@@ -3,18 +3,14 @@
 #include <filesystem>
 #include <functional>
 #include <imgui.h>
-#include <map>
 #include <memory>
 #include <spdlog/sinks/ringbuffer_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
-#include <string>
 #include <vector>
 
 #define VP(T) ::cereal::make_nvp(#T, T)
 #define NVP(S, T) ::cereal::make_nvp(S, T)
-
-template <typename T> using Assets = std::map<std::string, std::shared_ptr<T>>;
 
 // TODO: Undo: Create a smart pointer that...
 // Is used by both ImNodes and Self: Swap<T>.data()
@@ -47,13 +43,9 @@ public:
     return ringbuffer_sink;
   }
   // Gets the current global undo context
-  static inline UndoContext *getUndoContext() {
-    return Global::instance().undo_context;
-  }
+  static inline UndoContext *getUndoContext() { return Global::instance().undo_context; }
   // Sets the current global undo context
-  static inline void setUndoContext(UndoContext *ptr) {
-    Global::instance().undo_context = ptr;
-  }
+  static inline void setUndoContext(UndoContext *ptr) { Global::instance().undo_context = ptr; }
 
 private:
   Global() = default;
@@ -73,8 +65,7 @@ private:
 
 public:
   Action(
-      std::function<void()> do_func = [] {},
-      std::function<void()> undo_func = [] {})
+      std::function<void()> do_func = [] {}, std::function<void()> undo_func = [] {})
       : do_func(do_func), undo_func(undo_func) {}
   void Do() { do_func(); };
   void Undo() { undo_func(); };

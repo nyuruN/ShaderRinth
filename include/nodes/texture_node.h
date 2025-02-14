@@ -17,18 +17,14 @@ private:
   float node_width = 120.0f;
 
 public:
-  void set_texture(std::shared_ptr<Texture> texture) {
-    this->texture = texture;
-  }
+  void set_texture(std::shared_ptr<Texture> texture) { this->texture = texture; }
   int get_output_pin() { return output_pin; }
   void render_combobox(RenderGraph &graph) {
     ImGui::SetNextItemWidth(node_width);
-    if (ImGui::BeginCombo("##hidelabel",
-                          bool(texture) ? texture->get_name().c_str() : "")) {
+    if (ImGui::BeginCombo("##hidelabel", bool(texture) ? texture->get_name().c_str() : "")) {
       for (auto const &pair : *graph.textures) {
-        bool is_selected =
-            (texture) && (texture->get_name() == pair.second->get_name());
-        if (ImGui::Selectable(pair.first.c_str(), is_selected))
+        bool is_selected = (texture) && (texture->get_name() == pair.second->get_name());
+        if (ImGui::Selectable(pair.second->get_name().c_str(), is_selected))
           set_texture(pair.second);
         // Set the initial focus when opening the combo (scrolling + keyboard
         // navigation focus)
@@ -64,9 +60,7 @@ public:
   void run(RenderGraph &graph) override {
     graph.set_pin_data(output_pin, (Data::Texture2D)texture->get_texture());
   }
-  std::shared_ptr<Node> clone() const override {
-    return std::make_shared<Texture2DNode>(*this);
-  }
+  std::shared_ptr<Node> clone() const override { return std::make_shared<Texture2DNode>(*this); }
   std::vector<int> layout() const override { return {output_pin}; }
   template <class Archive> void serialize(Archive &ar) {
     ar(cereal::base_class<Node>(this));
