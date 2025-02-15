@@ -1,0 +1,88 @@
+[Assets]
+next_geometry_id = 0
+next_graph_id = 0
+next_shader_id = 0
+next_texture_id = 0
+
+    [[Assets.Geometries]]
+    asset_id = 0
+    name = 'FullscreenQuad'
+    type = 'ScreenQuadGeometry'
+
+    [[Assets.Graphs]]
+    asset_id = 0
+    edges = [
+        { edge_id = 0, from_node = 3, to_node = 0 },
+        { edge_id = 1, from_node = 1, to_node = 5 },
+        { edge_id = 3, from_node = 6, to_node = 7 },
+        { edge_id = 4, from_node = 9, to_node = 4 }
+    ]
+    geometry_id = 0
+    name = 'Default Graph'
+    next_edge_id = 5
+    next_node_id = 6
+    next_pin_id = 10
+    nodes = [
+        { input_pin = 0, node_id = 0, out_texture = 5, position = { x = 542.0, y = 42.0 }, type = 'OutputNode' },
+        { node_id = 1, output_pin = 1, position = { x = 20.0, y = 160.0 }, type = 'TimeNode' },
+        { node_id = 3, output_pin = 3, position = { x = 228.0, y = 102.0 }, shader_id = 0, type = 'FragmentShaderNode', uniform_pins = [
+            { identifier = 'u_resolution', pin_id = 4, type = 5 },
+            { identifier = 'u_time', pin_id = 5, type = 4 },
+            { identifier = 'u_cat', pin_id = 7, type = 8 }
+        ] },
+        { node_id = 4, output_pin = 6, position = { x = 17.0, y = 265.0 }, texture_id = 0, type = 'Texture2DNode' },
+        { node_id = 5, output_pin = 9, position = { x = 20.0, y = 40.0 }, type = 'ViewportNode' }
+    ]
+    pins = [
+        { node_id = 0, pin_id = 0, type = 8 },
+        { node_id = 1, pin_id = 1, type = 4 },
+        { node_id = 2, pin_id = 2, type = 5 },
+        { node_id = 3, pin_id = 3, type = 8 },
+        { node_id = 3, pin_id = 4, type = 5 },
+        { node_id = 3, pin_id = 5, type = 4 },
+        { node_id = 4, pin_id = 6, type = 8 },
+        { node_id = 3, pin_id = 7, type = 8 },
+        { node_id = 3, pin_id = 8, type = 8 },
+        { node_id = 5, pin_id = 9, type = 5 }
+    ]
+    root_node = 0
+
+    [[Assets.Shaders]]
+    asset_id = 0
+    name = 'Default'
+    path = 'shaders/Default.glsl'
+
+    [[Assets.Textures]]
+    asset_id = 0
+    name = 'Cat'
+    path = '/home/zhangwei/Projects/ShaderRinth/assets/textures/cat.png'
+
+[Settings]
+current_workspace = 0
+graph_id = 0
+next_widget_id = 4
+
+[[Workspaces]]
+name = 'Shading'
+
+    [[Workspaces.Widgets]]
+    shader_id = 0
+    type = 'EditorWidget'
+    widget_id = 0
+
+    [[Workspaces.Widgets]]
+    graph_id = 0
+    type = 'ViewportWidget'
+    widget_id = 1
+
+    [[Workspaces.Widgets]]
+    type = 'ConsoleWidget'
+    widget_id = 2
+
+[[Workspaces]]
+name = 'RenderGraph'
+
+    [[Workspaces.Widgets]]
+    graph_id = 0
+    type = 'NodeEditorWidget'
+    widget_id = 3

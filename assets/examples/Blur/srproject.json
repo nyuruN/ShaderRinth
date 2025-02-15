@@ -1,0 +1,1275 @@
+{
+    "shaders": {
+        "ptr_wrapper": {
+            "id": 2147483649,
+            "data": [
+                {
+                    "key": "Default",
+                    "value": {
+                        "ptr_wrapper": {
+                            "id": 2147483650,
+                            "data": {
+                                "name": "Default",
+                                "path": "shaders/Default.glsl"
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "geometries": {
+        "ptr_wrapper": {
+            "id": 2147483651,
+            "data": [
+                {
+                    "key": "FullscreenQuad",
+                    "value": {
+                        "polymorphic_id": 2147483649,
+                        "polymorphic_name": "ScreenQuadGeometry",
+                        "ptr_wrapper": {
+                            "id": 2147483652,
+                            "data": {
+                                "value0": {
+                                    "value0": "FullscreenQuad"
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "textures": {
+        "ptr_wrapper": {
+            "id": 2147483653,
+            "data": [
+                {
+                    "key": "Cat",
+                    "value": {
+                        "ptr_wrapper": {
+                            "id": 2147483654,
+                            "data": {
+                                "value0": "Cat",
+                                "value1": "/home/zhangwei/Projects/ShaderRinth/assets/textures/cat.png"
+                            }
+                        }
+                    }
+                },
+                {
+                    "key": "Crisps-2787737411.jpg",
+                    "value": {
+                        "ptr_wrapper": {
+                            "id": 2147483655,
+                            "data": {
+                                "value0": "Crisps-2787737411.jpg",
+                                "value1": "/home/zhangwei/Downloads/Crisps-2787737411.jpg"
+                            }
+                        }
+                    }
+                },
+                {
+                    "key": "tux.png",
+                    "value": {
+                        "ptr_wrapper": {
+                            "id": 2147483656,
+                            "data": {
+                                "value0": "tux.png",
+                                "value1": "/home/zhangwei/Projects/ShaderRinth/assets/textures/tux.png"
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "graph": {
+        "ptr_wrapper": {
+            "id": 2147483657,
+            "data": {
+                "nodes": [
+                    {
+                        "key": 0,
+                        "value": {
+                            "polymorphic_id": 2147483650,
+                            "polymorphic_name": "OutputNode",
+                            "ptr_wrapper": {
+                                "id": 2147483658,
+                                "data": {
+                                    "value0": {
+                                        "value0": 0,
+                                        "value1": {
+                                            "value0": 1543.0,
+                                            "value1": 256.0
+                                        }
+                                    },
+                                    "value1": 0,
+                                    "value2": 12
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "key": 2,
+                        "value": {
+                            "polymorphic_id": 2147483651,
+                            "polymorphic_name": "ViewportNode",
+                            "ptr_wrapper": {
+                                "id": 2147483659,
+                                "data": {
+                                    "value0": {
+                                        "value0": 2,
+                                        "value1": {
+                                            "value0": 17.0,
+                                            "value1": 35.0
+                                        }
+                                    },
+                                    "value1": 2
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "key": 3,
+                        "value": {
+                            "polymorphic_id": 2147483652,
+                            "polymorphic_name": "FragmentShaderNode",
+                            "ptr_wrapper": {
+                                "id": 2147483660,
+                                "data": {
+                                    "value0": {
+                                        "value0": 3,
+                                        "value1": {
+                                            "value0": 235.0,
+                                            "value1": 86.0
+                                        }
+                                    },
+                                    "value1": 3,
+                                    "value2": [
+                                        {
+                                            "value0": 4,
+                                            "value1": 5,
+                                            "value2": "u_resolution"
+                                        },
+                                        {
+                                            "value0": 7,
+                                            "value1": 4,
+                                            "value2": "u_mode"
+                                        },
+                                        {
+                                            "value0": 8,
+                                            "value1": 8,
+                                            "value2": "u_cat"
+                                        },
+                                        {
+                                            "value0": 29,
+                                            "value1": 4,
+                                            "value2": "rangeMult"
+                                        }
+                                    ],
+                                    "value3": {
+                                        "ptr_wrapper": {
+                                            "id": 2
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "key": 5,
+                        "value": {
+                            "polymorphic_id": 2147483653,
+                            "polymorphic_name": "Texture2DNode",
+                            "ptr_wrapper": {
+                                "id": 2147483661,
+                                "data": {
+                                    "value0": {
+                                        "value0": 5,
+                                        "value1": {
+                                            "value0": 40.0,
+                                            "value1": 248.0
+                                        }
+                                    },
+                                    "value1": 9,
+                                    "value2": {
+                                        "ptr_wrapper": {
+                                            "id": 7
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "key": 6,
+                        "value": {
+                            "polymorphic_id": 4,
+                            "ptr_wrapper": {
+                                "id": 2147483662,
+                                "data": {
+                                    "value0": {
+                                        "value0": 6,
+                                        "value1": {
+                                            "value0": 683.0,
+                                            "value1": 182.0
+                                        }
+                                    },
+                                    "value1": 10,
+                                    "value2": [
+                                        {
+                                            "value0": 11,
+                                            "value1": 5,
+                                            "value2": "u_resolution"
+                                        },
+                                        {
+                                            "value0": 12,
+                                            "value1": 4,
+                                            "value2": "u_mode"
+                                        },
+                                        {
+                                            "value0": 13,
+                                            "value1": 8,
+                                            "value2": "u_cat"
+                                        },
+                                        {
+                                            "value0": 30,
+                                            "value1": 4,
+                                            "value2": "rangeMult"
+                                        }
+                                    ],
+                                    "value3": {
+                                        "ptr_wrapper": {
+                                            "id": 2
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "key": 7,
+                        "value": {
+                            "polymorphic_id": 2147483654,
+                            "polymorphic_name": "FloatNode",
+                            "ptr_wrapper": {
+                                "id": 2147483663,
+                                "data": {
+                                    "value0": {
+                                        "value0": 7,
+                                        "value1": {
+                                            "value0": 444.0,
+                                            "value1": 3.0
+                                        }
+                                    },
+                                    "value1": 14,
+                                    "value2": 1.0
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "key": 8,
+                        "value": {
+                            "polymorphic_id": 4,
+                            "ptr_wrapper": {
+                                "id": 2147483664,
+                                "data": {
+                                    "value0": {
+                                        "value0": 8,
+                                        "value1": {
+                                            "value0": 331.0,
+                                            "value1": 327.0
+                                        }
+                                    },
+                                    "value1": 15,
+                                    "value2": [
+                                        {
+                                            "value0": 16,
+                                            "value1": 5,
+                                            "value2": "u_resolution"
+                                        },
+                                        {
+                                            "value0": 17,
+                                            "value1": 4,
+                                            "value2": "u_mode"
+                                        },
+                                        {
+                                            "value0": 18,
+                                            "value1": 8,
+                                            "value2": "u_cat"
+                                        },
+                                        {
+                                            "value0": 23,
+                                            "value1": 4,
+                                            "value2": "rangeMult"
+                                        }
+                                    ],
+                                    "value3": {
+                                        "ptr_wrapper": {
+                                            "id": 2
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "key": 9,
+                        "value": {
+                            "polymorphic_id": 4,
+                            "ptr_wrapper": {
+                                "id": 2147483665,
+                                "data": {
+                                    "value0": {
+                                        "value0": 9,
+                                        "value1": {
+                                            "value0": 674.0,
+                                            "value1": 380.0
+                                        }
+                                    },
+                                    "value1": 19,
+                                    "value2": [
+                                        {
+                                            "value0": 20,
+                                            "value1": 5,
+                                            "value2": "u_resolution"
+                                        },
+                                        {
+                                            "value0": 21,
+                                            "value1": 4,
+                                            "value2": "u_mode"
+                                        },
+                                        {
+                                            "value0": 22,
+                                            "value1": 8,
+                                            "value2": "u_cat"
+                                        },
+                                        {
+                                            "value0": 24,
+                                            "value1": 4,
+                                            "value2": "rangeMult"
+                                        }
+                                    ],
+                                    "value3": {
+                                        "ptr_wrapper": {
+                                            "id": 2
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "key": 10,
+                        "value": {
+                            "polymorphic_id": 6,
+                            "ptr_wrapper": {
+                                "id": 2147483666,
+                                "data": {
+                                    "value0": {
+                                        "value0": 10,
+                                        "value1": {
+                                            "value0": 49.0,
+                                            "value1": 560.0
+                                        }
+                                    },
+                                    "value1": 25,
+                                    "value2": 2.0
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "key": 11,
+                        "value": {
+                            "polymorphic_id": 6,
+                            "ptr_wrapper": {
+                                "id": 2147483667,
+                                "data": {
+                                    "value0": {
+                                        "value0": 11,
+                                        "value1": {
+                                            "value0": 31.0,
+                                            "value1": 350.0
+                                        }
+                                    },
+                                    "value1": 26,
+                                    "value2": 0.0
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "key": 12,
+                        "value": {
+                            "polymorphic_id": 6,
+                            "ptr_wrapper": {
+                                "id": 2147483668,
+                                "data": {
+                                    "value0": {
+                                        "value0": 12,
+                                        "value1": {
+                                            "value0": 25.0,
+                                            "value1": 138.0
+                                        }
+                                    },
+                                    "value1": 27,
+                                    "value2": 0.0
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "key": 13,
+                        "value": {
+                            "polymorphic_id": 6,
+                            "ptr_wrapper": {
+                                "id": 2147483669,
+                                "data": {
+                                    "value0": {
+                                        "value0": 13,
+                                        "value1": {
+                                            "value0": 433.0,
+                                            "value1": 560.0
+                                        }
+                                    },
+                                    "value1": 28,
+                                    "value2": 1.0
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "key": 14,
+                        "value": {
+                            "polymorphic_id": 6,
+                            "ptr_wrapper": {
+                                "id": 2147483670,
+                                "data": {
+                                    "value0": {
+                                        "value0": 14,
+                                        "value1": {
+                                            "value0": 177.0,
+                                            "value1": -7.0
+                                        }
+                                    },
+                                    "value1": 31,
+                                    "value2": 4.0
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "key": 15,
+                        "value": {
+                            "polymorphic_id": 4,
+                            "ptr_wrapper": {
+                                "id": 2147483671,
+                                "data": {
+                                    "value0": {
+                                        "value0": 15,
+                                        "value1": {
+                                            "value0": 1085.0,
+                                            "value1": 194.0
+                                        }
+                                    },
+                                    "value1": 32,
+                                    "value2": [
+                                        {
+                                            "value0": 33,
+                                            "value1": 5,
+                                            "value2": "u_resolution"
+                                        },
+                                        {
+                                            "value0": 34,
+                                            "value1": 4,
+                                            "value2": "u_mode"
+                                        },
+                                        {
+                                            "value0": 35,
+                                            "value1": 8,
+                                            "value2": "u_cat"
+                                        },
+                                        {
+                                            "value0": 36,
+                                            "value1": 4,
+                                            "value2": "rangeMult"
+                                        }
+                                    ],
+                                    "value3": {
+                                        "ptr_wrapper": {
+                                            "id": 2
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "key": 16,
+                        "value": {
+                            "polymorphic_id": 4,
+                            "ptr_wrapper": {
+                                "id": 2147483672,
+                                "data": {
+                                    "value0": {
+                                        "value0": 16,
+                                        "value1": {
+                                            "value0": 1052.0,
+                                            "value1": 441.0
+                                        }
+                                    },
+                                    "value1": 37,
+                                    "value2": [
+                                        {
+                                            "value0": 38,
+                                            "value1": 5,
+                                            "value2": "u_resolution"
+                                        },
+                                        {
+                                            "value0": 39,
+                                            "value1": 4,
+                                            "value2": "u_mode"
+                                        },
+                                        {
+                                            "value0": 40,
+                                            "value1": 8,
+                                            "value2": "u_cat"
+                                        },
+                                        {
+                                            "value0": 41,
+                                            "value1": 4,
+                                            "value2": "rangeMult"
+                                        }
+                                    ],
+                                    "value3": {
+                                        "ptr_wrapper": {
+                                            "id": 2
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ],
+                "edges": [
+                    {
+                        "key": 4,
+                        "value": {
+                            "id": 4,
+                            "from": 2,
+                            "to": 4
+                        }
+                    },
+                    {
+                        "key": 5,
+                        "value": {
+                            "id": 5,
+                            "from": 9,
+                            "to": 8
+                        }
+                    },
+                    {
+                        "key": 6,
+                        "value": {
+                            "id": 6,
+                            "from": 3,
+                            "to": 13
+                        }
+                    },
+                    {
+                        "key": 7,
+                        "value": {
+                            "id": 7,
+                            "from": 2,
+                            "to": 11
+                        }
+                    },
+                    {
+                        "key": 8,
+                        "value": {
+                            "id": 8,
+                            "from": 14,
+                            "to": 12
+                        }
+                    },
+                    {
+                        "key": 10,
+                        "value": {
+                            "id": 10,
+                            "from": 25,
+                            "to": 23
+                        }
+                    },
+                    {
+                        "key": 11,
+                        "value": {
+                            "id": 11,
+                            "from": 25,
+                            "to": 24
+                        }
+                    },
+                    {
+                        "key": 12,
+                        "value": {
+                            "id": 12,
+                            "from": 27,
+                            "to": 7
+                        }
+                    },
+                    {
+                        "key": 13,
+                        "value": {
+                            "id": 13,
+                            "from": 26,
+                            "to": 17
+                        }
+                    },
+                    {
+                        "key": 14,
+                        "value": {
+                            "id": 14,
+                            "from": 10,
+                            "to": 18
+                        }
+                    },
+                    {
+                        "key": 15,
+                        "value": {
+                            "id": 15,
+                            "from": 15,
+                            "to": 22
+                        }
+                    },
+                    {
+                        "key": 16,
+                        "value": {
+                            "id": 16,
+                            "from": 2,
+                            "to": 20
+                        }
+                    },
+                    {
+                        "key": 17,
+                        "value": {
+                            "id": 17,
+                            "from": 2,
+                            "to": 16
+                        }
+                    },
+                    {
+                        "key": 19,
+                        "value": {
+                            "id": 19,
+                            "from": 28,
+                            "to": 21
+                        }
+                    },
+                    {
+                        "key": 22,
+                        "value": {
+                            "id": 22,
+                            "from": 31,
+                            "to": 29
+                        }
+                    },
+                    {
+                        "key": 23,
+                        "value": {
+                            "id": 23,
+                            "from": 31,
+                            "to": 30
+                        }
+                    },
+                    {
+                        "key": 25,
+                        "value": {
+                            "id": 25,
+                            "from": 2,
+                            "to": 33
+                        }
+                    },
+                    {
+                        "key": 26,
+                        "value": {
+                            "id": 26,
+                            "from": 27,
+                            "to": 34
+                        }
+                    },
+                    {
+                        "key": 27,
+                        "value": {
+                            "id": 27,
+                            "from": 19,
+                            "to": 35
+                        }
+                    },
+                    {
+                        "key": 28,
+                        "value": {
+                            "id": 28,
+                            "from": 28,
+                            "to": 36
+                        }
+                    },
+                    {
+                        "key": 29,
+                        "value": {
+                            "id": 29,
+                            "from": 32,
+                            "to": 40
+                        }
+                    },
+                    {
+                        "key": 30,
+                        "value": {
+                            "id": 30,
+                            "from": 37,
+                            "to": 0
+                        }
+                    },
+                    {
+                        "key": 31,
+                        "value": {
+                            "id": 31,
+                            "from": 2,
+                            "to": 38
+                        }
+                    },
+                    {
+                        "key": 32,
+                        "value": {
+                            "id": 32,
+                            "from": 28,
+                            "to": 39
+                        }
+                    },
+                    {
+                        "key": 33,
+                        "value": {
+                            "id": 33,
+                            "from": 28,
+                            "to": 41
+                        }
+                    }
+                ],
+                "pins": [
+                    {
+                        "key": 0,
+                        "value": {
+                            "id": 0,
+                            "node_id": 0,
+                            "data": {
+                                "value0": 8
+                            }
+                        }
+                    },
+                    {
+                        "key": 1,
+                        "value": {
+                            "id": 1,
+                            "node_id": 1,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    },
+                    {
+                        "key": 2,
+                        "value": {
+                            "id": 2,
+                            "node_id": 2,
+                            "data": {
+                                "value0": 5
+                            }
+                        }
+                    },
+                    {
+                        "key": 3,
+                        "value": {
+                            "id": 3,
+                            "node_id": 3,
+                            "data": {
+                                "value0": 8
+                            }
+                        }
+                    },
+                    {
+                        "key": 4,
+                        "value": {
+                            "id": 4,
+                            "node_id": 3,
+                            "data": {
+                                "value0": 5
+                            }
+                        }
+                    },
+                    {
+                        "key": 5,
+                        "value": {
+                            "id": 5,
+                            "node_id": 3,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    },
+                    {
+                        "key": 6,
+                        "value": {
+                            "id": 6,
+                            "node_id": 4,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    },
+                    {
+                        "key": 7,
+                        "value": {
+                            "id": 7,
+                            "node_id": 3,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    },
+                    {
+                        "key": 8,
+                        "value": {
+                            "id": 8,
+                            "node_id": 3,
+                            "data": {
+                                "value0": 8
+                            }
+                        }
+                    },
+                    {
+                        "key": 9,
+                        "value": {
+                            "id": 9,
+                            "node_id": 5,
+                            "data": {
+                                "value0": 8
+                            }
+                        }
+                    },
+                    {
+                        "key": 10,
+                        "value": {
+                            "id": 10,
+                            "node_id": 6,
+                            "data": {
+                                "value0": 8
+                            }
+                        }
+                    },
+                    {
+                        "key": 11,
+                        "value": {
+                            "id": 11,
+                            "node_id": 6,
+                            "data": {
+                                "value0": 5
+                            }
+                        }
+                    },
+                    {
+                        "key": 12,
+                        "value": {
+                            "id": 12,
+                            "node_id": 6,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    },
+                    {
+                        "key": 13,
+                        "value": {
+                            "id": 13,
+                            "node_id": 6,
+                            "data": {
+                                "value0": 8
+                            }
+                        }
+                    },
+                    {
+                        "key": 14,
+                        "value": {
+                            "id": 14,
+                            "node_id": 7,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    },
+                    {
+                        "key": 15,
+                        "value": {
+                            "id": 15,
+                            "node_id": 8,
+                            "data": {
+                                "value0": 8
+                            }
+                        }
+                    },
+                    {
+                        "key": 16,
+                        "value": {
+                            "id": 16,
+                            "node_id": 8,
+                            "data": {
+                                "value0": 5
+                            }
+                        }
+                    },
+                    {
+                        "key": 17,
+                        "value": {
+                            "id": 17,
+                            "node_id": 8,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    },
+                    {
+                        "key": 18,
+                        "value": {
+                            "id": 18,
+                            "node_id": 8,
+                            "data": {
+                                "value0": 8
+                            }
+                        }
+                    },
+                    {
+                        "key": 19,
+                        "value": {
+                            "id": 19,
+                            "node_id": 9,
+                            "data": {
+                                "value0": 8
+                            }
+                        }
+                    },
+                    {
+                        "key": 20,
+                        "value": {
+                            "id": 20,
+                            "node_id": 9,
+                            "data": {
+                                "value0": 5
+                            }
+                        }
+                    },
+                    {
+                        "key": 21,
+                        "value": {
+                            "id": 21,
+                            "node_id": 9,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    },
+                    {
+                        "key": 22,
+                        "value": {
+                            "id": 22,
+                            "node_id": 9,
+                            "data": {
+                                "value0": 8
+                            }
+                        }
+                    },
+                    {
+                        "key": 23,
+                        "value": {
+                            "id": 23,
+                            "node_id": 8,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    },
+                    {
+                        "key": 24,
+                        "value": {
+                            "id": 24,
+                            "node_id": 9,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    },
+                    {
+                        "key": 25,
+                        "value": {
+                            "id": 25,
+                            "node_id": 10,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    },
+                    {
+                        "key": 26,
+                        "value": {
+                            "id": 26,
+                            "node_id": 11,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    },
+                    {
+                        "key": 27,
+                        "value": {
+                            "id": 27,
+                            "node_id": 12,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    },
+                    {
+                        "key": 28,
+                        "value": {
+                            "id": 28,
+                            "node_id": 13,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    },
+                    {
+                        "key": 29,
+                        "value": {
+                            "id": 29,
+                            "node_id": 3,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    },
+                    {
+                        "key": 30,
+                        "value": {
+                            "id": 30,
+                            "node_id": 6,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    },
+                    {
+                        "key": 31,
+                        "value": {
+                            "id": 31,
+                            "node_id": 14,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    },
+                    {
+                        "key": 32,
+                        "value": {
+                            "id": 32,
+                            "node_id": 15,
+                            "data": {
+                                "value0": 8
+                            }
+                        }
+                    },
+                    {
+                        "key": 33,
+                        "value": {
+                            "id": 33,
+                            "node_id": 15,
+                            "data": {
+                                "value0": 5
+                            }
+                        }
+                    },
+                    {
+                        "key": 34,
+                        "value": {
+                            "id": 34,
+                            "node_id": 15,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    },
+                    {
+                        "key": 35,
+                        "value": {
+                            "id": 35,
+                            "node_id": 15,
+                            "data": {
+                                "value0": 8
+                            }
+                        }
+                    },
+                    {
+                        "key": 36,
+                        "value": {
+                            "id": 36,
+                            "node_id": 15,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    },
+                    {
+                        "key": 37,
+                        "value": {
+                            "id": 37,
+                            "node_id": 16,
+                            "data": {
+                                "value0": 8
+                            }
+                        }
+                    },
+                    {
+                        "key": 38,
+                        "value": {
+                            "id": 38,
+                            "node_id": 16,
+                            "data": {
+                                "value0": 5
+                            }
+                        }
+                    },
+                    {
+                        "key": 39,
+                        "value": {
+                            "id": 39,
+                            "node_id": 16,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    },
+                    {
+                        "key": 40,
+                        "value": {
+                            "id": 40,
+                            "node_id": 16,
+                            "data": {
+                                "value0": 8
+                            }
+                        }
+                    },
+                    {
+                        "key": 41,
+                        "value": {
+                            "id": 41,
+                            "node_id": 16,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    }
+                ],
+                "shaders": {
+                    "ptr_wrapper": {
+                        "id": 1
+                    }
+                },
+                "textures": {
+                    "ptr_wrapper": {
+                        "id": 5
+                    }
+                },
+                "graph_geometry": {
+                    "polymorphic_id": 1,
+                    "ptr_wrapper": {
+                        "id": 4
+                    }
+                },
+                "viewport_resolution": {
+                    "value0": 627.0,
+                    "value1": 481.0
+                },
+                "root_node": 0,
+                "next_node_id": 17,
+                "next_edge_id": 34,
+                "next_pin_id": 42
+            }
+        }
+    },
+    "workspaces": [
+        {
+            "first": "Shading",
+            "second": [
+                {
+                    "polymorphic_id": 2147483655,
+                    "polymorphic_name": "EditorWidget",
+                    "ptr_wrapper": {
+                        "id": 2147483673,
+                        "data": {
+                            "id": 0,
+                            "shader": {
+                                "ptr_wrapper": {
+                                    "id": 2
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "polymorphic_id": 2147483656,
+                    "polymorphic_name": "ViewportWidget",
+                    "ptr_wrapper": {
+                        "id": 2147483674,
+                        "data": {
+                            "id": 1,
+                            "viewgraph": {
+                                "ptr_wrapper": {
+                                    "id": 9
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "polymorphic_id": 2147483657,
+                    "polymorphic_name": "ConsoleWidget",
+                    "ptr_wrapper": {
+                        "id": 2147483675,
+                        "data": {
+                            "id": 2
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "first": "RenderGraph",
+            "second": [
+                {
+                    "polymorphic_id": 2147483658,
+                    "polymorphic_name": "NodeEditorWidget",
+                    "ptr_wrapper": {
+                        "id": 2147483676,
+                        "data": {
+                            "graph": {
+                                "ptr_wrapper": {
+                                    "id": 9
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "current_workspace": 0,
+    "next_widget_id": 3
+}

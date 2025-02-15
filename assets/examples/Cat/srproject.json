@@ -1,0 +1,425 @@
+{
+    "shaders": {
+        "ptr_wrapper": {
+            "id": 2147483649,
+            "data": [
+                {
+                    "key": "Default",
+                    "value": {
+                        "ptr_wrapper": {
+                            "id": 2147483650,
+                            "data": {
+                                "name": "Default",
+                                "path": "shaders/Default.glsl"
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "geometries": {
+        "ptr_wrapper": {
+            "id": 2147483651,
+            "data": [
+                {
+                    "key": "FullscreenQuad",
+                    "value": {
+                        "polymorphic_id": 2147483649,
+                        "polymorphic_name": "ScreenQuadGeometry",
+                        "ptr_wrapper": {
+                            "id": 2147483652,
+                            "data": {
+                                "value0": {
+                                    "value0": "FullscreenQuad"
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "textures": {
+        "ptr_wrapper": {
+            "id": 2147483653,
+            "data": [
+                {
+                    "key": "Cat",
+                    "value": {
+                        "ptr_wrapper": {
+                            "id": 2147483654,
+                            "data": {
+                                "value0": "Cat",
+                                "value1": "/home/zhangwei/Projects/ShaderRinth/assets/textures/cat.png"
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "graph": {
+        "ptr_wrapper": {
+            "id": 2147483655,
+            "data": {
+                "nodes": [
+                    {
+                        "key": 0,
+                        "value": {
+                            "polymorphic_id": 2147483650,
+                            "polymorphic_name": "OutputNode",
+                            "ptr_wrapper": {
+                                "id": 2147483656,
+                                "data": {
+                                    "value0": {
+                                        "value0": 0,
+                                        "value1": {
+                                            "value0": 696.0,
+                                            "value1": 143.0
+                                        }
+                                    },
+                                    "value1": 0,
+                                    "value2": 5
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "key": 1,
+                        "value": {
+                            "polymorphic_id": 2147483651,
+                            "polymorphic_name": "TimeNode",
+                            "ptr_wrapper": {
+                                "id": 2147483657,
+                                "data": {
+                                    "value0": {
+                                        "value0": 1,
+                                        "value1": {
+                                            "value0": 20.0,
+                                            "value1": 160.0
+                                        }
+                                    },
+                                    "value1": 1
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "key": 3,
+                        "value": {
+                            "polymorphic_id": 2147483652,
+                            "polymorphic_name": "FragmentShaderNode",
+                            "ptr_wrapper": {
+                                "id": 2147483658,
+                                "data": {
+                                    "value0": {
+                                        "value0": 3,
+                                        "value1": {
+                                            "value0": 339.0,
+                                            "value1": 147.0
+                                        }
+                                    },
+                                    "value1": 3,
+                                    "value2": [
+                                        {
+                                            "value0": 4,
+                                            "value1": 5,
+                                            "value2": "u_resolution"
+                                        },
+                                        {
+                                            "value0": 5,
+                                            "value1": 4,
+                                            "value2": "u_time"
+                                        },
+                                        {
+                                            "value0": 7,
+                                            "value1": 8,
+                                            "value2": "u_cat"
+                                        }
+                                    ],
+                                    "value3": {
+                                        "ptr_wrapper": {
+                                            "id": 2
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "key": 4,
+                        "value": {
+                            "polymorphic_id": 2147483653,
+                            "polymorphic_name": "Texture2DNode",
+                            "ptr_wrapper": {
+                                "id": 2147483659,
+                                "data": {
+                                    "value0": {
+                                        "value0": 4,
+                                        "value1": {
+                                            "value0": 22.0,
+                                            "value1": 265.0
+                                        }
+                                    },
+                                    "value1": 6,
+                                    "value2": {
+                                        "ptr_wrapper": {
+                                            "id": 6
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "key": 5,
+                        "value": {
+                            "polymorphic_id": 2147483654,
+                            "polymorphic_name": "ViewportNode",
+                            "ptr_wrapper": {
+                                "id": 2147483660,
+                                "data": {
+                                    "value0": {
+                                        "value0": 5,
+                                        "value1": {
+                                            "value0": 69.0,
+                                            "value1": 42.0
+                                        }
+                                    },
+                                    "value1": 9
+                                }
+                            }
+                        }
+                    }
+                ],
+                "edges": [
+                    {
+                        "key": 0,
+                        "value": {
+                            "id": 0,
+                            "from": 3,
+                            "to": 0
+                        }
+                    },
+                    {
+                        "key": 1,
+                        "value": {
+                            "id": 1,
+                            "from": 1,
+                            "to": 5
+                        }
+                    },
+                    {
+                        "key": 3,
+                        "value": {
+                            "id": 3,
+                            "from": 6,
+                            "to": 7
+                        }
+                    },
+                    {
+                        "key": 4,
+                        "value": {
+                            "id": 4,
+                            "from": 9,
+                            "to": 4
+                        }
+                    }
+                ],
+                "pins": [
+                    {
+                        "key": 0,
+                        "value": {
+                            "id": 0,
+                            "node_id": 0,
+                            "data": {
+                                "value0": 8
+                            }
+                        }
+                    },
+                    {
+                        "key": 1,
+                        "value": {
+                            "id": 1,
+                            "node_id": 1,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    },
+                    {
+                        "key": 2,
+                        "value": {
+                            "id": 2,
+                            "node_id": 2,
+                            "data": {
+                                "value0": 5
+                            }
+                        }
+                    },
+                    {
+                        "key": 3,
+                        "value": {
+                            "id": 3,
+                            "node_id": 3,
+                            "data": {
+                                "value0": 8
+                            }
+                        }
+                    },
+                    {
+                        "key": 4,
+                        "value": {
+                            "id": 4,
+                            "node_id": 3,
+                            "data": {
+                                "value0": 5
+                            }
+                        }
+                    },
+                    {
+                        "key": 5,
+                        "value": {
+                            "id": 5,
+                            "node_id": 3,
+                            "data": {
+                                "value0": 4
+                            }
+                        }
+                    },
+                    {
+                        "key": 6,
+                        "value": {
+                            "id": 6,
+                            "node_id": 4,
+                            "data": {
+                                "value0": 8
+                            }
+                        }
+                    },
+                    {
+                        "key": 7,
+                        "value": {
+                            "id": 7,
+                            "node_id": 3,
+                            "data": {
+                                "value0": 8
+                            }
+                        }
+                    },
+                    {
+                        "key": 8,
+                        "value": {
+                            "id": 8,
+                            "node_id": 3,
+                            "data": {
+                                "value0": 8
+                            }
+                        }
+                    },
+                    {
+                        "key": 9,
+                        "value": {
+                            "id": 9,
+                            "node_id": 5,
+                            "data": {
+                                "value0": 5
+                            }
+                        }
+                    }
+                ],
+                "shaders": {
+                    "ptr_wrapper": {
+                        "id": 1
+                    }
+                },
+                "textures": {
+                    "ptr_wrapper": {
+                        "id": 5
+                    }
+                },
+                "graph_geometry": {
+                    "polymorphic_id": 1,
+                    "ptr_wrapper": {
+                        "id": 4
+                    }
+                },
+                "viewport_resolution": {
+                    "value0": 627.0,
+                    "value1": 481.0
+                },
+                "root_node": 0,
+                "next_node_id": 6,
+                "next_edge_id": 5,
+                "next_pin_id": 10
+            }
+        }
+    },
+    "workspaces": [
+        {
+            "first": "Shading",
+            "second": [
+                {
+                    "polymorphic_id": 2147483655,
+                    "polymorphic_name": "EditorWidget",
+                    "ptr_wrapper": {
+                        "id": 2147483661,
+                        "data": {
+                            "shader": {
+                                "ptr_wrapper": {
+                                    "id": 2
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "polymorphic_id": 2147483656,
+                    "polymorphic_name": "ViewportWidget",
+                    "ptr_wrapper": {
+                        "id": 2147483662,
+                        "data": {
+                            "viewgraph": {
+                                "ptr_wrapper": {
+                                    "id": 7
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "polymorphic_id": 2147483657,
+                    "polymorphic_name": "ConsoleWidget",
+                    "ptr_wrapper": {
+                        "id": 2147483663,
+                        "data": {
+                            "value0": 0
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "first": "RenderGraph",
+            "second": [
+                {
+                    "polymorphic_id": 2147483658,
+                    "polymorphic_name": "NodeEditorWidget",
+                    "ptr_wrapper": {
+                        "id": 2147483664,
+                        "data": {
+                            "graph": {
+                                "ptr_wrapper": {
+                                    "id": 7
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "current_workspace": 0,
+    "next_widget_id": 1
+}
