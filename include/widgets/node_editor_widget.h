@@ -1,10 +1,10 @@
 #pragma once
 
-#include "graph.h"
 #include "nodes.h"
 #include "widget.h"
 #include <imnodes.h>
 
+// Helper struct for adding nodes
 struct AddNodes {
 private:
   std::vector<std::shared_ptr<Node>> insert_nodes = {};
@@ -19,21 +19,33 @@ public:
     spawn_position = ImGui::GetIO().MousePos;
   }
   // Apply changes to RenderGraph
-  void commit(RenderGraph *graph) {
-    auto io = ImGui::GetIO();
-    for (auto node : insert_nodes) {
-      int id = graph->insert_node(node);
-      ImNodes::SetNodeScreenSpacePos(id, spawn_position);
-    }
-    insert_nodes.clear();
-  }
+  void commit(RenderGraph *graph);
   // Renders the GUI and handles user interactions
   void show();
 };
 
-struct ClipboardEdge {
-  int from_node_idx, to_node_idx;
-  int from_layout_idx, to_layout_idx;
+// Helper struct for copy and paste
+struct Clipboard {
+private:
+  struct ClipboardEdge {
+    int from_node_idx, to_node_idx;
+    int from_layout_idx, to_layout_idx;
+  };
+
+  std::vector<std::shared_ptr<Node>> clipboard_nodes = {};
+  std::vector<ClipboardEdge> clipboard_edges = {};
+  // Call ImNodes::SelectNode() after an object is created
+  std::vector<int> deferred_node_selection = {};
+  std::vector<int> deferred_edge_selection = {};
+  unsigned int paste_count = 0; // For position offsets
+
+public:
+  // Apply deferred selection
+  void apply_deferred();
+  // Copy currently selected Nodes and Edges
+  void copy(RenderGraph *graph);
+  // Paste stored Nodes and Edges (if any)
+  void paste(RenderGraph *graph);
 };
 
 class NodeEditorWidget : public Widget {
@@ -43,16 +55,10 @@ private:
 
   ImNodesEditorContext *context = ImNodes::EditorContextCreate();
   AddNodes add_nodes = AddNodes();
+  Clipboard clipboard = Clipboard();
   UndoContext history = UndoContext(50);
   DataType current_link_type = DataType(0); // Any default type
   bool focused = false;
-
-  std::vector<std::shared_ptr<Node>> clipboard_nodes = {};
-  std::vector<ClipboardEdge> clipboard_edges = {};
-  // Call SelectNode after an object is created
-  std::vector<int> deferred_node_selection = {};
-  std::vector<int> deferred_edge_selection = {};
-  unsigned int paste_count = 0; // For position offsets
 
 public:
   NodeEditorWidget(int id, std::shared_ptr<AssetManager> assets, AssetId<RenderGraph> graph_id) {
@@ -67,14 +73,7 @@ public:
     add_nodes.commit(graph.get());
 
     // Apply deferred selection
-    if (!deferred_node_selection.empty() || !deferred_edge_selection.empty()) {
-      for (int id : deferred_node_selection)
-        ImNodes::SelectNode(id);
-      for (int id : deferred_edge_selection)
-        ImNodes::SelectLink(id);
-      deferred_node_selection.clear();
-      deferred_edge_selection.clear();
-    }
+    clipboard.apply_deferred();
 
     { // ImNodes events
       int from_pin, to_pin;
