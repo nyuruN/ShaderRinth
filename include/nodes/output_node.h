@@ -49,13 +49,28 @@ public:
       }
     }
   }
-  std::shared_ptr<Node> clone() const override {
-    return std::make_shared<OutputNode>(*this);
-  }
+  std::shared_ptr<Node> clone() const override { return std::make_shared<OutputNode>(*this); }
   std::vector<int> layout() const override { return {input_pin}; }
   template <class Archive> void serialize(Archive &ar) {
     ar(cereal::base_class<Node>(this));
     ar(input_pin, out_texture);
+  }
+  toml::table save() override {
+    return toml::table{
+        {"type", "OutputNode"},        //
+        {"node_id", id},               //
+        {"position", Node::save(pos)}, //
+        {"input_pin", input_pin},      //
+        {"out_texture", out_texture},  //
+    };
+  }
+  static OutputNode load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+    auto n = OutputNode();
+    n.id = tbl["node_id"].value<int>().value();
+    n.pos = Node::load_pos(*tbl["position"].as_table());
+    n.input_pin = tbl["input_pin"].value<int>().value();
+    n.out_texture = tbl["out_texture"].value<int>().value();
+    return n;
   }
 };
 

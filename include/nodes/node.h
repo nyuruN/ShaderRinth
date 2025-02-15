@@ -4,20 +4,22 @@
 #include <memory>
 #include <vector>
 
-#define BEGIN_INPUT_PIN(id, type)                                              \
-  ImNodes::PushColorStyle(ImNodesCol_Pin, Data::COLORS[type]);                 \
-  ImNodes::PushColorStyle(ImNodesCol_PinHovered, Data::COLORS_HOVER[type]);    \
-  ImNodes::BeginInputAttribute(id);                                            \
-  ImNodes::PopColorStyle();                                                    \
+#include <toml++/toml.hpp>
+
+#define BEGIN_INPUT_PIN(id, type)                                                                  \
+  ImNodes::PushColorStyle(ImNodesCol_Pin, Data::COLORS[type]);                                     \
+  ImNodes::PushColorStyle(ImNodesCol_PinHovered, Data::COLORS_HOVER[type]);                        \
+  ImNodes::BeginInputAttribute(id);                                                                \
+  ImNodes::PopColorStyle();                                                                        \
   ImNodes::PopColorStyle();
 
 #define END_INPUT_PIN() ImNodes::EndInputAttribute();
 
-#define BEGIN_OUTPUT_PIN(id, type)                                             \
-  ImNodes::PushColorStyle(ImNodesCol_Pin, Data::COLORS[type]);                 \
-  ImNodes::PushColorStyle(ImNodesCol_PinHovered, Data::COLORS_HOVER[type]);    \
-  ImNodes::BeginOutputAttribute(id);                                           \
-  ImNodes::PopColorStyle();                                                    \
+#define BEGIN_OUTPUT_PIN(id, type)                                                                 \
+  ImNodes::PushColorStyle(ImNodesCol_Pin, Data::COLORS[type]);                                     \
+  ImNodes::PushColorStyle(ImNodesCol_PinHovered, Data::COLORS_HOVER[type]);                        \
+  ImNodes::BeginOutputAttribute(id);                                                               \
+  ImNodes::PopColorStyle();                                                                        \
   ImNodes::PopColorStyle();
 
 #define END_OUTPUT_PIN() ImNodes::EndOutputAttribute();
@@ -60,5 +62,20 @@ public:
   // Runs the Node and writes to output pins
   virtual void run(RenderGraph &) {}
 
+  static inline toml::table save(Data::Vec2 &pos) {
+    toml::table t{
+        {"x", pos[0]},
+        {"y", pos[1]},
+    };
+    t.is_inline(true);
+    return t;
+  }
+  static inline Data::Vec2 load_pos(toml::table &tbl) {
+    Data::Vec2 pos;
+    pos[0] = tbl["x"].value<float>().value();
+    pos[1] = tbl["y"].value<float>().value();
+    return pos;
+  }
+  virtual toml::table save() = 0;
   template <class Archive> void serialize(Archive &ar) { ar(id, pos); }
 };

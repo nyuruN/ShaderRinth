@@ -14,8 +14,7 @@
 
 //! Texture
 
-Texture::Texture(std::string name, std::filesystem::path path)
-    : name(name), path(path) {
+Texture::Texture(std::string name, std::filesystem::path path) : name(name), path(path) {
   stbi_set_flip_vertically_on_load(true);
   unsigned char *data = stbi_load(path.c_str(), &width, &height, &channels, 0);
 
@@ -43,4 +42,11 @@ Texture::Texture(std::string name, std::filesystem::path path)
   stbi_image_free(data);
 
   loaded = true;
+}
+#include <toml++/toml.h>
+toml::table Texture::save() {
+  return toml::table{
+      {"name", name},
+      {"path", path.string()},
+  };
 }

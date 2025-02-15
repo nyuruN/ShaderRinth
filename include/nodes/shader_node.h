@@ -20,17 +20,21 @@ class FragmentShaderNode : public Node {
     template <class Archive> void serialize(Archive &ar) { ar(pinid, type, identifier); }
   };
 
-  int output_pin;
   std::vector<UniformPin> uniform_pins;
-  std::shared_ptr<Shader> shader;
+  int output_pin;
+  AssetId<Shader> shader_id;
 
+  std::shared_ptr<Shader> shader;
   GLuint image_fbo;
   GLuint image_colorbuffer;
 
   const float node_width = 240.0f;
 
 public:
-  void set_shader(std::shared_ptr<Shader> shader) { this->shader = shader; }
+  void set_shader(std::shared_ptr<AssetManager> assets, AssetId<Shader> shader_id) {
+    this->shader = assets->get_shader(shader_id);
+    this->shader_id = shader_id;
+  }
   int get_output_pin() { return output_pin; }
   int add_uniform_pin(RenderGraph &graph, DataType type, std::string name) {
     int pinid;
@@ -60,8 +64,10 @@ public:
     if (ImGui::BeginCombo("##hidelabel", bool(shader) ? shader->get_name().c_str() : "")) {
       for (auto const &pair : *graph.shaders) {
         bool is_selected = (shader) && (shader->get_name() == pair.second->get_name());
-        if (ImGui::Selectable(pair.second->get_name().c_str(), is_selected))
-          set_shader(pair.second);
+        if (ImGui::Selectable(pair.second->get_name().c_str(), is_selected)) {
+          shader_id = pair.first;
+          shader = pair.second;
+        }
         // Set the initial focus when opening the combo (scrolling + keyboard
         // navigation focus)
         if (is_selected)
@@ -204,6 +210,7 @@ public:
 
     graph.set_pin_data(output_pin, (Data::Texture2D)image_colorbuffer);
   }
+
   std::shared_ptr<Node> clone() const override {
     return std::make_shared<FragmentShaderNode>(*this);
   }
@@ -217,6 +224,52 @@ public:
   template <class Archive> void serialize(Archive &ar) {
     ar(cereal::base_class<Node>(this));
     ar(output_pin, uniform_pins, shader);
+  }
+  toml::table save() override {
+    toml::array uniform_pins;
+
+    for (auto &pin : this->uniform_pins) {
+      toml::table t{
+          {"pin_id", pin.pinid},
+          {"identifier", pin.identifier},
+          {"type", pin.type},
+      };
+      t.is_inline(true);
+      uniform_pins.push_back(t);
+    }
+
+    return toml::table{
+        {"type", "FragmentShaderNode"}, //
+        {"node_id", id},                //
+        {"position", Node::save(pos)},  //
+        {"output_pin", output_pin},     //
+        {"uniform_pins", uniform_pins}, //
+        {"shader_id", shader_id},       //
+    };
+  }
+  static FragmentShaderNode load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+    auto n = FragmentShaderNode();
+    n.id = tbl["node_id"].value<int>().value();
+    n.pos = Node::load_pos(*tbl["position"].as_table());
+    n.output_pin = tbl["output_pin"].value<int>().value();
+    n.shader_id = tbl["shader_id"].value<int>().value();
+    n.shader = assets->get_shader(n.shader_id);
+
+    for (auto &n_pin : *tbl["uniform_pins"].as_array()) {
+      toml::table *t_pin = n_pin.as_table();
+
+      int pin_id = (*t_pin)["pin_id"].value<int>().value();
+      int type = (*t_pin)["type"].value<int>().value();
+      std::string identifier = (*t_pin)["identifier"].value<std::string>().value();
+
+      n.uniform_pins.push_back(UniformPin{
+        pinid : pin_id,
+        type : DataType(type),
+        identifier : identifier,
+      });
+    }
+
+    return n;
   }
 };
 

@@ -26,6 +26,7 @@ add_executable(
   src/theme.cpp
   src/geometry.cpp
   src/shader.cpp
+  src/app.cpp
   src/assets.cpp
 
   src/widgets/node_editor_widget.cpp
@@ -55,6 +56,11 @@ find_package(Stb REQUIRED)
 target_include_directories(${EXECUTABLE} PRIVATE ${Stb_INCLUDE_DIR})
 find_package(OpenGL REQUIRED)
 target_link_libraries(${EXECUTABLE} PRIVATE OpenGL::GL)
+
+# Link tomlplusplus
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(tomlplusplus REQUIRED IMPORTED_TARGET tomlplusplus)
+target_link_libraries(${EXECUTABLE} PRIVATE PkgConfig::tomlplusplus)
 
 # Link zep
 add_definitions(-DZEP_FEATURE_CPP_FILE_SYSTEM)

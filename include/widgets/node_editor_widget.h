@@ -40,6 +40,7 @@ struct ClipboardEdge {
 
 class NodeEditorWidget : public Widget {
 private:
+  AssetId<RenderGraph> graph_id;
   std::shared_ptr<RenderGraph> graph = nullptr;
 
   ImNodesEditorContext *context = ImNodes::EditorContextCreate();
@@ -56,7 +57,11 @@ private:
   unsigned int paste_count = 0; // For position offsets
 
 public:
-  NodeEditorWidget(std::shared_ptr<RenderGraph> graph) : graph(graph) {}
+  NodeEditorWidget(int id, std::shared_ptr<AssetManager> assets, AssetId<RenderGraph> graph_id) {
+    this->id = id;
+    this->graph_id = graph_id;
+    graph = assets->get_graph(graph_id);
+  }
   void onStartup() override { graph->set_node_positions(context); };
   void onShutdown() override { ImNodes::EditorContextFree(context); }
   void onUpdate() override {
@@ -95,17 +100,28 @@ public:
   void delete_selected();
 
   template <class Archive>
-  static void
-  load_and_construct(Archive &ar,
-                     cereal::construct<NodeEditorWidget> &construct) {
+  static void load_and_construct(Archive &ar, cereal::construct<NodeEditorWidget> &construct) {
     std::shared_ptr<RenderGraph> graph;
     ar(graph);
     construct(graph);
   }
   template <class Archive> void serialize(Archive &ar) { ar(VP(graph)); }
+  toml::table save() {
+    return toml::table{
+        {"type", "NodeEditorWidget"},
+        {"widget_id", id},
+        {"graph_id", graph_id},
+    };
+  }
+  static NodeEditorWidget load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+    int id = tbl["widget_id"].value<int>().value();
+    AssetId<RenderGraph> graph_id = tbl["graph_id"].value<int>().value();
+    auto w = NodeEditorWidget(id, assets, graph_id);
+    return w;
+  }
 };
 
 // Type registration
 #include <cereal/archives/json.hpp>
-CEREAL_REGISTER_TYPE(NodeEditorWidget)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Widget, NodeEditorWidget)
+// CEREAL_REGISTER_TYPE(NodeEditorWidget)
+// CEREAL_REGISTER_POLYMORPHIC_RELATION(Widget, NodeEditorWidget)

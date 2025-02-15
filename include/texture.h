@@ -6,6 +6,13 @@
 
 #include <cereal/cereal.hpp> // for static load_and_construct
 #include <cereal/types/string.hpp>
+// #include <toml++/toml.hpp>
+
+namespace toml {
+inline namespace v3 {
+class table;
+}
+} // namespace toml
 
 struct Texture {
 private:
@@ -29,13 +36,11 @@ public:
   bool is_loaded() { return loaded; }
   std::string &get_name() { return name; }
   template <class Archive>
-  static void load_and_construct(Archive &ar,
-                                 cereal::construct<Texture> &construct) {
+  static void load_and_construct(Archive &ar, cereal::construct<Texture> &construct) {
     std::string path_str, name;
     ar(name, path_str);
     construct(name, path_str);
   }
-  template <class Archive> void save(Archive &ar) const {
-    ar(name, path.string());
-  }
+  template <class Archive> void save(Archive &ar) const { ar(name, path.string()); }
+  toml::table save();
 };

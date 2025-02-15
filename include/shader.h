@@ -9,10 +9,10 @@
 #include <string>
 
 #include <cereal/cereal.hpp>
+#include <toml++/toml.hpp>
 
 static const std::filesystem::path DEFAULT_FRAG_PATH =
-    std::filesystem::path(APP_ROOT) / "assets" / "shaders" /
-    "default_frag.glsl";
+    std::filesystem::path(APP_ROOT) / "assets" / "shaders" / "default_frag.glsl";
 
 // Forward declares
 class Geometry;
@@ -34,6 +34,20 @@ public:
 
   // Creates a new default fragment shader
   Shader(std::string name);
+  // Creates a new fragment shader and loads its source
+  Shader(std::string name, std::filesystem::path path) {
+    std::filesystem::path abs_path = Global::instance().project_root / path;
+    std::ifstream file(abs_path);
+    if (!file) {
+      spdlog::error("Failed to load shader \"{}\" in \"{}\"!", name, abs_path.string());
+      return;
+    }
+    std::ostringstream buf;
+    buf << file.rdbuf();
+    source = buf.str();
+    this->name = name;
+    this->path = path;
+  }
   // Creates a new fragment shader, does not load yet
   Shader(std::string name, std::filesystem::path path, std::string source) {
     this->name = name;
@@ -58,25 +72,21 @@ public:
   // Clears bound textures
   void clear_textures() { bound_textures.clear(); }
   // If one needs to manually set uniforms
-  GLuint get_uniform_loc(const char *name) {
-    return glGetUniformLocation(program, name);
-  }
+  GLuint get_uniform_loc(const char *name) { return glGetUniformLocation(program, name); }
   bool is_compiled() { return compiled; }
   std::string &get_source() { return source; }
   std::string &get_name() { return name; }
   std::filesystem::path get_path() { return path; }
   char *get_log() { return log; }
   template <class Archive>
-  static void load_and_construct(Archive &ar,
-                                 cereal::construct<Shader> &construct) {
+  static void load_and_construct(Archive &ar, cereal::construct<Shader> &construct) {
     std::string name, path, source;
     ar(name, path);
 
     std::filesystem::path abs_path = Global::instance().project_root / path;
     std::ifstream file(abs_path);
     if (!file) {
-      spdlog::error("failed to load shader \"{}\" in \"{}\"!", name,
-                    abs_path.string());
+      spdlog::error("failed to load shader \"{}\" in \"{}\"!", name, abs_path.string());
       return;
     }
     std::ostringstream buf;
@@ -92,12 +102,26 @@ public:
 
     std::ofstream file(abs_path);
     if (!file) {
-      spdlog::error("failed to save shader \"{}\" in \"{}\"!", name,
-                    abs_path.string());
+      spdlog::error("failed to save shader \"{}\" in \"{}\"!", name, abs_path.string());
       return;
     }
     file << source;
 
     ar(VP(name), NVP("path", path.string()));
+  }
+  toml::table save() {
+    auto abs_path = Global::instance().project_root / path;
+    // Ensure the parent directory exists
+    std::filesystem::create_directories(abs_path.parent_path());
+
+    if (auto file = std::ofstream(abs_path))
+      file << source;
+    else
+      spdlog::error("Failed to save shader \"{}\" in \"{}\"!", name, abs_path.string());
+
+    return toml::table{
+        {"name", name},
+        {"path", path.string()},
+    };
   }
 };

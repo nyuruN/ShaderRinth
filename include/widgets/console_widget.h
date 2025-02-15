@@ -44,12 +44,10 @@ public:
 
         if (msg.level < colors_len) {
           ImGui::PushStyleColor(ImGuiCol_Text, colors[msg.level]);
-          ImGui::TextUnformatted(
-              spdlog::level::to_string_view(msg.level).data());
+          ImGui::TextUnformatted(spdlog::level::to_string_view(msg.level).data());
           ImGui::PopStyleColor();
         } else
-          ImGui::TextUnformatted(
-              spdlog::level::to_string_view(msg.level).data());
+          ImGui::TextUnformatted(spdlog::level::to_string_view(msg.level).data());
 
         ImGui::SameLine(0, 0);
         ImGui::TextUnformatted("] ");
@@ -80,13 +78,23 @@ public:
   }
 
   template <class Archive>
-  static void load_and_construct(Archive &ar,
-                                 cereal::construct<ConsoleWidget> &construct) {
+  static void load_and_construct(Archive &ar, cereal::construct<ConsoleWidget> &construct) {
     int id;
     ar(id);
     construct(id);
   }
   template <class Archive> void serialize(Archive &ar) { ar(VP(id)); }
+  toml::table save() {
+    return toml::table{
+        {"type", "ConsoleWidget"},
+        {"widget_id", id},
+    };
+  }
+  static ConsoleWidget load(toml::table &tbl) {
+    int id = tbl["widget_id"].value<int>().value();
+    auto w = ConsoleWidget(id);
+    return w;
+  }
 };
 
 // Type registration

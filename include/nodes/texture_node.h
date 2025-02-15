@@ -12,20 +12,22 @@ class Texture2DNode : public Node {
 private:
   int output_pin;
 
+  AssetId<Texture> texture_id = -1;
   std::shared_ptr<Texture> texture;
 
   float node_width = 120.0f;
 
 public:
-  void set_texture(std::shared_ptr<Texture> texture) { this->texture = texture; }
   int get_output_pin() { return output_pin; }
   void render_combobox(RenderGraph &graph) {
     ImGui::SetNextItemWidth(node_width);
     if (ImGui::BeginCombo("##hidelabel", bool(texture) ? texture->get_name().c_str() : "")) {
       for (auto const &pair : *graph.textures) {
         bool is_selected = (texture) && (texture->get_name() == pair.second->get_name());
-        if (ImGui::Selectable(pair.second->get_name().c_str(), is_selected))
-          set_texture(pair.second);
+        if (ImGui::Selectable(pair.second->get_name().c_str(), is_selected)) {
+          texture_id = pair.first;
+          texture = pair.second;
+        }
         // Set the initial focus when opening the combo (scrolling + keyboard
         // navigation focus)
         if (is_selected)
@@ -65,6 +67,24 @@ public:
   template <class Archive> void serialize(Archive &ar) {
     ar(cereal::base_class<Node>(this));
     ar(output_pin, texture);
+  }
+  toml::table save() override {
+    return toml::table{
+        {"type", "Texture2DNode"},     //
+        {"node_id", id},               //
+        {"position", Node::save(pos)}, //
+        {"output_pin", output_pin},    //
+        {"texture_id", texture_id},    //
+    };
+  }
+  static Texture2DNode load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+    auto n = Texture2DNode();
+    n.id = tbl["node_id"].value<int>().value();
+    n.pos = Node::load_pos(*tbl["position"].as_table());
+    n.texture_id = tbl["texture_id"].value<int>().value();
+    n.output_pin = tbl["output_pin"].value<int>().value();
+    n.texture = assets->get_texture(n.texture_id);
+    return n;
   }
 };
 

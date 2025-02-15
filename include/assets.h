@@ -5,6 +5,7 @@
 
 #include "utils.h"
 #include <cereal/cereal.hpp>
+#include <toml++/toml.hpp>
 
 // Forward declares
 struct Shader;
@@ -15,7 +16,7 @@ class Geometry;
 template <typename T> using AssetId = unsigned int;
 template <typename T> using Assets = std::map<AssetId<T>, std::shared_ptr<T>>;
 
-struct AssetManager {
+struct AssetManager : std::enable_shared_from_this<AssetManager> {
 private:
   AssetId<Shader> next_shader_id = 0;
   AssetId<Texture> next_texture_id = 0;
@@ -54,4 +55,6 @@ public:
   template <class Archive> void serialize(Archive &ar) {
     ar(VP(shaders), VP(textures), VP(geometries), VP(graphs));
   }
+  toml::table save();
+  void load(toml::table &tbl);
 };

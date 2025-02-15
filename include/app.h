@@ -49,14 +49,14 @@ struct App {
     if (!*texture)
       spdlog::error("Failed to load texture assets/textures/cat.png");
 
-    assets->insert_shader(shader);
+    auto shader_id = assets->insert_shader(shader);
     assets->insert_shader(std::make_shared<Shader>("OtherDefault"));
-    assets->insert_geometry(geo);
-    assets->insert_texture(texture);
+    auto geo_id = assets->insert_geometry(geo);
+    auto tex_id = assets->insert_texture(texture);
 
-    graph_id = assets->insert_graph(std::make_shared<RenderGraph>(assets, geo));
+    graph_id = assets->insert_graph(std::make_shared<RenderGraph>(assets, geo_id));
     graph = assets->get_graph(graph_id);
-    graph->default_layout(shader);
+    graph->default_layout(assets, shader_id);
 
     export_image.set_graph(graph);
 
@@ -64,11 +64,11 @@ struct App {
     workspaces = std::vector<Workspace>({
         Workspace("Shading",
                   {
-                      std::make_shared<EditorWidget>(next_widget_id++, shader),
-                      std::make_shared<ViewportWidget>(next_widget_id++, graph),
+                      std::make_shared<EditorWidget>(next_widget_id++, assets, shader_id),
+                      std::make_shared<ViewportWidget>(next_widget_id++, assets, graph_id),
                       std::make_shared<ConsoleWidget>(next_widget_id++),
                   }),
-        Workspace("RenderGraph", {std::make_shared<NodeEditorWidget>(graph)}),
+        Workspace("RenderGraph", {std::make_shared<NodeEditorWidget>(next_widget_id++, assets, graph_id)}),
     });
     // clang-format on
   }
@@ -165,11 +165,16 @@ struct App {
         if (ImGui::MenuItem("Console"))
           deferred_add_widget.push_back(std::make_shared<ConsoleWidget>(next_widget_id++));
         if (ImGui::MenuItem("Viewport"))
-          deferred_add_widget.push_back(std::make_shared<ViewportWidget>(next_widget_id++, graph));
+          deferred_add_widget.push_back(
+              std::make_shared<ViewportWidget>(next_widget_id++, assets, graph_id));
         if (!assets->shaders->empty())
           if (ImGui::BeginMenu("Editor")) {
             for (auto &pair : *assets->shaders) {
-              if (!ImGui::MenuItem(pair.second->get_name().c_str()))
+              ImGui::PushID(pair.first);
+              bool clicked = ImGui::MenuItem(pair.second->get_name().c_str());
+              ImGui::PopID();
+
+              if (!clicked)
                 continue;
 
               bool has_editor = false;
@@ -182,7 +187,7 @@ struct App {
                 continue;
 
               deferred_add_widget.push_back(
-                  std::make_shared<EditorWidget>(next_widget_id++, pair.second));
+                  std::make_shared<EditorWidget>(next_widget_id++, assets, pair.first));
             }
             ImGui::EndMenu();
           }
@@ -227,16 +232,19 @@ struct App {
   }
   // Save everything related to a project
   void save_project(std::filesystem::path project_directory) {
-    std::ofstream ofs(project_root.value() / "srproject.json");
-    cereal::JSONOutputArchive archive(ofs);
-
-    archive(                   //
-        VP(assets),            //
-        VP(graph_id),          //
-        VP(workspaces),        //
-        VP(current_workspace), //
-        VP(next_widget_id)     //
-    );
+    // std::ofstream ofs(project_root.value() / "srproject.json");
+    // cereal::JSONOutputArchive archive(ofs);
+    //
+    // archive(                   //
+    //     VP(assets),            //
+    //     VP(graph_id),          //
+    //     VP(workspaces),        //
+    //     VP(current_workspace), //
+    //     VP(next_widget_id)     //
+    // );
+    toml::table tbl = try_save_toml();
+    std::ofstream ofs(project_root.value() / "srproject.toml");
+    ofs << tbl;
 
     ImGui::SaveIniSettingsToDisk((project_root.value() / "sr_imgui.ini").c_str());
 
@@ -251,7 +259,8 @@ struct App {
     if (dir_str.empty())
       return;
 
-    std::ifstream file(std::filesystem::path(dir_str) / "srproject.json");
+    // std::ifstream file(std::filesystem::path(dir_str) / "srproject.json");
+    std::ifstream file(std::filesystem::path(dir_str) / "srproject.toml");
     if (!file) {
       spdlog::error("Unknown project directory format!");
       return;
@@ -262,16 +271,18 @@ struct App {
     // Safely clear all resources
     shutdown();
 
-    {
-      cereal::JSONInputArchive archive(file);
-      archive(                   //
-          VP(assets),            //
-          VP(graph_id),          //
-          VP(workspaces),        //
-          VP(current_workspace), //
-          VP(next_widget_id)     //
-      );
-    }
+    toml::table tbl = toml::parse(file);
+    try_load_toml(tbl);
+    // {
+    //   cereal::JSONInputArchive archive(file);
+    //   archive(                   //
+    //       VP(assets),            //
+    //       VP(graph_id),          //
+    //       VP(workspaces),        //
+    //       VP(current_workspace), //
+    //       VP(next_widget_id)     //
+    //   );
+    // }
 
     // Load ImGui settings
     auto imgui_filepath = project_root.value() / "sr_imgui.ini";
@@ -332,4 +343,6 @@ struct App {
 
     ImGui::End();
   }
+  toml::table try_save_toml();
+  void try_load_toml(toml::table &);
 };

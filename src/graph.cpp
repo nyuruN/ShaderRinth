@@ -122,7 +122,7 @@ void RenderGraph::setup_nodes_on_load() {
     pair.second->onLoad(*this);
   }
 }
-void RenderGraph::default_layout(std::shared_ptr<Shader> shader) {
+void RenderGraph::default_layout(std::shared_ptr<AssetManager> assets, AssetId<Shader> shader_id) {
   int out = insert_root_node(std::make_shared<OutputNode>());
   int time = insert_node(std::make_shared<TimeNode>());
   int viewport = insert_node(std::make_shared<ViewportNode>());
@@ -135,7 +135,7 @@ void RenderGraph::default_layout(std::shared_ptr<Shader> shader) {
   int time_out = dynamic_cast<TimeNode *>(get_node(time))->get_output_pin();
   int frag_out = f->get_output_pin();
   int vec_out = vp->get_output_pin();
-  f->set_shader(shader);
+  f->set_shader(assets, shader_id);
 
   int u_res_in = f->add_uniform_pin(*this, DataType::Vec2, "u_resolution");
   int u_time_in = f->add_uniform_pin(*this, DataType::Float, "u_time");
@@ -149,3 +149,68 @@ void RenderGraph::default_layout(std::shared_ptr<Shader> shader) {
   get_node(time)->pos = {20, 160};
   get_node(frag)->pos = {200, 60};
 }
+toml::table RenderGraph::save() {
+  toml::array pins{};
+  for (auto &pair : this->pins) {
+    toml::table t{
+        {"pin_id", pair.second.id},
+        {"node_id", pair.second.node_id},
+        {"type", pair.second.data.type},
+    };
+    t.is_inline(true);
+    pins.push_back(t);
+  }
+
+  toml::array edges{};
+  for (auto &pair : this->edges) {
+    toml::table t{
+        {"edge_id", pair.second.id},
+        {"from_node", pair.second.from},
+        {"to_node", pair.second.to},
+    };
+    t.is_inline(true);
+    edges.push_back(t);
+  }
+
+  // Save position in nodes
+  get_node_positions();
+
+  toml::array nodes{};
+  for (auto &pair : this->nodes) {
+    toml::table t = pair.second->save();
+    t.is_inline(true);
+    nodes.push_back(t);
+  }
+
+  return toml::table{
+      {"name", "Default Graph"},      //
+      {"nodes", nodes},               //
+      {"edges", edges},               //
+      {"pins", pins},                 //
+      {"geometry_id", geometry_id},   //
+      {"root_node", root_node},       //
+      {"next_node_id", next_node_id}, //
+      {"next_edge_id", next_edge_id}, //
+      {"next_pin_id", next_pin_id},   //
+  };
+}
+std::shared_ptr<Node> load_node(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+  std::string type = tbl["type"].value<std::string>().value();
+
+  if (type == "OutputNode")
+    return std::make_shared<OutputNode>(OutputNode::load(tbl, assets));
+  if (type == "FragmentShaderNode")
+    return std::make_shared<FragmentShaderNode>(FragmentShaderNode::load(tbl, assets));
+  if (type == "Texture2DNode")
+    return std::make_shared<Texture2DNode>(Texture2DNode::load(tbl, assets));
+  if (type == "TimeNode")
+    return std::make_shared<TimeNode>(TimeNode::load(tbl, assets));
+  if (type == "Vec2Node")
+    return std::make_shared<Vec2Node>(Vec2Node::load(tbl, assets));
+  if (type == "FloatNode")
+    return std::make_shared<FloatNode>(FloatNode::load(tbl, assets));
+  if (type == "ViewportNode")
+    return std::make_shared<ViewportNode>(ViewportNode::load(tbl, assets));
+
+  throw std::runtime_error("Unknown Node type!");
+};

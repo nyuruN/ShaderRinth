@@ -1,5 +1,7 @@
 #pragma once
 
+#include <toml++/toml.hpp>
+
 // A stateful widget
 class Widget {
 protected:
@@ -16,5 +18,6 @@ public:
   // Setting p_open to false will close the widget
   virtual void render(bool *p_open) {};
 
+  virtual toml::table save() = 0;
   template <class Archive> void serialize(Archive &ar) {}
 };

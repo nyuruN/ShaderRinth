@@ -42,16 +42,29 @@ public:
     graph.register_pin(id, DataType::Float, &output_pin);
   }
   void onExit(RenderGraph &graph) override { graph.delete_pin(output_pin); }
-  void run(RenderGraph &graph) override {
-    graph.set_pin_data(output_pin, (Data::Float)value);
-  }
-  std::shared_ptr<Node> clone() const override {
-    return std::make_shared<FloatNode>(*this);
-  }
+  void run(RenderGraph &graph) override { graph.set_pin_data(output_pin, (Data::Float)value); }
+  std::shared_ptr<Node> clone() const override { return std::make_shared<FloatNode>(*this); }
   std::vector<int> layout() const override { return {output_pin}; }
   template <class Archive> void serialize(Archive &ar) {
     ar(cereal::base_class<Node>(this));
     ar(output_pin, value);
+  }
+  toml::table save() override {
+    return toml::table{
+        {"type", "FloatNode"},         //
+        {"node_id", id},               //
+        {"position", Node::save(pos)}, //
+        {"output_pin", output_pin},    //
+        {"value", value},              //
+    };
+  }
+  static FloatNode load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+    auto n = FloatNode();
+    n.id = tbl["node_id"].value<int>().value();
+    n.pos = Node::load_pos(*tbl["position"].as_table());
+    n.output_pin = tbl["output_pin"].value<int>().value();
+    n.value = tbl["value"].value<float>().value();
+    return n;
   }
 };
 
@@ -77,8 +90,7 @@ public:
     {
       BEGIN_OUTPUT_PIN(output_pin, DataType::Vec2);
       ImGui::SetNextItemWidth(node_width);
-      ImGui::InputFloat2("##hidelabel", value.data(), "%.1f",
-                         ImGuiInputTextFlags_NoUndoRedo);
+      ImGui::InputFloat2("##hidelabel", value.data(), "%.1f", ImGuiInputTextFlags_NoUndoRedo);
       if (ImGui::IsItemDeactivatedAfterEdit()) {
         Global::getUndoContext()->do_action(
             {[this, newvalue = value] { prev_value = value = newvalue; },
@@ -91,20 +103,31 @@ public:
 
     ImNodes::EndNode();
   }
-  void onEnter(RenderGraph &graph) override {
-    graph.register_pin(id, DataType::Vec2, &output_pin);
-  }
+  void onEnter(RenderGraph &graph) override { graph.register_pin(id, DataType::Vec2, &output_pin); }
   void onExit(RenderGraph &graph) override { graph.delete_pin(output_pin); }
-  void run(RenderGraph &graph) override {
-    graph.set_pin_data(output_pin, (Data::Vec2)value);
-  }
-  std::shared_ptr<Node> clone() const override {
-    return std::make_shared<Vec2Node>(*this);
-  }
+  void run(RenderGraph &graph) override { graph.set_pin_data(output_pin, (Data::Vec2)value); }
+  std::shared_ptr<Node> clone() const override { return std::make_shared<Vec2Node>(*this); }
   std::vector<int> layout() const override { return {output_pin}; }
   template <class Archive> void serialize(Archive &ar) {
     ar(cereal::base_class<Node>(this));
     ar(output_pin, value);
+  }
+  toml::table save() override {
+    return toml::table{
+        {"type", "Vec2Node"},          //
+        {"node_id", id},               //
+        {"position", Node::save(pos)}, //
+        {"output_pin", output_pin},    //
+        {"value", Node::save(value)},  //
+    };
+  }
+  static Vec2Node load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+    auto n = Vec2Node();
+    n.id = tbl["node_id"].value<int>().value();
+    n.pos = Node::load_pos(*tbl["position"].as_table());
+    n.output_pin = tbl["output_pin"].value<int>().value();
+    n.value = Node::load_pos(*tbl["value"].as_table());
+    return n;
   }
 };
 

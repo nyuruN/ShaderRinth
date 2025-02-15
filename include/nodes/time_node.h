@@ -38,13 +38,26 @@ public:
   void run(RenderGraph &graph) override {
     graph.set_pin_data(output_pin, (Data::Float)glfwGetTime());
   }
-  std::shared_ptr<Node> clone() const override {
-    return std::make_shared<TimeNode>(*this);
-  }
+  std::shared_ptr<Node> clone() const override { return std::make_shared<TimeNode>(*this); }
   std::vector<int> layout() const override { return {output_pin}; }
   template <class Archive> void serialize(Archive &ar) {
     ar(cereal::base_class<Node>(this));
     ar(output_pin);
+  }
+  toml::table save() override {
+    return toml::table{
+        {"type", "TimeNode"},
+        {"node_id", id},
+        {"position", Node::save(pos)},
+        {"output_pin", output_pin},
+    };
+  }
+  static TimeNode load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+    auto n = TimeNode();
+    n.id = tbl["node_id"].value<int>().value();
+    n.pos = Node::load_pos(*tbl["position"].as_table());
+    n.output_pin = tbl["output_pin"].value<int>().value();
+    return n;
   }
 };
 

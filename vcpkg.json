@@ -3,6 +3,7 @@
     "glfw3",
     "spdlog",
     "cereal",
+    "tomlplusplus",
     "stb",
     "opengl",
     {

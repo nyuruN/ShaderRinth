@@ -53,12 +53,11 @@ public:
 
     switch (format) {
     case PNG:
-      success = stbi_write_png(export_path.c_str(), resolution[0],
-                               resolution[1], 4, data, resolution[0] * 4);
+      success = stbi_write_png(export_path.c_str(), resolution[0], resolution[1], 4, data,
+                               resolution[0] * 4);
       break;
     case JPEG:
-      success = stbi_write_jpg(export_path.c_str(), resolution[0],
-                               resolution[1], 4, data, quality);
+      success = stbi_write_jpg(export_path.c_str(), resolution[0], resolution[1], 4, data, quality);
       break;
     }
 
@@ -99,15 +98,13 @@ public:
       ImGui::InputText("Path", &export_path, ImGuiInputTextFlags_ElideLeft);
       ImGui::SameLine();
       if (ImGui::Button("...")) {
-        auto res = pfd::save_file("Export image to", export_path,
-                                  {"Images", "*.png; *.jpg"})
-                       .result();
+        auto res =
+            pfd::save_file("Export image to", export_path, {"Images", "*.png; *.jpg"}).result();
         if (!res.empty())
           export_path = res;
       }
 
-      ImGui::SetNextItemWidth(widget_width -
-                              ImGui::CalcTextSize("Image Resolution").x);
+      ImGui::SetNextItemWidth(widget_width - ImGui::CalcTextSize("Image Resolution").x);
       ImGui::InputInt2("Image Resolution", resolution);
 
       if (ImGui::RadioButton("PNG", &format, PNG))
@@ -117,8 +114,7 @@ public:
         set_extension(".jpg");
 
       if (format == JPEG) {
-        ImGui::SetNextItemWidth(widget_width -
-                                ImGui::CalcTextSize("Image Quality").x);
+        ImGui::SetNextItemWidth(widget_width - ImGui::CalcTextSize("Image Quality").x);
         ImGui::DragInt("Image Quality", &quality, 1, 0, 100, "%d%%");
       }
 
@@ -139,6 +135,7 @@ public:
     }
     ImGui::PopStyleVar();
   }
+  toml::table save() { throw std::runtime_error("Popup widget should not be serialized!"); }
 };
 
 // Type registration

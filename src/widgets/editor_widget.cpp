@@ -3,8 +3,11 @@
 #include "editor.h"
 #include "shader.h"
 
-EditorWidget::EditorWidget(int id, std::shared_ptr<Shader> shader) : shader(shader) {
+EditorWidget::EditorWidget(int id, std::shared_ptr<AssetManager> assets,
+                           AssetId<Shader> shader_id) {
   this->id = id;
+  this->shader_id = shader_id;
+  this->shader = assets->get_shader(shader_id);
   title = fmt::format("{}##{}", shader->get_name().c_str(), id);
 }
 std::string EditorWidget::get_buffer_text() {

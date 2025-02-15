@@ -14,6 +14,7 @@
 #include <cereal/types/memory.hpp>
 #include <cereal/types/string.hpp>
 #include <cereal/types/vector.hpp>
+#include <toml++/toml.hpp>
 
 // Forward declares
 class Node;
@@ -39,6 +40,8 @@ struct Edge {
   template <class Archive> void serialize(Archive &ar) { ar(VP(id), VP(from), VP(to)); }
 };
 
+std::shared_ptr<Node> load_node(toml::table &tbl, std::shared_ptr<AssetManager> assets);
+
 // RenderGraph
 struct RenderGraph {
 private:
@@ -47,6 +50,7 @@ private:
   std::map<int, Pin> pins = {};
   std::vector<int> run_order = {};
 
+  AssetId<Geometry> geometry_id;
   int root_node = -1;
   bool should_stop = false;
   int next_node_id = 0;
@@ -63,10 +67,11 @@ public:
   ImVec2 viewport_resolution = ImVec2(640, 480);
 
   RenderGraph(std::shared_ptr<AssetManager> assets = std::make_shared<AssetManager>(),
-              std::shared_ptr<Geometry> geo = NULL) {
+              AssetId<Geometry> geometry_id = 0) {
     this->shaders = assets->shaders;
     this->textures = assets->textures;
-    this->graph_geometry = geo;
+    this->graph_geometry = assets->get_geometry(geometry_id);
+    this->geometry_id = geometry_id;
   };
   template <class Archive> void load(Archive &ar) {
     Data::Vec2 resolution;
@@ -91,6 +96,53 @@ public:
     // Setup nodes
     setup_nodes_on_load();
   }
+  static RenderGraph load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+    AssetId<Geometry> geo_id = tbl["geometry_id"].value<int>().value();
+    RenderGraph graph(assets, geo_id);
+    graph.root_node = tbl["root_node"].value<int>().value();
+    graph.next_pin_id = tbl["next_pin_id"].value<int>().value();
+    graph.next_edge_id = tbl["next_edge_id"].value<int>().value();
+    graph.next_node_id = tbl["next_node_id"].value<int>().value();
+
+    spdlog::info("Loading pins");
+
+    // Load pins
+    for (auto &node : *tbl["pins"].as_array()) {
+      toml::table *t = node.as_table();
+      int pin_id = (*t)["pin_id"].value<int>().value();
+      int node_id = (*t)["node_id"].value<int>().value();
+      int type = (*t)["type"].value<int>().value();
+      graph.pins.insert({pin_id, Pin{id : pin_id, node_id : node_id, data : Data(DataType(type))}});
+    }
+
+    spdlog::info("Loading edges");
+
+    // Load edges
+    for (auto &node : *tbl["edges"].as_array()) {
+      toml::table *t = node.as_table();
+      int edge_id = (*t)["edge_id"].value<int>().value();
+      int from_id = (*t)["from_node"].value<int>().value();
+      int to_id = (*t)["to_node"].value<int>().value();
+      graph.edges.insert({edge_id, Edge{id : edge_id, from : from_id, to : to_id}});
+    }
+
+    // Load Nodes
+    for (auto &n_node : *tbl["nodes"].as_array()) {
+      toml::table *t_node = n_node.as_table();
+      int node_id = (*t_node)["node_id"].value<int>().value();
+      std::string type = (*t_node)["type"].value<std::string>().value();
+
+      spdlog::info("Loading Node: {}", type);
+
+      graph.nodes.insert({node_id, load_node(*t_node, assets)});
+    }
+
+    // Setup nodes
+    graph.setup_nodes_on_load();
+
+    return graph;
+  }
+  toml::table save();
   template <class Archive> void save(Archive &ar) const {
     Data::Vec2 resolution = {viewport_resolution.x, viewport_resolution.y};
 
@@ -180,5 +232,5 @@ public:
   // Prevents nodes from reusing previous data
   void clear_graph_data();
   // Default node layout
-  void default_layout(std::shared_ptr<Shader>);
+  void default_layout(std::shared_ptr<AssetManager> assets, AssetId<Shader> shader_id);
 };
