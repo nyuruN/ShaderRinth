@@ -55,6 +55,11 @@ toml::table AssetManager::save() {
   };
 }
 void AssetManager::load(toml::table &tbl) {
+  next_shader_id = tbl["next_shader_id"].value<int>().value();
+  next_texture_id = tbl["next_texture_id"].value<int>().value();
+  next_geometry_id = tbl["next_geometry_id"].value<int>().value();
+  next_graph_id = tbl["next_graph_id"].value<int>().value();
+
   for (auto &node : *tbl["Shaders"].as_array()) {
     toml::table *t = node.as_table();
     int asset_id = (*t)["asset_id"].value<int>().value();

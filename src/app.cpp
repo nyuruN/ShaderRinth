@@ -50,7 +50,7 @@ void App::try_load_toml(toml::table &tbl) {
 
       // clang-format off
       if (type == "ConsoleWidget")
-        widgets.push_back(std::make_shared<ConsoleWidget>(ConsoleWidget::load(*t_widget)));
+        widgets.push_back(std::make_shared<ConsoleWidget>(ConsoleWidget::load(*t_widget, assets)));
       if (type == "EditorWidget")
         widgets.push_back(std::make_shared<EditorWidget>(EditorWidget::load(*t_widget, assets)));
       if (type == "ViewportWidget")

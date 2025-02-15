@@ -3,6 +3,9 @@
 #include "utils.h"
 #include "widget.h"
 
+// Forward declares
+struct AssetManager;
+
 class ConsoleWidget : public Widget {
 private:
   constexpr static ImVec4 colors[] = {
@@ -81,7 +84,7 @@ public:
         {"widget_id", id},
     };
   }
-  static ConsoleWidget load(toml::table &tbl) {
+  static ConsoleWidget load(toml::table &tbl, std::shared_ptr<AssetManager>) {
     int id = tbl["widget_id"].value<int>().value();
     auto w = ConsoleWidget(id);
     return w;

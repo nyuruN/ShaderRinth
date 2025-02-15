@@ -1,8 +1,8 @@
 [Assets]
-next_geometry_id = 0
-next_graph_id = 0
-next_shader_id = 0
-next_texture_id = 0
+next_geometry_id = 1
+next_graph_id = 1
+next_shader_id = 1
+next_texture_id = 1
 
     [[Assets.Geometries]]
     asset_id = 0
