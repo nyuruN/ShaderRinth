@@ -23,9 +23,9 @@ toml::table App::try_save_toml() {
   }
 
   return toml::table{
-      {"Settings", settings},     //
-      {"Workspaces", workspaces}, //
-      {"Assets", assets->save()}, // Save Assets
+      {"Settings", settings},                         //
+      {"Workspaces", workspaces},                     //
+      {"Assets", assets->save(project_root.value())}, // Save Assets
   };
 }
 void App::try_load_toml(toml::table &tbl) {
@@ -36,7 +36,7 @@ void App::try_load_toml(toml::table &tbl) {
 
   // Load Assets
   assets = std::make_shared<AssetManager>();
-  assets->load(*tbl["Assets"].as_table());
+  assets->load(*tbl["Assets"].as_table(), project_root.value());
 
   // Load Workspaces
   for (auto &n_workspace : *tbl["Workspaces"].as_array()) {

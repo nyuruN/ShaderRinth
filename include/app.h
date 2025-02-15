@@ -221,7 +221,6 @@ struct App {
     if (dir.empty())
       return;
     project_root = dir;
-    Global::instance().project_root = project_root.value();
     save_project(project_root.value());
   }
   // Save everything related to a project
@@ -260,7 +259,6 @@ struct App {
       return;
     }
     project_root = dir_str;
-    Global::instance().project_root = project_root.value();
 
     // Safely clear all resources
     shutdown();

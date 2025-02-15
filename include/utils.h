@@ -21,7 +21,6 @@ struct UndoContext;
 
 struct Global {
 public:
-  std::filesystem::path project_root;
   UndoContext *undo_context;
 
   // Access a static instance of Global

@@ -17,10 +17,10 @@ void AssetManager::destroy() {
   textures.reset();
   graphs.reset();
 }
-toml::table AssetManager::save() {
+toml::table AssetManager::save(std::filesystem::path project_root) {
   toml::array shaders{};
   for (auto &pair : *this->shaders) {
-    auto t = pair.second->save();
+    auto t = pair.second->save(project_root);
     t.insert("asset_id", pair.first);
     shaders.push_back(t);
   }
@@ -54,7 +54,7 @@ toml::table AssetManager::save() {
       {"Graphs", graphs},
   };
 }
-void AssetManager::load(toml::table &tbl) {
+void AssetManager::load(toml::table &tbl, std::filesystem::path project_root) {
   next_shader_id = tbl["next_shader_id"].value<int>().value();
   next_texture_id = tbl["next_texture_id"].value<int>().value();
   next_geometry_id = tbl["next_geometry_id"].value<int>().value();
@@ -64,15 +64,15 @@ void AssetManager::load(toml::table &tbl) {
     toml::table *t = node.as_table();
     int asset_id = (*t)["asset_id"].value<int>().value();
     std::string name = (*t)["name"].value<std::string>().value();
-    std::string path_str = (*t)["path"].value<std::string>().value();
+    std::string path_str = (*t)["path"].value<std::string>().value(); // Relative path
 
-    shaders->insert({asset_id, std::make_shared<Shader>(Shader(name, path_str))});
+    shaders->insert({asset_id, std::make_shared<Shader>(Shader(name, project_root, path_str))});
   }
   for (auto &node : *tbl["Textures"].as_array()) {
     toml::table *t = node.as_table();
     int asset_id = (*t)["asset_id"].value<int>().value();
     std::string name = (*t)["name"].value<std::string>().value();
-    std::string path_str = (*t)["path"].value<std::string>().value();
+    std::string path_str = (*t)["path"].value<std::string>().value(); // Absolute path
 
     textures->insert({asset_id, std::make_shared<Texture>(Texture(name, path_str))});
   }

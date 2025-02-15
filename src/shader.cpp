@@ -7,17 +7,15 @@
 
 // Uniform setters
 static const std::function<void(GLint, Data)> SET_UNIFORM[] = {
-    // clang-format off
-  [](GLint l, Data v) { glUniform1i(l, v.get<Data::Int>()); },
-  [](GLint l, Data v) { glUniform2iv(l, 1, v.get<Data::IVec2>().data()); },
-  [](GLint l, Data v) { glUniform3iv(l, 1, v.get<Data::IVec3>().data()); },
-  [](GLint l, Data v) { glUniform4iv(l, 1, v.get<Data::IVec4>().data()); },
-  [](GLint l, Data v) { glUniform1f(l, v.get<Data::Float>()); },
-  [](GLint l, Data v) { glUniform2fv(l, 1, v.get<Data::Vec2>().data()); },
-  [](GLint l, Data v) { glUniform3fv(l, 1, v.get<Data::Vec3>().data()); },
-  [](GLint l, Data v) { glUniform4fv(l, 1, v.get<Data::Vec4>().data()); },
-  [](GLint l, Data v) { /* Data::Texture2D */ },
-    // clang-format on
+    [](GLint l, Data v) { glUniform1i(l, v.get<Data::Int>()); },
+    [](GLint l, Data v) { glUniform2iv(l, 1, v.get<Data::IVec2>().data()); },
+    [](GLint l, Data v) { glUniform3iv(l, 1, v.get<Data::IVec3>().data()); },
+    [](GLint l, Data v) { glUniform4iv(l, 1, v.get<Data::IVec4>().data()); },
+    [](GLint l, Data v) { glUniform1f(l, v.get<Data::Float>()); },
+    [](GLint l, Data v) { glUniform2fv(l, 1, v.get<Data::Vec2>().data()); },
+    [](GLint l, Data v) { glUniform3fv(l, 1, v.get<Data::Vec3>().data()); },
+    [](GLint l, Data v) { glUniform4fv(l, 1, v.get<Data::Vec4>().data()); },
+    [](GLint l, Data v) { /* Data::Texture2D */ },
 };
 
 Shader::Shader(std::string name) {
@@ -32,8 +30,9 @@ Shader::Shader(std::string name) {
   source = buf.str();
   this->name = name;
 }
-Shader::Shader(std::string name, std::filesystem::path path) {
-  std::filesystem::path abs_path = Global::instance().project_root / path;
+Shader::Shader(std::string name, std::filesystem::path project_root,
+               std::filesystem::path rel_path) {
+  auto abs_path = project_root / rel_path;
   std::ifstream file(abs_path);
   if (!file) {
     spdlog::error("Failed to load shader \"{}\" in \"{}\"!", name, abs_path.string());
@@ -43,7 +42,7 @@ Shader::Shader(std::string name, std::filesystem::path path) {
   buf << file.rdbuf();
   source = buf.str();
   this->name = name;
-  this->path = path;
+  this->path = rel_path;
 }
 bool Shader::compile(std::shared_ptr<Geometry> geo) {
   int success;
@@ -103,8 +102,8 @@ void Shader::set_uniform(const char *name, Data data) {
   } else
     SET_UNIFORM[data.type](loc, data);
 }
-toml::table Shader::save() {
-  auto abs_path = Global::instance().project_root / path;
+toml::table Shader::save(std::filesystem::path project_root) {
+  auto abs_path = project_root / path;
   // Ensure the parent directory exists
   std::filesystem::create_directories(abs_path.parent_path());
 

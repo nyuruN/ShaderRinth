@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <map>
 #include <memory>
 
@@ -50,6 +51,6 @@ public:
   std::shared_ptr<Geometry> get_geometry(AssetId<Geometry> &id) { return geometries->at(id); }
   std::shared_ptr<RenderGraph> get_graph(AssetId<RenderGraph> &id) { return graphs->at(id); }
 
-  toml::table save();
-  void load(toml::table &tbl);
+  toml::table save(std::filesystem::path project_root);
+  void load(toml::table &tbl, std::filesystem::path project_root);
 };

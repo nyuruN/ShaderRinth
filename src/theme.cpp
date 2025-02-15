@@ -21,7 +21,6 @@ void StyleColorsCinder() {
   style.ScrollbarSize = 12.0f;
   style.ScrollbarRounding = 16.0f;
 
-  // clang-format off
   style.Colors[ImGuiCol_Text] = ImVec4(0.86f, 0.93f, 0.89f, 0.78f);
   style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.86f, 0.93f, 0.89f, 0.28f);
   style.Colors[ImGuiCol_WindowBg] = ImVec4(0.13f, 0.14f, 0.17f, 1.00f);
@@ -68,10 +67,9 @@ void StyleColorsCinder() {
   style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.86f, 0.93f, 0.89f, 0.63f);
   style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.92f, 0.18f, 0.29f, 1.00f);
   style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.92f, 0.18f, 0.29f, 0.43f);
-  //style.Colors[ImGuiCol_PopupBg] = ImVec4(0.20f, 0.22f, 0.27f, 0.9f);
-  style.Colors[ImGuiCol_PopupBg] = ImVec4(0.20f*.9, 0.22f*.9, 0.27f*.9, 0.9f);
-  style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.20f*.8, 0.22f*.8, 0.27f*.8, 0.76f);
-  // clang-format on
+  // style.Colors[ImGuiCol_PopupBg] = ImVec4(0.20f, 0.22f, 0.27f, 0.9f);
+  style.Colors[ImGuiCol_PopupBg] = ImVec4(0.20f * .9, 0.22f * .9, 0.27f * .9, 0.9f);
+  style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.20f * .8, 0.22f * .8, 0.27f * .8, 0.76f);
 }
 } // namespace ImGui
 

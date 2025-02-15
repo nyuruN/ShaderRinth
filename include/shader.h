@@ -32,7 +32,7 @@ public:
   // Creates a new default fragment shader
   Shader(std::string name);
   // Creates a new fragment shader and loads its source
-  Shader(std::string name, std::filesystem::path path);
+  Shader(std::string name, std::filesystem::path project_root, std::filesystem::path path);
   // Compiles the shader given a Geometry (mesh, vertex shader)
   bool compile(std::shared_ptr<Geometry> geo);
   // Destroys created program
@@ -58,5 +58,5 @@ public:
   std::filesystem::path get_path() { return path; }
   char *get_log() { return log; }
 
-  toml::table save();
+  toml::table save(std::filesystem::path project_root);
 };
