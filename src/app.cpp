@@ -38,21 +38,15 @@ void App::try_load_toml(toml::table &tbl) {
   assets = std::make_shared<AssetManager>();
   assets->load(*tbl["Assets"].as_table());
 
-  spdlog::info("Assets loaded");
-
   // Load Workspaces
   for (auto &n_workspace : *tbl["Workspaces"].as_array()) {
     toml::table *t_workspace = n_workspace.as_table();
     std::string name = (*t_workspace)["name"].value<std::string>().value();
 
-    spdlog::info("Loading Workspace {}", name);
-
     std::vector<std::shared_ptr<Widget>> widgets = {};
     for (auto &n_widget : *(*t_workspace)["Widgets"].as_array()) {
       toml::table *t_widget = n_widget.as_table();
       std::string type = (*t_widget)["type"].value<std::string>().value();
-
-      spdlog::info("Loading Widget {}", type);
 
       // clang-format off
       if (type == "ConsoleWidget")

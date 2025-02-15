@@ -79,7 +79,6 @@ void AssetManager::load(toml::table &tbl) {
     // We only have one geometry class for now...
     if (type == "ScreenQuadGeometry") {
       std::string name = (*t)["name"].value<std::string>().value();
-      spdlog::info("Inserting Geometry \"{}\" ", name);
       geometries->insert(
           {asset_id, std::make_shared<ScreenQuadGeometry>(ScreenQuadGeometry(name))});
     }

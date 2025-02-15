@@ -104,8 +104,6 @@ public:
     graph.next_edge_id = tbl["next_edge_id"].value<int>().value();
     graph.next_node_id = tbl["next_node_id"].value<int>().value();
 
-    spdlog::info("Loading pins");
-
     // Load pins
     for (auto &node : *tbl["pins"].as_array()) {
       toml::table *t = node.as_table();
@@ -114,8 +112,6 @@ public:
       int type = (*t)["type"].value<int>().value();
       graph.pins.insert({pin_id, Pin{id : pin_id, node_id : node_id, data : Data(DataType(type))}});
     }
-
-    spdlog::info("Loading edges");
 
     // Load edges
     for (auto &node : *tbl["edges"].as_array()) {
@@ -131,8 +127,6 @@ public:
       toml::table *t_node = n_node.as_table();
       int node_id = (*t_node)["node_id"].value<int>().value();
       std::string type = (*t_node)["type"].value<std::string>().value();
-
-      spdlog::info("Loading Node: {}", type);
 
       graph.nodes.insert({node_id, load_node(*t_node, assets)});
     }
