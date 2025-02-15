@@ -4,8 +4,6 @@
 #include "nodes/output_node.h"
 #include "widget.h"
 
-#include <cereal/types/polymorphic.hpp>
-
 /// TODO:
 /// Add option to display the image without stretching
 class ViewportWidget : public Widget {
@@ -43,14 +41,6 @@ public:
     ImGui::End();
   }
 
-  template <class Archive>
-  static void load_and_construct(Archive &ar, cereal::construct<ViewportWidget> &construct) {
-    std::shared_ptr<RenderGraph> viewgraph;
-    int id;
-    ar(id, viewgraph);
-    construct(id, viewgraph);
-  }
-  template <class Archive> void serialize(Archive &ar) { ar(VP(id), VP(viewgraph)); }
   toml::table save() override {
     return toml::table{
         {"type", "ViewportWidget"},
@@ -65,8 +55,3 @@ public:
     return w;
   }
 };
-
-// Type registration
-#include <cereal/archives/json.hpp>
-// CEREAL_REGISTER_TYPE(ViewportWidget)
-// CEREAL_REGISTER_POLYMORPHIC_RELATION(Widget, ViewportWidget)

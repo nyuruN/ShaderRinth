@@ -5,8 +5,6 @@
 #include "widget.h"
 #include <imnodes.h>
 
-#include <cereal/types/polymorphic.hpp>
-
 struct AddNodes {
 private:
   std::vector<std::shared_ptr<Node>> insert_nodes = {};
@@ -99,13 +97,6 @@ public:
   // Deletes selected links and nodes
   void delete_selected();
 
-  template <class Archive>
-  static void load_and_construct(Archive &ar, cereal::construct<NodeEditorWidget> &construct) {
-    std::shared_ptr<RenderGraph> graph;
-    ar(graph);
-    construct(graph);
-  }
-  template <class Archive> void serialize(Archive &ar) { ar(VP(graph)); }
   toml::table save() {
     return toml::table{
         {"type", "NodeEditorWidget"},
@@ -120,8 +111,3 @@ public:
     return w;
   }
 };
-
-// Type registration
-#include <cereal/archives/json.hpp>
-// CEREAL_REGISTER_TYPE(NodeEditorWidget)
-// CEREAL_REGISTER_POLYMORPHIC_RELATION(Widget, NodeEditorWidget)

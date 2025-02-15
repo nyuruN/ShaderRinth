@@ -19,5 +19,4 @@ public:
   virtual void render(bool *p_open) {};
 
   virtual toml::table save() = 0;
-  template <class Archive> void serialize(Archive &ar) {}
 };

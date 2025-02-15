@@ -34,9 +34,8 @@ public:
   using Texture2D = GLuint;
 
   inline static constexpr DataType ALL[] = {
-      DataType::Int,   DataType::IVec2, DataType::IVec3,
-      DataType::IVec4, DataType::Float, DataType::Vec2,
-      DataType::Vec3,  DataType::Vec4,  DataType::Texture2D,
+      DataType::Int,  DataType::IVec2, DataType::IVec3, DataType::IVec4,     DataType::Float,
+      DataType::Vec2, DataType::Vec3,  DataType::Vec4,  DataType::Texture2D,
   };
   inline static constexpr char *NAME[] = {
       "Int",       // Int
@@ -57,8 +56,7 @@ public:
   DataType type;
   std::any data;
 
-  Data(DataType type = DataType(-1), std::any data = nullptr)
-      : type(type), data(data) {}
+  Data(DataType type = DataType(-1), std::any data = nullptr) : type(type), data(data) {}
   constexpr bool operator==(DataType t) { return type == t; }
   operator bool() const { return data.has_value(); }
 
@@ -74,5 +72,4 @@ public:
   void reset() { data.reset(); }
   constexpr static char *type_name(DataType type) { return NAME[type]; }
   char *type_name() { return type_name(type); }
-  template <class Archive> void serialize(Archive &ar) { ar(type); }
 };

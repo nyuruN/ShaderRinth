@@ -4,7 +4,6 @@
 #include <memory>
 
 #include "utils.h"
-#include <cereal/cereal.hpp>
 #include <toml++/toml.hpp>
 
 // Forward declares
@@ -52,9 +51,6 @@ public:
   std::shared_ptr<Geometry> get_geometry(AssetId<Geometry> &id) { return geometries->at(id); }
   std::shared_ptr<RenderGraph> get_graph(AssetId<RenderGraph> &id) { return graphs->at(id); }
 
-  template <class Archive> void serialize(Archive &ar) {
-    ar(VP(shaders), VP(textures), VP(geometries), VP(graphs));
-  }
   toml::table save();
   void load(toml::table &tbl);
 };

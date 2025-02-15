@@ -8,12 +8,6 @@
 #include <map>
 #include <memory>
 
-#include <cereal/cereal.hpp>
-#include <cereal/types/array.hpp>
-#include <cereal/types/map.hpp>
-#include <cereal/types/memory.hpp>
-#include <cereal/types/string.hpp>
-#include <cereal/types/vector.hpp>
 #include <toml++/toml.hpp>
 
 // Forward declares
@@ -28,16 +22,12 @@ struct Pin {
   int id = -1;
   int node_id = -1;
   Data data;
-
-  template <class Archive> void serialize(Archive &ar) { ar(VP(id), VP(node_id), VP(data)); }
 };
 
 // Represents a connection between nodes
 struct Edge {
   int id = -1;
   int from = -1, to = -1;
-
-  template <class Archive> void serialize(Archive &ar) { ar(VP(id), VP(from), VP(to)); }
 };
 
 std::shared_ptr<Node> load_node(toml::table &tbl, std::shared_ptr<AssetManager> assets);
@@ -73,29 +63,6 @@ public:
     this->graph_geometry = assets->get_geometry(geometry_id);
     this->geometry_id = geometry_id;
   };
-  template <class Archive> void load(Archive &ar) {
-    Data::Vec2 resolution;
-
-    ar(                                         //
-        VP(nodes),                              //
-        VP(edges),                              //
-        VP(pins),                               //
-        VP(shaders),                            //
-        VP(textures),                           //
-        VP(graph_geometry),                     //
-        NVP("viewport_resolution", resolution), //
-        VP(root_node),                          //
-        VP(next_node_id),                       //
-        VP(next_edge_id),                       //
-        VP(next_pin_id)                         //
-    );
-
-    viewport_resolution.x = resolution[0];
-    viewport_resolution.y = resolution[1];
-
-    // Setup nodes
-    setup_nodes_on_load();
-  }
   static RenderGraph load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
     AssetId<Geometry> geo_id = tbl["geometry_id"].value<int>().value();
     RenderGraph graph(assets, geo_id);
@@ -137,26 +104,6 @@ public:
     return graph;
   }
   toml::table save();
-  template <class Archive> void save(Archive &ar) const {
-    Data::Vec2 resolution = {viewport_resolution.x, viewport_resolution.y};
-
-    // Save position in nodes
-    get_node_positions();
-
-    ar(                                         //
-        VP(nodes),                              //
-        VP(edges),                              //
-        VP(pins),                               //
-        VP(shaders),                            //
-        VP(textures),                           //
-        VP(graph_geometry),                     //
-        NVP("viewport_resolution", resolution), //
-        VP(root_node),                          //
-        VP(next_node_id),                       //
-        VP(next_edge_id),                       //
-        VP(next_pin_id)                         //
-    );
-  }
   // Sets up node position for ImNodesEditorContext
   void set_node_positions(ImNodesEditorContext *context);
   // Gets node position for serialization

@@ -3,8 +3,6 @@
 #include "utils.h"
 #include "widget.h"
 
-#include <cereal/types/polymorphic.hpp>
-
 class ConsoleWidget : public Widget {
 private:
   constexpr static ImVec4 colors[] = {
@@ -77,13 +75,6 @@ public:
     ImGui::End();
   }
 
-  template <class Archive>
-  static void load_and_construct(Archive &ar, cereal::construct<ConsoleWidget> &construct) {
-    int id;
-    ar(id);
-    construct(id);
-  }
-  template <class Archive> void serialize(Archive &ar) { ar(VP(id)); }
   toml::table save() {
     return toml::table{
         {"type", "ConsoleWidget"},
@@ -96,8 +87,3 @@ public:
     return w;
   }
 };
-
-// Type registration
-#include <cereal/archives/json.hpp>
-CEREAL_REGISTER_TYPE(ConsoleWidget)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Widget, ConsoleWidget)

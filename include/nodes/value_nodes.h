@@ -4,9 +4,6 @@
 #include "node.h"
 #include <imnodes.h>
 
-#include <cereal/types/base_class.hpp>
-#include <cereal/types/polymorphic.hpp>
-
 class FloatNode : public Node {
   int output_pin;
 
@@ -43,12 +40,9 @@ public:
   }
   void onExit(RenderGraph &graph) override { graph.delete_pin(output_pin); }
   void run(RenderGraph &graph) override { graph.set_pin_data(output_pin, (Data::Float)value); }
+
   std::shared_ptr<Node> clone() const override { return std::make_shared<FloatNode>(*this); }
   std::vector<int> layout() const override { return {output_pin}; }
-  template <class Archive> void serialize(Archive &ar) {
-    ar(cereal::base_class<Node>(this));
-    ar(output_pin, value);
-  }
   toml::table save() override {
     return toml::table{
         {"type", "FloatNode"},         //
@@ -106,12 +100,9 @@ public:
   void onEnter(RenderGraph &graph) override { graph.register_pin(id, DataType::Vec2, &output_pin); }
   void onExit(RenderGraph &graph) override { graph.delete_pin(output_pin); }
   void run(RenderGraph &graph) override { graph.set_pin_data(output_pin, (Data::Vec2)value); }
+
   std::shared_ptr<Node> clone() const override { return std::make_shared<Vec2Node>(*this); }
   std::vector<int> layout() const override { return {output_pin}; }
-  template <class Archive> void serialize(Archive &ar) {
-    ar(cereal::base_class<Node>(this));
-    ar(output_pin, value);
-  }
   toml::table save() override {
     return toml::table{
         {"type", "Vec2Node"},          //
@@ -130,8 +121,3 @@ public:
     return n;
   }
 };
-
-// Type registration
-#include <cereal/archives/json.hpp>
-CEREAL_REGISTER_TYPE(FloatNode)
-CEREAL_REGISTER_TYPE(Vec2Node)

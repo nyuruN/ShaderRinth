@@ -53,7 +53,7 @@ purposes.
 
 ### VERSION 0.1.0 (Miniminal Viable Product)
 
-* Serialize project data in toml file
+* Serialize project data in toml file [done]
 
 * Enhanced error highlighting
 

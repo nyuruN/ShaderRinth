@@ -77,5 +77,4 @@ public:
     return pos;
   }
   virtual toml::table save() = 0;
-  template <class Archive> void serialize(Archive &ar) { ar(id, pos); }
 };

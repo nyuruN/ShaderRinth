@@ -8,9 +8,6 @@
 #include <imgui_stdlib.h>
 #include <imnodes.h>
 
-#include <cereal/types/base_class.hpp>
-#include <cereal/types/polymorphic.hpp>
-
 class FragmentShaderNode : public Node {
   struct UniformPin {
     int pinid;
@@ -221,10 +218,6 @@ public:
       l.push_back(pin.pinid);
     return l;
   }
-  template <class Archive> void serialize(Archive &ar) {
-    ar(cereal::base_class<Node>(this));
-    ar(output_pin, uniform_pins, shader);
-  }
   toml::table save() override {
     toml::array uniform_pins;
 
@@ -272,7 +265,3 @@ public:
     return n;
   }
 };
-
-// Type registration
-#include <cereal/archives/json.hpp>
-CEREAL_REGISTER_TYPE(FragmentShaderNode)

@@ -4,9 +4,6 @@
 #include "node.h"
 #include <imnodes.h>
 
-#include <cereal/types/base_class.hpp>
-#include <cereal/types/polymorphic.hpp>
-
 class OutputNode : public Node {
 private:
   int input_pin;
@@ -49,12 +46,9 @@ public:
       }
     }
   }
+
   std::shared_ptr<Node> clone() const override { return std::make_shared<OutputNode>(*this); }
   std::vector<int> layout() const override { return {input_pin}; }
-  template <class Archive> void serialize(Archive &ar) {
-    ar(cereal::base_class<Node>(this));
-    ar(input_pin, out_texture);
-  }
   toml::table save() override {
     return toml::table{
         {"type", "OutputNode"},        //
@@ -73,7 +67,3 @@ public:
     return n;
   }
 };
-
-// Type registration
-#include <cereal/archives/json.hpp>
-CEREAL_REGISTER_TYPE(OutputNode)

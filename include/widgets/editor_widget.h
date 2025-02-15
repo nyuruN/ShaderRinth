@@ -4,7 +4,6 @@
 
 #include "assets.h"
 #include "utils.h"
-#include <cereal/types/polymorphic.hpp>
 
 // Forward declares
 struct Shader;
@@ -33,14 +32,6 @@ public:
   void onStartup() override;
   void onShutdown() override;
 
-  template <class Archive>
-  static void load_and_construct(Archive &ar, cereal::construct<EditorWidget> &construct) {
-    std::shared_ptr<Shader> shader;
-    int id;
-    ar(id, shader);
-    construct(id, shader);
-  }
-  template <class Archive> void serialize(Archive &ar) { ar(VP(id), VP(shader)); }
   toml::table save() {
     return toml::table{
         {"type", "EditorWidget"},
@@ -55,8 +46,3 @@ public:
     return w;
   }
 };
-
-// Type registration
-#include <cereal/archives/json.hpp>
-// CEREAL_REGISTER_TYPE(EditorWidget)
-// CEREAL_REGISTER_POLYMORPHIC_RELATION(Widget, EditorWidget)

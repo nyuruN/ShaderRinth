@@ -9,8 +9,6 @@
 #include <stb_image.h>
 #include <stb_image_write.h>
 
-#include <cereal/types/polymorphic.hpp>
-
 /// Popup widget, should not be serialized
 class ExportImagePopup : public Widget {
 private:
@@ -137,8 +135,3 @@ public:
   }
   toml::table save() { throw std::runtime_error("Popup widget should not be serialized!"); }
 };
-
-// Type registration
-#include <cereal/archives/json.hpp>
-CEREAL_REGISTER_TYPE(ExportImagePopup)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Widget, ExportImagePopup)

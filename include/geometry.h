@@ -3,9 +3,6 @@
 #include <GLES3/gl3.h>
 #include <string>
 
-#include <cereal/cereal.hpp>
-#include <cereal/types/base_class.hpp>
-#include <cereal/types/polymorphic.hpp>
 #include <toml++/toml.hpp>
 
 class Geometry {
@@ -22,7 +19,6 @@ public:
   std::string &get_name() { return name; }
 
   virtual toml::table save() = 0;
-  template <class Archive> void serialize(Archive &ar) { ar(name); }
 };
 
 // Geometry covering the entire viewport
@@ -60,9 +56,4 @@ public:
   toml::table save() override {
     return toml::table{{"type", "ScreenQuadGeometry"}, {"name", name}};
   }
-  template <class Archive> void serialize(Archive &ar) { ar(cereal::base_class<Geometry>(this)); }
 };
-
-// Type registration
-#include <cereal/archives/json.hpp>
-CEREAL_REGISTER_TYPE(ScreenQuadGeometry)
