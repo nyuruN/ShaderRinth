@@ -31,6 +31,7 @@ add_executable(
 
   src/widgets/node_editor_widget.cpp
   src/widgets/editor_widget.cpp
+  src/widgets/export_image_popup.cpp
   
   extern/imnodes/imnodes.cpp
 )
@@ -50,8 +51,6 @@ find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(${EXECUTABLE} PRIVATE glfw)
 find_package(spdlog CONFIG REQUIRED)
 target_link_libraries(${EXECUTABLE} PRIVATE spdlog::spdlog)
-# find_package(cereal CONFIG REQUIRED)
-# target_link_libraries(${EXECUTABLE} PRIVATE cereal::cereal)
 find_package(Stb REQUIRED)
 target_include_directories(${EXECUTABLE} PRIVATE ${Stb_INCLUDE_DIR})
 find_package(OpenGL REQUIRED)

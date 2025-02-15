@@ -6,6 +6,7 @@
 #include "shader.h"
 #include "texture.h"
 #include "widgets.h"
+#include <GL/gl.h>
 #include <GLFW/glfw3.h> // OpenGL headers
 #include <filesystem>
 #include <fstream>

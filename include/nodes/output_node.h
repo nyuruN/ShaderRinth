@@ -3,6 +3,7 @@
 #include "graph.h"
 #include "node.h"
 #include <imnodes.h>
+#include <spdlog/spdlog.h>
 
 class OutputNode : public Node {
 private:

@@ -2,6 +2,7 @@
 
 #include "graph.h"
 #include "node.h"
+#include "utils.h"
 #include <imnodes.h>
 
 class FloatNode : public Node {

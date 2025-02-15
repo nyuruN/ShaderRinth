@@ -1,6 +1,9 @@
 #include "shader.h"
 #include "data.h"
 #include "geometry.h"
+#include "utils.h"
+
+#include <fstream>
 
 // Uniform setters
 static const std::function<void(GLint, Data)> SET_UNIFORM[] = {
@@ -28,6 +31,19 @@ Shader::Shader(std::string name) {
   path = std::filesystem::path("shaders") / n.append(".glsl");
   source = buf.str();
   this->name = name;
+}
+Shader::Shader(std::string name, std::filesystem::path path) {
+  std::filesystem::path abs_path = Global::instance().project_root / path;
+  std::ifstream file(abs_path);
+  if (!file) {
+    spdlog::error("Failed to load shader \"{}\" in \"{}\"!", name, abs_path.string());
+    return;
+  }
+  std::ostringstream buf;
+  buf << file.rdbuf();
+  source = buf.str();
+  this->name = name;
+  this->path = path;
 }
 bool Shader::compile(std::shared_ptr<Geometry> geo) {
   int success;
@@ -86,4 +102,19 @@ void Shader::set_uniform(const char *name, Data data) {
     glUniform1i(loc, bound_textures.size() - 1);
   } else
     SET_UNIFORM[data.type](loc, data);
+}
+toml::table Shader::save() {
+  auto abs_path = Global::instance().project_root / path;
+  // Ensure the parent directory exists
+  std::filesystem::create_directories(abs_path.parent_path());
+
+  if (auto file = std::ofstream(abs_path))
+    file << source;
+  else
+    spdlog::error("Failed to save shader \"{}\" in \"{}\"!", name, abs_path.string());
+
+  return toml::table{
+      {"name", name},
+      {"path", path.string()},
+  };
 }

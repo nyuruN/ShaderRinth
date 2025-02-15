@@ -9,9 +9,6 @@
 #include <spdlog/spdlog.h>
 #include <vector>
 
-#define VP(T) ::cereal::make_nvp(#T, T)
-#define NVP(S, T) ::cereal::make_nvp(S, T)
-
 // TODO: Undo: Create a smart pointer that...
 // Is used by both ImNodes and Self: Swap<T>.data()
 // Keeps track of previous value: Swap<T>.prev()

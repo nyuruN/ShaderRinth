@@ -1,10 +1,8 @@
 #pragma once
 
 #include "config_app.h"
-#include "utils.h"
 #include <GLES3/gl3.h>
 #include <filesystem>
-#include <fstream>
 #include <spdlog/spdlog.h>
 #include <string>
 
@@ -34,25 +32,7 @@ public:
   // Creates a new default fragment shader
   Shader(std::string name);
   // Creates a new fragment shader and loads its source
-  Shader(std::string name, std::filesystem::path path) {
-    std::filesystem::path abs_path = Global::instance().project_root / path;
-    std::ifstream file(abs_path);
-    if (!file) {
-      spdlog::error("Failed to load shader \"{}\" in \"{}\"!", name, abs_path.string());
-      return;
-    }
-    std::ostringstream buf;
-    buf << file.rdbuf();
-    source = buf.str();
-    this->name = name;
-    this->path = path;
-  }
-  // Creates a new fragment shader, does not load yet
-  Shader(std::string name, std::filesystem::path path, std::string source) {
-    this->name = name;
-    this->path = path;
-    this->source = source;
-  }
+  Shader(std::string name, std::filesystem::path path);
   // Compiles the shader given a Geometry (mesh, vertex shader)
   bool compile(std::shared_ptr<Geometry> geo);
   // Destroys created program
@@ -78,19 +58,5 @@ public:
   std::filesystem::path get_path() { return path; }
   char *get_log() { return log; }
 
-  toml::table save() {
-    auto abs_path = Global::instance().project_root / path;
-    // Ensure the parent directory exists
-    std::filesystem::create_directories(abs_path.parent_path());
-
-    if (auto file = std::ofstream(abs_path))
-      file << source;
-    else
-      spdlog::error("Failed to save shader \"{}\" in \"{}\"!", name, abs_path.string());
-
-    return toml::table{
-        {"name", name},
-        {"path", path.string()},
-    };
-  }
+  toml::table save();
 };

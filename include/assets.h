@@ -3,7 +3,6 @@
 #include <map>
 #include <memory>
 
-#include "utils.h"
 #include <toml++/toml.hpp>
 
 // Forward declares
