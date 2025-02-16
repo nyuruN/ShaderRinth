@@ -14,11 +14,11 @@ void OutlinerWidget::render(bool *p_open) {
 
   ImGui::TableNextRow();
   ImGui::TableNextColumn();
+  static unsigned int editing = 0;
+  static std::string input;
 
   // Textures
   if (ImGui::TreeNodeEx("Textures")) {
-    static unsigned int editing = -1;
-    static std::string input;
     for (auto &pair : *assets->textures) {
       ImGui::TableNextRow();
       ImGui::TableNextColumn();
@@ -26,7 +26,7 @@ void OutlinerWidget::render(bool *p_open) {
       if (pair.first == editing) {
         ImGui::Indent(20);
         if (ImGui::InputText("##hidelabel", &input, ImGuiInputTextFlags_EnterReturnsTrue)) {
-          editing = -1;
+          editing = 0;
           pair.second->get_name() = input;
         }
         ImGui::Indent(-20);
@@ -51,8 +51,6 @@ void OutlinerWidget::render(bool *p_open) {
 
   // Shaders
   if (ImGui::TreeNodeEx("Shaders")) {
-    static unsigned int editing = -1;
-    static std::string input;
     for (auto &pair : *assets->shaders) {
       ImGui::TableNextRow();
       ImGui::TableNextColumn();
@@ -60,7 +58,7 @@ void OutlinerWidget::render(bool *p_open) {
       if (pair.first == editing) {
         ImGui::Indent(20);
         if (ImGui::InputText("##hidelabel", &input, ImGuiInputTextFlags_EnterReturnsTrue)) {
-          editing = -1;
+          editing = 0;
           pair.second->get_name() = input;
         }
         ImGui::Indent(-20);
@@ -85,8 +83,6 @@ void OutlinerWidget::render(bool *p_open) {
 
   // Geometries
   if (ImGui::TreeNodeEx("Geometries")) {
-    static unsigned int editing = -1;
-    static std::string input;
     for (auto &pair : *assets->geometries) {
       ImGui::TableNextRow();
       ImGui::TableNextColumn();
@@ -94,7 +90,7 @@ void OutlinerWidget::render(bool *p_open) {
       if (pair.first == editing) {
         ImGui::Indent(20);
         if (ImGui::InputText("##hidelabel", &input, ImGuiInputTextFlags_EnterReturnsTrue)) {
-          editing = -1;
+          editing = 0;
           pair.second->get_name() = input;
         }
         ImGui::Indent(-20);

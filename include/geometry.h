@@ -1,14 +1,12 @@
 #pragma once
 
+#include "assets.h"
 #include <GLES3/gl3.h>
 #include <string>
 
 #include <toml++/toml.hpp>
 
-class Geometry {
-protected:
-  std::string name;
-
+class Geometry : public Asset {
 public:
   // Compiles a vertex shader, implementation should guarantee success
   virtual void compile_vertex_shader(unsigned int &vert_shader) {};
@@ -16,7 +14,6 @@ public:
   virtual void draw_geometry() {};
   // Release resources allocated by Geometry
   virtual void destroy() {};
-  std::string &get_name() { return name; }
 
   virtual toml::table save() = 0;
 };
@@ -54,6 +51,6 @@ public:
   void destroy() override;
 
   toml::table save() override {
-    return toml::table{{"type", "ScreenQuadGeometry"}, {"name", name}};
+    return toml::table{{"type", "ScreenQuadGeometry"}, {"name", this->name}};
   }
 };

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "assets.h"
 #include "config_app.h"
 #include <GLES3/gl3.h>
 #include <filesystem>
@@ -15,12 +16,11 @@ static const std::filesystem::path DEFAULT_FRAG_PATH =
 class Geometry;
 struct Data;
 
-struct Shader {
+class Shader : public Asset {
 private:
   char log[512] = {'\0'};
   std::filesystem::path path; //  is RELATIVE to project_root
   std::string source;
-  std::string name;
 
   std::vector<GLuint> bound_textures = {};
   GLuint program = 0;
@@ -54,7 +54,6 @@ public:
   GLuint get_uniform_loc(const char *name) { return glGetUniformLocation(program, name); }
   bool is_compiled() { return compiled; }
   std::string &get_source() { return source; }
-  std::string &get_name() { return name; }
   std::filesystem::path get_path() { return path; }
   char *get_log() { return log; }
 

@@ -7,9 +7,9 @@
 #include <toml++/toml.hpp>
 
 // Forward declares
-struct Shader;
-struct Texture;
-struct RenderGraph;
+class Shader;
+class Texture;
+class RenderGraph;
 class Geometry;
 
 template <typename T> using AssetId = unsigned int;
