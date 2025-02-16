@@ -44,10 +44,7 @@ toml::table AssetManager::save(std::filesystem::path project_root) {
   }
 
   return toml::table{
-      {"next_shader_id", next_shader_id},
-      {"next_texture_id", next_texture_id},
-      {"next_geometry_id", next_geometry_id},
-      {"next_graph_id", next_graph_id},
+      {"next_asset_id", next_asset_id}, //
       {"Shaders", shaders},
       {"Textures", textures},
       {"Geometries", geometries},
@@ -55,10 +52,7 @@ toml::table AssetManager::save(std::filesystem::path project_root) {
   };
 }
 void AssetManager::load(toml::table &tbl, std::filesystem::path project_root) {
-  next_shader_id = tbl["next_shader_id"].value<int>().value();
-  next_texture_id = tbl["next_texture_id"].value<int>().value();
-  next_geometry_id = tbl["next_geometry_id"].value<int>().value();
-  next_graph_id = tbl["next_graph_id"].value<int>().value();
+  next_asset_id = tbl["next_asset_id"].value<int>().value();
 
   for (auto &node : *tbl["Shaders"].as_array()) {
     toml::table *t = node.as_table();

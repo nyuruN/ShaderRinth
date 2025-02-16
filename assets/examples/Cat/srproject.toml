@@ -1,23 +1,20 @@
 [Assets]
-next_geometry_id = 1
-next_graph_id = 1
-next_shader_id = 1
-next_texture_id = 1
+next_asset_id = 5
 
     [[Assets.Geometries]]
-    asset_id = 0
+    asset_id = 2
     name = 'FullscreenQuad'
     type = 'ScreenQuadGeometry'
 
     [[Assets.Graphs]]
-    asset_id = 0
+    asset_id = 4
     edges = [
         { edge_id = 0, from_node = 3, to_node = 0 },
         { edge_id = 1, from_node = 1, to_node = 5 },
         { edge_id = 3, from_node = 6, to_node = 7 },
         { edge_id = 4, from_node = 9, to_node = 4 }
     ]
-    geometry_id = 0
+    geometry_id = 2
     name = 'Default Graph'
     next_edge_id = 5
     next_node_id = 6
@@ -30,7 +27,7 @@ next_texture_id = 1
             { identifier = 'u_time', pin_id = 5, type = 4 },
             { identifier = 'u_cat', pin_id = 7, type = 8 }
         ] },
-        { node_id = 4, output_pin = 6, position = { x = 17.0, y = 265.0 }, texture_id = 0, type = 'Texture2DNode' },
+        { node_id = 4, output_pin = 6, position = { x = 17.0, y = 265.0 }, texture_id = 3, type = 'Texture2DNode' },
         { node_id = 5, output_pin = 9, position = { x = 20.0, y = 40.0 }, type = 'ViewportNode' }
     ]
     pins = [
@@ -48,18 +45,18 @@ next_texture_id = 1
     root_node = 0
 
     [[Assets.Shaders]]
-    asset_id = 0
+    asset_id = 1
     name = 'Default'
     path = 'shaders/Default.glsl'
 
     [[Assets.Textures]]
-    asset_id = 0
+    asset_id = 3
     name = 'Cat'
     path = '/home/zhangwei/Projects/ShaderRinth/assets/textures/cat.png'
 
 [Settings]
 current_workspace = 0
-graph_id = 0
+graph_id = 4
 next_widget_id = 4
 
 [[Workspaces]]
@@ -71,7 +68,7 @@ name = 'Shading'
     widget_id = 0
 
     [[Workspaces.Widgets]]
-    graph_id = 0
+    graph_id = 4
     type = 'ViewportWidget'
     widget_id = 1
 
@@ -83,6 +80,6 @@ name = 'Shading'
 name = 'RenderGraph'
 
     [[Workspaces.Widgets]]
-    graph_id = 0
+    graph_id = 4
     type = 'NodeEditorWidget'
     widget_id = 3

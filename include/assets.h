@@ -15,12 +15,18 @@ class Geometry;
 template <typename T> using AssetId = unsigned int;
 template <typename T> using Assets = std::map<AssetId<T>, std::shared_ptr<T>>;
 
+class Asset {
+protected:
+  std::string name;
+
+public:
+  std::string &get_name() { return name; }
+};
+
 struct AssetManager : std::enable_shared_from_this<AssetManager> {
 private:
-  AssetId<Shader> next_shader_id = 0;
-  AssetId<Texture> next_texture_id = 0;
-  AssetId<Geometry> next_geometry_id = 0;
-  AssetId<RenderGraph> next_graph_id = 0;
+  // 0 is a reserved invalid asset id
+  AssetId<Asset> next_asset_id = 1;
 
 public:
   std::shared_ptr<Assets<Texture>> textures = std::make_shared<Assets<Texture>>();
@@ -31,20 +37,20 @@ public:
   void destroy();
 
   AssetId<Shader> insert_shader(std::shared_ptr<Shader> shader) {
-    shaders->insert({next_shader_id++, shader});
-    return next_shader_id - 1;
+    shaders->insert({next_asset_id++, shader});
+    return next_asset_id - 1;
   }
   AssetId<Texture> insert_texture(std::shared_ptr<Texture> shader) {
-    textures->insert({next_texture_id++, shader});
-    return next_texture_id - 1;
+    textures->insert({next_asset_id++, shader});
+    return next_asset_id - 1;
   }
   AssetId<Geometry> insert_geometry(std::shared_ptr<Geometry> shader) {
-    geometries->insert({next_geometry_id++, shader});
-    return next_geometry_id - 1;
+    geometries->insert({next_asset_id++, shader});
+    return next_asset_id - 1;
   }
   AssetId<RenderGraph> insert_graph(std::shared_ptr<RenderGraph> shader) {
-    graphs->insert({next_graph_id++, shader});
-    return next_graph_id - 1;
+    graphs->insert({next_asset_id++, shader});
+    return next_asset_id - 1;
   }
   std::shared_ptr<Shader> get_shader(AssetId<Shader> &id) { return shaders->at(id); }
   std::shared_ptr<Texture> get_texture(AssetId<Texture> &id) { return textures->at(id); }
