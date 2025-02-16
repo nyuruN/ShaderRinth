@@ -3,7 +3,6 @@
 #include "widget.h"
 
 #include "assets.h"
-#include "utils.h"
 
 // Forward declares
 struct Shader;
@@ -14,7 +13,7 @@ class ZepBuffer;
 
 class EditorWidget : public Widget {
 private:
-  std::shared_ptr<Shader> shader;
+  std::weak_ptr<Shader> shader;
   AssetId<Shader> shader_id;
 
   std::string title;
@@ -26,7 +25,7 @@ private:
 public:
   EditorWidget(int id, std::shared_ptr<AssetManager> assets, AssetId<Shader> shader_id);
   std::string get_buffer_text();
-  std::shared_ptr<Shader> get_shader() { return shader; }
+  AssetId<Shader> get_shader() { return shader_id; }
   void render(bool *) override;
   void onUpdate() override;
   void onStartup() override;

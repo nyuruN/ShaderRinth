@@ -178,7 +178,7 @@ struct App {
               bool has_editor = false;
               for (auto widget : workspaces[current_workspace].second) {
                 auto editor = dynamic_cast<EditorWidget *>(widget.get());
-                if (editor && editor->get_shader() == pair.second)
+                if (editor && editor->get_shader() == pair.first)
                   has_editor = true;
               }
               if (has_editor)

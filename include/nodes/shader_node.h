@@ -20,8 +20,8 @@ class FragmentShaderNode : public Node {
   std::vector<UniformPin> uniform_pins;
   int output_pin;
   AssetId<Shader> shader_id;
-
-  std::shared_ptr<Shader> shader;
+  std::weak_ptr<Assets<Shader>> shaders;
+  std::weak_ptr<Shader> shader;
   GLuint image_fbo;
   GLuint image_colorbuffer;
 
@@ -30,6 +30,7 @@ class FragmentShaderNode : public Node {
 public:
   void set_shader(std::shared_ptr<AssetManager> assets, AssetId<Shader> shader_id) {
     this->shader = assets->get_shader(shader_id);
+    this->shaders = assets->shaders;
     this->shader_id = shader_id;
   }
   int get_output_pin() { return output_pin; }
@@ -58,12 +59,17 @@ public:
     ImGui::SameLine();
     ImGui::SetNextItemWidth(node_width - ImGui::CalcTextSize("Source").x);
 
+    auto shader = this->shader.lock();
     if (ImGui::BeginCombo("##hidelabel", bool(shader) ? shader->get_name().c_str() : "")) {
-      for (auto const &pair : *graph.shaders) {
+      auto shaders = this->shaders.lock();
+
+      assert(shaders && "Shader assets not initialized!");
+
+      for (auto const &pair : *shaders) {
         bool is_selected = (shader) && (shader->get_name() == pair.second->get_name());
         if (ImGui::Selectable(pair.second->get_name().c_str(), is_selected)) {
-          shader_id = pair.first;
-          shader = pair.second;
+          this->shader_id = pair.first;
+          this->shader = pair.second;
         }
         // Set the initial focus when opening the combo (scrolling + keyboard
         // navigation focus)
@@ -152,6 +158,8 @@ public:
     glDeleteTextures(1, &image_colorbuffer);
   }
   void run(RenderGraph &graph) override {
+    auto shader = this->shader.lock();
+
     if (!shader) {
       graph.stop();
       return;
@@ -160,7 +168,7 @@ public:
     if (!shader->is_compiled()) {
       static bool should_error = true;
       if (!shader->compile(graph.graph_geometry)) {
-        // TODO: Likewise find a better way to delegate
+        // TODO: Find a better way to delegate
         // error messages to the user -> interaction with
         // editor?
         if (should_error)
@@ -168,10 +176,8 @@ public:
         should_error = false; // Don't error next time
         graph.stop();
         return;
-      } else { // If compiled
+      } else {
         should_error = true;
-        // TODO: Find a better way to display status
-        // spdlog::info("Shader compiled");
       }
     }
 

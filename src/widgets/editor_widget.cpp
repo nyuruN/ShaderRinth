@@ -2,12 +2,14 @@
 
 #include "editor.h"
 #include "shader.h"
+#include "utils.h"
 
 EditorWidget::EditorWidget(int id, std::shared_ptr<AssetManager> assets,
                            AssetId<Shader> shader_id) {
   this->id = id;
   this->shader_id = shader_id;
-  this->shader = assets->get_shader(shader_id);
+  auto shader = assets->get_shader(shader_id);
+  this->shader = shader;
   title = fmt::format("{}##{}", shader->get_name().c_str(), id);
 }
 std::string EditorWidget::get_buffer_text() {
@@ -15,6 +17,9 @@ std::string EditorWidget::get_buffer_text() {
 }
 void EditorWidget::onStartup() {
   auto &zep = zep_get_editor();
+  auto shader = this->shader.lock();
+
+  assert(shader && "Invalid shader object on startup!");
 
   buffer = zep.GetEmptyBuffer(shader->get_path().filename());
   buffer->SetText(shader->get_source());
@@ -34,6 +39,10 @@ void EditorWidget::onShutdown() {
   zep.RemoveBuffer(buffer);
 }
 void EditorWidget::onUpdate() {
+  auto shader = this->shader.lock();
+  if (!shader) // Is shader deleted ?
+    return;
+
   uint64_t new_update = buffer->GetUpdateCount();
   if (new_update != last_update)
     this->is_dirty = true;

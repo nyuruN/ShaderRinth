@@ -4,13 +4,51 @@
 #include "geometry.h"
 #include "shader.h"
 #include "texture.h"
+#include <imgui.h>
 #include <imgui_stdlib.h>
 
+void render_entry(AssetId<Asset> asset_id, std::string &name, AssetId<Asset> &editing,
+                  std::string &input, std::vector<AssetId<Asset>> &deferred_delete) {
+  ImGui::TableNextRow();
+  ImGui::TableNextColumn();
+
+  if (asset_id == editing) {
+    ImGui::Indent(20);
+    if (ImGui::InputText("##hidelabel", &input, ImGuiInputTextFlags_EnterReturnsTrue)) {
+      editing = 0;
+      name = input;
+    }
+    ImGui::Indent(-20);
+  } else {
+    ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_Leaf);
+    ImGui::TreePop();
+  }
+
+  ImGui::TableNextColumn();
+  ImGui::PushID(asset_id);
+  if (ImGui::Button("Edit")) {
+    editing = asset_id;
+    input = name;
+  }
+  ImGui::SameLine();
+  if (ImGui::Button(" - ")) {
+    deferred_delete.push_back(asset_id);
+  }
+  ImGui::SameLine();
+  ImGui::Dummy({5, 0});
+  ImGui::PopID();
+}
 void OutlinerWidget::render(bool *p_open) {
   ImGui::SetNextWindowSize({400, 200}, ImGuiCond_FirstUseEver);
-  ImGui::Begin(title.c_str(), p_open);
+  if (!ImGui::Begin(title.c_str(), p_open)) {
+    ImGui::End();
+    return;
+  }
 
   ImGui::BeginTable("Scene", 2, ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersInnerH);
+
+  ImGui::TableSetupColumn("Assets", ImGuiTableColumnFlags_WidthStretch);
+  ImGui::TableSetupColumn("Edit", ImGuiTableColumnFlags_WidthFixed);
 
   ImGui::TableNextRow();
   ImGui::TableNextColumn();
@@ -19,29 +57,12 @@ void OutlinerWidget::render(bool *p_open) {
 
   // Textures
   if (ImGui::TreeNodeEx("Textures")) {
+    std::vector<AssetId<Shader>> deferred_delete = {};
     for (auto &pair : *assets->textures) {
-      ImGui::TableNextRow();
-      ImGui::TableNextColumn();
-
-      if (pair.first == editing) {
-        ImGui::Indent(20);
-        if (ImGui::InputText("##hidelabel", &input, ImGuiInputTextFlags_EnterReturnsTrue)) {
-          editing = 0;
-          pair.second->get_name() = input;
-        }
-        ImGui::Indent(-20);
-      } else {
-        ImGui::TreeNodeEx(pair.second->get_name().c_str(), ImGuiTreeNodeFlags_Leaf);
-        ImGui::TreePop();
-      }
-
-      ImGui::TableNextColumn();
-      ImGui::PushID(pair.first);
-      if (ImGui::Button("Edit")) {
-        editing = pair.first;
-        input = pair.second->get_name();
-      }
-      ImGui::PopID();
+      render_entry(pair.first, pair.second->get_name(), editing, input, deferred_delete);
+    }
+    for (auto id : deferred_delete) {
+      // Delete
     }
     ImGui::TreePop();
   }
@@ -51,29 +72,12 @@ void OutlinerWidget::render(bool *p_open) {
 
   // Shaders
   if (ImGui::TreeNodeEx("Shaders")) {
+    std::vector<AssetId<Shader>> deferred_delete = {};
     for (auto &pair : *assets->shaders) {
-      ImGui::TableNextRow();
-      ImGui::TableNextColumn();
-
-      if (pair.first == editing) {
-        ImGui::Indent(20);
-        if (ImGui::InputText("##hidelabel", &input, ImGuiInputTextFlags_EnterReturnsTrue)) {
-          editing = 0;
-          pair.second->get_name() = input;
-        }
-        ImGui::Indent(-20);
-      } else {
-        ImGui::TreeNodeEx(pair.second->get_name().c_str(), ImGuiTreeNodeFlags_Leaf);
-        ImGui::TreePop();
-      }
-
-      ImGui::TableNextColumn();
-      ImGui::PushID(pair.first);
-      if (ImGui::Button("Edit")) {
-        editing = pair.first;
-        input = pair.second->get_name();
-      }
-      ImGui::PopID();
+      render_entry(pair.first, pair.second->get_name(), editing, input, deferred_delete);
+    }
+    for (auto id : deferred_delete) {
+      assets->shaders->erase(id);
     }
     ImGui::TreePop();
   }
@@ -83,29 +87,12 @@ void OutlinerWidget::render(bool *p_open) {
 
   // Geometries
   if (ImGui::TreeNodeEx("Geometries")) {
+    std::vector<AssetId<Shader>> deferred_delete = {};
     for (auto &pair : *assets->geometries) {
-      ImGui::TableNextRow();
-      ImGui::TableNextColumn();
-
-      if (pair.first == editing) {
-        ImGui::Indent(20);
-        if (ImGui::InputText("##hidelabel", &input, ImGuiInputTextFlags_EnterReturnsTrue)) {
-          editing = 0;
-          pair.second->get_name() = input;
-        }
-        ImGui::Indent(-20);
-      } else {
-        ImGui::TreeNodeEx(pair.second->get_name().c_str(), ImGuiTreeNodeFlags_Leaf);
-        ImGui::TreePop();
-      }
-
-      ImGui::TableNextColumn();
-      ImGui::PushID(pair.first);
-      if (ImGui::Button("Edit")) {
-        editing = pair.first;
-        input = pair.second->get_name();
-      }
-      ImGui::PopID();
+      render_entry(pair.first, pair.second->get_name(), editing, input, deferred_delete);
+    }
+    for (auto id : deferred_delete) {
+      // Delete
     }
     ImGui::TreePop();
   }
