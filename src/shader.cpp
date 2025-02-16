@@ -1,7 +1,6 @@
 #include "shader.h"
 #include "data.h"
 #include "geometry.h"
-#include "utils.h"
 
 #include <fstream>
 

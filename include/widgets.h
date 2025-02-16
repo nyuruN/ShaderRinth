@@ -10,4 +10,5 @@
 #include "widgets/editor_widget.h"      // IWYU pragma: export
 #include "widgets/export_image_popup.h" // IWYU pragma: export
 #include "widgets/node_editor_widget.h" // IWYU pragma: export
+#include "widgets/outliner_widget.h"    // IWYU pragma: export
 #include "widgets/viewport_widget.h"    // IWYU pragma: export

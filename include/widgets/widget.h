@@ -1,5 +1,7 @@
 #pragma once
 
+#include <imgui.h>
+
 #include <toml++/toml.hpp>
 
 // A stateful widget
@@ -19,4 +21,25 @@ public:
   virtual void render(bool *p_open) {};
 
   virtual toml::table save() = 0;
+};
+
+class PopupWidget : Widget {
+protected:
+  bool is_open = false;
+
+  // Should be called at the start of the render function
+  // MUST BE IN THE SAME ID STACK AS BeginPopup()
+  void update_popup(char *popup_str_id) {
+    if (is_open && !ImGui::IsPopupOpen(popup_str_id))
+      ImGui::OpenPopup(popup_str_id);
+    else
+      is_open = false;
+  }
+
+public:
+  void open_popup() { is_open = true; }
+
+  toml::table save() override {
+    throw std::runtime_error("Popup widgets should not be serialized!");
+  };
 };

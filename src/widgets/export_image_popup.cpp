@@ -42,8 +42,7 @@ void ExportImagePopup::export_image() {
   }
 }
 void ExportImagePopup::render(bool *p_open) {
-  if (is_open && !ImGui::IsPopupOpen("Export Image"))
-    ImGui::OpenPopup("Export Image");
+  update_popup("Export Image");
 
   // Always center this window when appearing
   ImVec2 center = ImGui::GetMainViewport()->GetCenter();

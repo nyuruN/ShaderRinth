@@ -52,6 +52,7 @@ struct App {
     graph = assets->get_graph(graph_id);
     graph->default_layout(assets, shader_id);
 
+    // Setup global widgets
     export_image.set_graph(graph);
 
     // clang-format off
@@ -61,6 +62,7 @@ struct App {
                       std::make_shared<EditorWidget>(next_widget_id++, assets, shader_id),
                       std::make_shared<ViewportWidget>(next_widget_id++, assets, graph_id),
                       std::make_shared<ConsoleWidget>(next_widget_id++),
+                      std::make_shared<OutlinerWidget>(next_widget_id++, assets),
                   }),
         Workspace("RenderGraph", {std::make_shared<NodeEditorWidget>(next_widget_id++, assets, graph_id)}),
     });
@@ -85,6 +87,7 @@ struct App {
       for (auto &widget : pair.second)
         widget->onStartup();
     }
+    export_image.set_graph(graph);
     export_image.onStartup();
   }
   void shutdown() {
@@ -157,10 +160,11 @@ struct App {
       }
       if (ImGui::BeginMenu("View")) {
         if (ImGui::MenuItem("Console"))
-          deferred_add_widget.push_back(std::make_shared<ConsoleWidget>(next_widget_id++));
+          deferred_add_widget.push_back(
+              std::make_shared<ConsoleWidget>(ConsoleWidget(next_widget_id++)));
         if (ImGui::MenuItem("Viewport"))
           deferred_add_widget.push_back(
-              std::make_shared<ViewportWidget>(next_widget_id++, assets, graph_id));
+              std::make_shared<ViewportWidget>(ViewportWidget(next_widget_id++, assets, graph_id)));
         if (!assets->shaders->empty())
           if (ImGui::BeginMenu("Editor")) {
             for (auto &pair : *assets->shaders) {
@@ -180,11 +184,14 @@ struct App {
               if (has_editor)
                 continue;
 
-              deferred_add_widget.push_back(
-                  std::make_shared<EditorWidget>(next_widget_id++, assets, pair.first));
+              deferred_add_widget.push_back(std::make_shared<EditorWidget>(
+                  EditorWidget(next_widget_id++, assets, pair.first)));
             }
             ImGui::EndMenu();
           }
+        if (ImGui::MenuItem("Outliner"))
+          deferred_add_widget.push_back(
+              std::make_shared<OutlinerWidget>(OutlinerWidget(next_widget_id++, assets)));
 
         ImGui::EndMenu();
       }
@@ -225,16 +232,6 @@ struct App {
   }
   // Save everything related to a project
   void save_project(std::filesystem::path project_directory) {
-    // std::ofstream ofs(project_root.value() / "srproject.json");
-    // cereal::JSONOutputArchive archive(ofs);
-    //
-    // archive(                   //
-    //     VP(assets),            //
-    //     VP(graph_id),          //
-    //     VP(workspaces),        //
-    //     VP(current_workspace), //
-    //     VP(next_widget_id)     //
-    // );
     toml::table tbl = try_save_toml();
     std::ofstream ofs(project_root.value() / "srproject.toml");
     ofs << tbl;
@@ -252,7 +249,6 @@ struct App {
     if (dir_str.empty())
       return;
 
-    // std::ifstream file(std::filesystem::path(dir_str) / "srproject.json");
     std::ifstream file(std::filesystem::path(dir_str) / "srproject.toml");
     if (!file) {
       spdlog::error("Unknown project directory format!");
@@ -265,16 +261,6 @@ struct App {
 
     toml::table tbl = toml::parse(file);
     try_load_toml(tbl);
-    // {
-    //   cereal::JSONInputArchive archive(file);
-    //   archive(                   //
-    //       VP(assets),            //
-    //       VP(graph_id),          //
-    //       VP(workspaces),        //
-    //       VP(current_workspace), //
-    //       VP(next_widget_id)     //
-    //   );
-    // }
 
     // Load ImGui settings
     auto imgui_filepath = project_root.value() / "sr_imgui.ini";
@@ -292,7 +278,6 @@ struct App {
     }
 
     startup();
-    export_image.set_graph(graph);
 
     spdlog::info("Project loaded {}", project_root.value().string());
   }

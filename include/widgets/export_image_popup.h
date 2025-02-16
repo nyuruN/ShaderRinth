@@ -7,7 +7,7 @@
 struct RenderGraph;
 
 /// Popup widget, should not be serialized
-class ExportImagePopup : public Widget {
+class ExportImagePopup : public PopupWidget {
 private:
   enum Format { PNG, JPEG };
 
@@ -19,12 +19,10 @@ private:
   int quality = 90;
 
   float widget_width = 480;
-  bool is_open = false;
 
 public:
   ExportImagePopup() {}
   ExportImagePopup(std::shared_ptr<RenderGraph> graph) { this->graph = graph; }
-  void open_popup() { is_open = true; }
   void set_graph(std::shared_ptr<RenderGraph> graph) { this->graph = graph; }
   void set_extension(const std::filesystem::path &ext) {
     std::filesystem::path path(export_path);
@@ -45,7 +43,6 @@ public:
       break;
     }
   }
-  void render(bool *p_open = NULL);
+  void render(bool *p_open = NULL) override;
   virtual void onShutdown() override { graph.reset(); }
-  toml::table save() { throw std::runtime_error("Popup widget should not be serialized!"); }
 };

@@ -57,6 +57,8 @@ void App::try_load_toml(toml::table &tbl) {
         widgets.push_back(std::make_shared<ViewportWidget>(ViewportWidget::load(*t_widget, assets)));
       if (type == "NodeEditorWidget")
         widgets.push_back(std::make_shared<NodeEditorWidget>(NodeEditorWidget::load(*t_widget, assets)));
+      if (type == "OutlinerWidget")
+        widgets.push_back(std::make_shared<OutlinerWidget>(OutlinerWidget::load(*t_widget, assets)));
       // clang-format on
     }
 
