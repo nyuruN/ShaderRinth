@@ -2,15 +2,14 @@
 
 A Shadertoy-like GLSL Editor written in C++
 
-## Design philosophy
+## About the project
 
-This program should fulfill the purpose of quickly
-generating various procedural textures per written
-shader code.
+ShaderRinth is designed to be a quick a dirty
+playground to experiment on your shader ideas!
 
-For instance, one could write code that procedurally
-generates some wood pattern and the program should
-take care of its outputs in normals, diffuse, etc.
+With ShaderRinth you should be able to generate
+textures with your renders, create interactive
+demos, and more.
 
 For that workflow to be applicable, the software
 should be relatively easy to use and offer various
@@ -35,48 +34,50 @@ purposes.
 
 ### VERSION 0.0.1 (Prototype)
 
-* Integrate more powerful code/text editor [done]
+* [x] Integrate more powerful code/text editor
 
-* Create framework for shaders/materials/configurable uniforms etc. [done]
+* [x] Create framework for shaders/materials/configurable uniforms etc.
 
-* Ability to save/load renders and shader projects [done]
+* [x] Ability to save/load renders and shader projects
 
-* Node based editor for shader passes / uniforms / textures [done]
+* [x] Node based editor for shader passes / uniforms / textures
 
-* Load textures & configure as uniforms (needs image handling) [done]
+* [x] Load textures & configure as uniforms (needs image handling)
 
-* Making renders to picture (e.g. Render Widget) [done -> file option]
+* [x] Making renders to picture (e.g. Render Widget)
 
-* Copy and paste in NodeEditorWidget [done]
+* [x] Copy and paste in NodeEditorWidget
 
-* Enhanced asset management [wip]
+* [ ] Enhanced asset management
+
+* [ ] Runtime Factories for polymorphic nodes and widgets (no if-chains)
+
+* [ ] Type erasure for assets (extension of Asset class)
+
+* [ ] Unit tests, cross platform tests etc.
 
 ### VERSION 0.1.0 (Miniminal Viable Product)
 
-* Runtime Factories for polymorphic nodes and widgets (serialization)
+* [x] Serialize project data in toml file
 
-* Type erasure for assets (extension of Asset class)
+* [ ] Enhanced error highlighting
 
-* Serialize project data in toml file [done]
+* [ ] Help page?
 
-* Enhanced error highlighting
+* [ ] Inspector widget: Selection system? control parameters
 
-* Help page?
+* [ ] Outliner widget: show execution flow if multiple graphs are present
 
-* Inspector widget: Selection system? control parameters
+* [ ] Multiple graphs and render to texture if needed
 
-* Outliner widget: show execution flow if multiple graphs are present
+* [ ] Undo history for common actions
 
-* Multiple graphs and render to texture if needed
+* [ ] UI improvements
 
-* Undo history for common actions
+  * [x] Custom theme
 
-* UI improvements
-  * Custom theme [done]
-  * Advanced windowing e.g. Splitters, Widgets etc. 
+  * [ ] Advanced windowing e.g. Splitters, Widgets etc. 
 
-* Finishing touches
-
-* ...
+* ***To be continued***
 
 
