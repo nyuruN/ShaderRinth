@@ -11,7 +11,7 @@ void AddNodes::commit(RenderGraph *graph) {
   }
   insert_nodes.clear();
 }
-void AddNodes::show() {
+void AddNodes::show(std::shared_ptr<AssetManager> assets) {
   if (is_open && !ImGui::IsPopupOpen("Add Nodes"))
     ImGui::OpenPopup("Add Nodes");
   else
@@ -29,7 +29,7 @@ void AddNodes::show() {
     if (ImGui::Selectable("Viewport"))
       insert_nodes.push_back(std::make_shared<ViewportNode>());
     if (ImGui::Selectable("Texture"))
-      insert_nodes.push_back(std::make_shared<Texture2DNode>());
+      insert_nodes.push_back(std::make_shared<Texture2DNode>(assets));
 
     if (ImGui::BeginMenu("Value Nodes")) {
       ImGui::Dummy(ImVec2(150, 0)); // Min width
@@ -169,7 +169,8 @@ void NodeEditorWidget::render(bool *) {
   Global::setUndoContext(&history);
   graph.get()->render();
 
-  add_nodes.show();
+  if (auto assets = this->assets.lock())
+    add_nodes.show(assets);
 
   focused = ImGui::IsWindowFocused();
 

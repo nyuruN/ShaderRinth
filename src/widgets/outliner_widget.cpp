@@ -57,12 +57,13 @@ void OutlinerWidget::render(bool *p_open) {
 
   // Textures
   if (ImGui::TreeNodeEx("Textures")) {
-    std::vector<AssetId<Shader>> deferred_delete = {};
+    std::vector<AssetId<Texture>> deferred_delete = {};
     for (auto &pair : *assets->textures) {
       render_entry(pair.first, pair.second->get_name(), editing, input, deferred_delete);
     }
     for (auto id : deferred_delete) {
-      // Delete
+      assets->textures->at(id)->destroy();
+      assets->textures->erase(id);
     }
     ImGui::TreePop();
   }
@@ -77,6 +78,7 @@ void OutlinerWidget::render(bool *p_open) {
       render_entry(pair.first, pair.second->get_name(), editing, input, deferred_delete);
     }
     for (auto id : deferred_delete) {
+      assets->shaders->at(id)->destroy();
       assets->shaders->erase(id);
     }
     ImGui::TreePop();

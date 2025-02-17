@@ -22,7 +22,7 @@ next_asset_id = 5
     nodes = [
         { input_pin = 0, node_id = 0, out_texture = 5, position = { x = 542.0, y = 42.0 }, type = 'OutputNode' },
         { node_id = 1, output_pin = 1, position = { x = 20.0, y = 160.0 }, type = 'TimeNode' },
-        { node_id = 3, output_pin = 3, position = { x = 228.0, y = 102.0 }, shader_id = 0, type = 'FragmentShaderNode', uniform_pins = [
+        { node_id = 3, output_pin = 3, position = { x = 228.0, y = 102.0 }, shader_id = 1, type = 'FragmentShaderNode', uniform_pins = [
             { identifier = 'u_resolution', pin_id = 4, type = 5 },
             { identifier = 'u_time', pin_id = 5, type = 4 },
             { identifier = 'u_cat', pin_id = 7, type = 8 }
@@ -63,7 +63,7 @@ next_widget_id = 4
 name = 'Shading'
 
     [[Workspaces.Widgets]]
-    shader_id = 0
+    shader_id = 1
     type = 'EditorWidget'
     widget_id = 0
 

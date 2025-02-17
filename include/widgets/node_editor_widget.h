@@ -4,6 +4,9 @@
 #include "widget.h"
 #include <imnodes.h>
 
+// Forward declares
+struct AssetManager;
+
 // Helper struct for adding nodes
 struct AddNodes {
 private:
@@ -21,7 +24,7 @@ public:
   // Apply changes to RenderGraph
   void commit(RenderGraph *graph);
   // Renders the GUI and handles user interactions
-  void show();
+  void show(std::shared_ptr<AssetManager>);
 };
 
 // Helper struct for copy and paste
@@ -52,6 +55,7 @@ class NodeEditorWidget : public Widget {
 private:
   AssetId<RenderGraph> graph_id;
   std::shared_ptr<RenderGraph> graph = nullptr;
+  std::weak_ptr<AssetManager> assets;
 
   ImNodesEditorContext *context = ImNodes::EditorContextCreate();
   AddNodes add_nodes = AddNodes();
@@ -64,7 +68,8 @@ public:
   NodeEditorWidget(int id, std::shared_ptr<AssetManager> assets, AssetId<RenderGraph> graph_id) {
     this->id = id;
     this->graph_id = graph_id;
-    graph = assets->get_graph(graph_id);
+    this->graph = assets->get_graph(graph_id);
+    this->assets = assets;
   }
   void onStartup() override { graph->set_node_positions(context); };
   void onShutdown() override { ImNodes::EditorContextFree(context); }
