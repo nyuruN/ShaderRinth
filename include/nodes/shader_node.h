@@ -66,7 +66,8 @@ public:
       assert(shaders && "Shader assets not initialized!");
 
       for (auto const &pair : *shaders) {
-        bool is_selected = (shader) && (shader->get_name() == pair.second->get_name());
+        ImGui::PushID(pair.first);
+        bool is_selected = (shader) && (shader_id == pair.first);
         if (ImGui::Selectable(pair.second->get_name().c_str(), is_selected)) {
           this->shader_id = pair.first;
           this->shader = pair.second;
@@ -75,6 +76,7 @@ public:
         // navigation focus)
         if (is_selected)
           ImGui::SetItemDefaultFocus();
+        ImGui::PopID();
       }
       ImGui::EndCombo();
     }

@@ -35,17 +35,14 @@ struct App {
   App() {
     ImGui::LoadIniSettingsFromDisk((std::filesystem::path(APP_ROOT) / "assets/imgui.ini").c_str());
 
-    auto shader = std::make_shared<Shader>("Default");
-    auto geo = std::make_shared<ScreenQuadGeometry>();
     auto texture = std::make_shared<Texture>("Cat", std::filesystem::path(APP_ROOT) /
                                                         "assets/textures/cat.png");
 
-    if (!*texture)
+    if (!texture->is_loaded())
       spdlog::error("Failed to load texture assets/textures/cat.png");
 
-    auto shader_id = assets->insert_shader(shader);
-    assets->insert_shader(std::make_shared<Shader>("OtherDefault"));
-    auto geo_id = assets->insert_geometry(geo);
+    auto shader_id = assets->insert_shader(std::make_shared<Shader>("Default"));
+    auto geo_id = assets->insert_geometry(std::make_shared<ScreenQuadGeometry>());
     auto tex_id = assets->insert_texture(texture);
 
     graph_id = assets->insert_graph(std::make_shared<RenderGraph>(assets, geo_id));
@@ -156,6 +153,9 @@ struct App {
         ImGui::EndMenu();
       }
       if (ImGui::BeginMenu("Edit")) {
+        if (ImGui::MenuItem("New Shader")) {
+          assets->insert_shader(std::make_shared<Shader>(Shader("NewShader")));
+        }
         ImGui::EndMenu();
       }
       if (ImGui::BeginMenu("View")) {

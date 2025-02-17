@@ -27,7 +27,8 @@ public:
       assert(textures && "Texture assets not initialized!");
 
       for (auto const &pair : *textures) {
-        bool is_selected = (texture) && (texture->get_name() == pair.second->get_name());
+        ImGui::PushID(pair.first);
+        bool is_selected = (texture) && (texture_id == pair.first);
         if (ImGui::Selectable(pair.second->get_name().c_str(), is_selected)) {
           this->texture_id = pair.first;
           this->texture = pair.second;
@@ -36,6 +37,7 @@ public:
         // navigation focus)
         if (is_selected)
           ImGui::SetItemDefaultFocus();
+        ImGui::PopID();
       }
       ImGui::EndCombo();
     }

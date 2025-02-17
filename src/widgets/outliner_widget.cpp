@@ -25,7 +25,6 @@ void render_entry(AssetId<Asset> asset_id, std::string &name, AssetId<Asset> &ed
   }
 
   ImGui::TableNextColumn();
-  ImGui::PushID(asset_id);
   if (ImGui::Button("Edit")) {
     editing = asset_id;
     input = name;
@@ -36,7 +35,6 @@ void render_entry(AssetId<Asset> asset_id, std::string &name, AssetId<Asset> &ed
   }
   ImGui::SameLine();
   ImGui::Dummy({5, 0});
-  ImGui::PopID();
 }
 void OutlinerWidget::render(bool *p_open) {
   ImGui::SetNextWindowSize({400, 200}, ImGuiCond_FirstUseEver);
@@ -59,7 +57,9 @@ void OutlinerWidget::render(bool *p_open) {
   if (ImGui::TreeNodeEx("Textures")) {
     std::vector<AssetId<Texture>> deferred_delete = {};
     for (auto &pair : *assets->textures) {
+      ImGui::PushID(pair.first);
       render_entry(pair.first, pair.second->get_name(), editing, input, deferred_delete);
+      ImGui::PopID();
     }
     for (auto id : deferred_delete) {
       assets->textures->at(id)->destroy();
@@ -71,13 +71,20 @@ void OutlinerWidget::render(bool *p_open) {
   ImGui::TableNextRow();
   ImGui::TableNextColumn();
 
+  bool shaders_open = ImGui::TreeNodeEx("Shaders");
+  ImGui::TableNextColumn();
+  if (ImGui::Button(" + ##shader")) { // Handle creation
+    assets->insert_shader(std::make_shared<Shader>(Shader("NewShader")));
+  }
   // Shaders
-  if (ImGui::TreeNodeEx("Shaders")) {
+  if (shaders_open) {
     std::vector<AssetId<Shader>> deferred_delete = {};
     for (auto &pair : *assets->shaders) {
+      ImGui::PushID(pair.first);
       render_entry(pair.first, pair.second->get_name(), editing, input, deferred_delete);
+      ImGui::PopID();
     }
-    for (auto id : deferred_delete) {
+    for (auto id : deferred_delete) { // Handle deletion
       assets->shaders->at(id)->destroy();
       assets->shaders->erase(id);
     }
@@ -91,10 +98,11 @@ void OutlinerWidget::render(bool *p_open) {
   if (ImGui::TreeNodeEx("Geometries")) {
     std::vector<AssetId<Shader>> deferred_delete = {};
     for (auto &pair : *assets->geometries) {
+      ImGui::PushID(pair.first);
+      ImGui::BeginDisabled(true);
       render_entry(pair.first, pair.second->get_name(), editing, input, deferred_delete);
-    }
-    for (auto id : deferred_delete) {
-      // Delete
+      ImGui::EndDisabled();
+      ImGui::PopID();
     }
     ImGui::TreePop();
   }

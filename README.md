@@ -49,9 +49,13 @@ purposes.
 
 * Copy and paste in NodeEditorWidget [done]
 
-* Enhanced asset management
+* Enhanced asset management [wip]
 
 ### VERSION 0.1.0 (Miniminal Viable Product)
+
+* Runtime Factories for polymorphic nodes and widgets (serialization)
+
+* Type erasure for assets (extension of Asset class)
 
 * Serialize project data in toml file [done]
 

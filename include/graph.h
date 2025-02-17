@@ -51,13 +51,11 @@ private:
   void setup_nodes_on_load();
 
 public:
-  std::shared_ptr<Assets<Texture>> textures = nullptr;
   std::shared_ptr<Geometry> graph_geometry = nullptr;
   ImVec2 viewport_resolution = ImVec2(640, 480);
 
   RenderGraph(std::shared_ptr<AssetManager> assets = std::make_shared<AssetManager>(),
               AssetId<Geometry> geometry_id = 0) {
-    this->textures = assets->textures;
     this->graph_geometry = assets->get_geometry(geometry_id);
     this->geometry_id = geometry_id;
   };
