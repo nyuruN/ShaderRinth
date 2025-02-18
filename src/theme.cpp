@@ -70,6 +70,7 @@ void StyleColorsCinder() {
   // style.Colors[ImGuiCol_PopupBg] = ImVec4(0.20f, 0.22f, 0.27f, 0.9f);
   style.Colors[ImGuiCol_PopupBg] = ImVec4(0.20f * .9, 0.22f * .9, 0.27f * .9, 0.9f);
   style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.20f * .8, 0.22f * .8, 0.27f * .8, 0.76f);
+  style.Colors[ImGuiCol_DockingPreview] = ImVec4(0.47f, 0.77f, 0.83f, 0.2f);
 }
 } // namespace ImGui
 

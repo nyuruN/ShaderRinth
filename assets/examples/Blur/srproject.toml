@@ -154,6 +154,7 @@ next_asset_id = 5
 current_workspace = 0
 graph_id = 4
 next_widget_id = 4
+show_tab_bar = true
 
 [[Workspaces]]
 name = 'Shading'

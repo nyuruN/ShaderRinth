@@ -23,6 +23,7 @@ struct App {
   std::vector<Workspace> workspaces;
   int current_workspace = 0;
   int next_widget_id = 0;
+  bool show_tab_bar = true;
 
   std::shared_ptr<RenderGraph> graph;
   std::optional<std::filesystem::path> project_root;
@@ -165,33 +166,35 @@ struct App {
         if (ImGui::MenuItem("Viewport"))
           deferred_add_widget.push_back(
               std::make_shared<ViewportWidget>(ViewportWidget(next_widget_id++, assets, graph_id)));
-        if (!assets->shaders->empty())
-          if (ImGui::BeginMenu("Editor")) {
-            for (auto &pair : *assets->shaders) {
-              ImGui::PushID(pair.first);
-              bool clicked = ImGui::MenuItem(pair.second->get_name().c_str());
-              ImGui::PopID();
+        if (ImGui::BeginMenu("Editor")) {
+          for (auto &pair : *assets->shaders) {
+            ImGui::PushID(pair.first);
+            bool clicked = ImGui::MenuItem(pair.second->get_name().c_str());
+            ImGui::PopID();
 
-              if (!clicked)
-                continue;
+            if (!clicked)
+              continue;
 
-              bool has_editor = false;
-              for (auto widget : workspaces[current_workspace].second) {
-                auto editor = dynamic_cast<EditorWidget *>(widget.get());
-                if (editor && editor->get_shader() == pair.first)
-                  has_editor = true;
-              }
-              if (has_editor)
-                continue;
-
-              deferred_add_widget.push_back(std::make_shared<EditorWidget>(
-                  EditorWidget(next_widget_id++, assets, pair.first)));
+            bool has_editor = false;
+            for (auto widget : workspaces[current_workspace].second) {
+              auto editor = dynamic_cast<EditorWidget *>(widget.get());
+              if (editor && editor->get_shader() == pair.first)
+                has_editor = true;
             }
-            ImGui::EndMenu();
+            if (has_editor)
+              continue;
+
+            deferred_add_widget.push_back(
+                std::make_shared<EditorWidget>(EditorWidget(next_widget_id++, assets, pair.first)));
           }
+          ImGui::EndMenu();
+        }
         if (ImGui::MenuItem("Outliner"))
           deferred_add_widget.push_back(
               std::make_shared<OutlinerWidget>(OutlinerWidget(next_widget_id++, assets)));
+        ImGui::Separator();
+
+        ImGui::Checkbox("Show Tab Bar", &show_tab_bar);
 
         ImGui::EndMenu();
       }
@@ -281,45 +284,8 @@ struct App {
 
     spdlog::info("Project loaded {}", project_root.value().string());
   }
-  void import_texture() {
-    auto res =
-        pfd::open_file("Select a texture file", "", {"Images", "*.png; *.jpg; *.jpg; *.tiff"})
-            .result();
-    if (res.empty() || res[0].empty())
-      return;
-    std::filesystem::path path(res[0]);
-
-    Texture texture(path.filename(), path);
-    if (!texture)
-      spdlog::error("Failed to load texture: {}", path.c_str());
-
-    assets->insert_texture(std::make_shared<Texture>(texture));
-  }
-  void render_dockspace() {
-    // Create a window just below the menu to host the docking space
-    float menu_height = ImGui::GetFrameHeight();
-    ImVec2 size = ImGui::GetWindowSize();
-    size.y -= menu_height;
-    ImGui::SetNextWindowPos(ImVec2(0, menu_height));
-    ImGui::SetNextWindowSize(size); // Size matches display
-
-    // Create a window for the docking space (no title bar, resize, or move)
-    ImGuiWindowFlags dockspace_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
-                                       ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-                                       ImGuiWindowFlags_NoBringToFrontOnFocus |
-                                       ImGuiWindowFlags_NoNavFocus;
-
-    // Disable padding and scrolling in the dockspace window
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-    ImGui::Begin("DockSpaceWindow", nullptr, dockspace_flags);
-    ImGui::PopStyleVar();
-
-    // Create a dock space
-    ImGuiID dockspace_id = ImGui::GetID("DockSpace");
-    ImGui::DockSpace(dockspace_id, ImVec2(0, 0), ImGuiDockNodeFlags_PassthruCentralNode);
-
-    ImGui::End();
-  }
+  void import_texture();
+  void render_dockspace();
   toml::table try_save_toml();
   void try_load_toml(toml::table &);
 };

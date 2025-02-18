@@ -56,6 +56,7 @@ private:
   AssetId<RenderGraph> graph_id;
   std::shared_ptr<RenderGraph> graph = nullptr;
   std::weak_ptr<AssetManager> assets;
+  std::string title;
 
   ImNodesEditorContext *context = ImNodes::EditorContextCreate();
   AddNodes add_nodes = AddNodes();
@@ -70,6 +71,7 @@ public:
     this->graph_id = graph_id;
     this->graph = assets->get_graph(graph_id);
     this->assets = assets;
+    this->title = fmt::format("Node Editor##{}", id);
   }
   void onStartup() override { graph->set_node_positions(context); };
   void onShutdown() override { ImNodes::EditorContextFree(context); }
