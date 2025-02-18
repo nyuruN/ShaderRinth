@@ -75,6 +75,7 @@ void OutlinerWidget::render(bool *p_open) {
   ImGui::TableNextColumn();
   if (ImGui::Button(" + ##shader")) { // Handle creation
     assets->insert_shader(std::make_shared<Shader>(Shader("NewShader")));
+    spdlog::info("Shader \"NewShader\" created!");
   }
   // Shaders
   if (shaders_open) {
