@@ -194,23 +194,41 @@ toml::table RenderGraph::save() {
       {"next_pin_id", next_pin_id},   //
   };
 }
-std::shared_ptr<Node> load_node(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
-  std::string type = tbl["type"].value<std::string>().value();
+RenderGraph RenderGraph::load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+  AssetId<Geometry> geo_id = tbl["geometry_id"].value<int>().value();
+  RenderGraph graph(assets, geo_id);
+  graph.root_node = tbl["root_node"].value<int>().value();
+  graph.next_pin_id = tbl["next_pin_id"].value<int>().value();
+  graph.next_edge_id = tbl["next_edge_id"].value<int>().value();
+  graph.next_node_id = tbl["next_node_id"].value<int>().value();
 
-  if (type == "OutputNode")
-    return std::make_shared<OutputNode>(OutputNode::load(tbl, assets));
-  if (type == "FragmentShaderNode")
-    return std::make_shared<FragmentShaderNode>(FragmentShaderNode::load(tbl, assets));
-  if (type == "Texture2DNode")
-    return std::make_shared<Texture2DNode>(Texture2DNode::load(tbl, assets));
-  if (type == "TimeNode")
-    return std::make_shared<TimeNode>(TimeNode::load(tbl, assets));
-  if (type == "Vec2Node")
-    return std::make_shared<Vec2Node>(Vec2Node::load(tbl, assets));
-  if (type == "FloatNode")
-    return std::make_shared<FloatNode>(FloatNode::load(tbl, assets));
-  if (type == "ViewportNode")
-    return std::make_shared<ViewportNode>(ViewportNode::load(tbl, assets));
+  // Load pins
+  for (auto &node : *tbl["pins"].as_array()) {
+    toml::table *t = node.as_table();
+    int pin_id = (*t)["pin_id"].value<int>().value();
+    int node_id = (*t)["node_id"].value<int>().value();
+    int type = (*t)["type"].value<int>().value();
+    graph.pins.insert({pin_id, Pin{id : pin_id, node_id : node_id, data : Data(DataType(type))}});
+  }
 
-  throw std::runtime_error("Unknown Node type!");
-};
+  // Load edges
+  for (auto &node : *tbl["edges"].as_array()) {
+    toml::table *t = node.as_table();
+    int edge_id = (*t)["edge_id"].value<int>().value();
+    int from_id = (*t)["from_node"].value<int>().value();
+    int to_id = (*t)["to_node"].value<int>().value();
+    graph.edges.insert({edge_id, Edge{id : edge_id, from : from_id, to : to_id}});
+  }
+
+  // Load Nodes
+  for (auto &n_node : *tbl["nodes"].as_array()) {
+    toml::table *t_node = n_node.as_table();
+    int node_id = (*t_node)["node_id"].value<int>().value();
+    graph.nodes.insert({node_id, Node::load(*t_node, assets)});
+  }
+
+  // Setup nodes
+  graph.setup_nodes_on_load();
+
+  return graph;
+}

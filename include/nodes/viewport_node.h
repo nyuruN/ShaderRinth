@@ -45,11 +45,13 @@ public:
         {"output_pin", output_pin},    //
     };
   }
-  static ViewportNode load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+  static std::shared_ptr<Node> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
     auto n = ViewportNode();
     n.id = tbl["node_id"].value<int>().value();
     n.pos = Node::load_pos(*tbl["position"].as_table());
     n.output_pin = tbl["output_pin"].value<int>().value();
-    return n;
+    return std::make_shared<ViewportNode>(n);
   }
 };
+
+REGISTER_NODE_FACTORY(ViewportNode)

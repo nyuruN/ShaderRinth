@@ -1,7 +1,9 @@
 #pragma once
 
 #include "data.h"
+#include <functional>
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include <toml++/toml.hpp>
@@ -24,8 +26,39 @@
 
 #define END_OUTPUT_PIN() ImNodes::EndOutputAttribute();
 
+#define REGISTER_NODE_FACTORY(type)                                                                \
+  namespace {                                                                                      \
+  static bool reg_##type = (NodeFactory::register_factory(#type, type::load), true);               \
+  }
+
 // Forward declares
 struct RenderGraph;
+struct AssetManager;
+class Node;
+
+// Nodes should implement a factory as follows:
+//
+// static std::shared_ptr<Node> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+//   // Deserialization code
+// }
+struct NodeFactory {
+public:
+  using Factory =
+      std::function<std::shared_ptr<Node>(toml::table &, std::shared_ptr<AssetManager>)>;
+
+  static void register_factory(std::string name, Factory factory) {
+    instance().factories.insert({name, factory});
+  }
+  static Factory get(std::string name) { return instance().factories.at(name); }
+
+private:
+  std::unordered_map<std::string, Factory> factories;
+
+  static NodeFactory &instance() {
+    static NodeFactory factory;
+    return factory;
+  }
+};
 
 // Nodes:
 // This base class defines function required for
@@ -57,7 +90,7 @@ public:
   virtual void onEnter(RenderGraph &) {}
   // Called when the Node is deleted from the graph
   virtual void onExit(RenderGraph &) {}
-  // Called when the Node is serialized and needs RenderGraph to setup
+  // Called when the Node is serialized and needs to perform additional setup
   virtual void onLoad(RenderGraph &) {}
   // Runs the Node and writes to output pins
   virtual void run(RenderGraph &) {}
@@ -77,4 +110,8 @@ public:
     return pos;
   }
   virtual toml::table save() = 0;
+  static std::shared_ptr<Node> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+    std::string type = tbl["type"].value<std::string>().value();
+    return NodeFactory::get(type)(tbl, assets);
+  };
 };

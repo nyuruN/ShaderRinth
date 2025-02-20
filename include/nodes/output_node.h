@@ -59,12 +59,14 @@ public:
         {"out_texture", out_texture},  //
     };
   }
-  static OutputNode load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+  static std::shared_ptr<Node> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
     auto n = OutputNode();
     n.id = tbl["node_id"].value<int>().value();
     n.pos = Node::load_pos(*tbl["position"].as_table());
     n.input_pin = tbl["input_pin"].value<int>().value();
     n.out_texture = tbl["out_texture"].value<int>().value();
-    return n;
+    return std::make_shared<OutputNode>(n);
   }
 };
+
+REGISTER_NODE_FACTORY(OutputNode)

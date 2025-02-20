@@ -81,7 +81,7 @@ public:
         {"texture_id", texture_id},    //
     };
   }
-  static Texture2DNode load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+  static std::shared_ptr<Node> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
     auto n = Texture2DNode(assets);
     n.id = tbl["node_id"].value<int>().value();
     n.pos = Node::load_pos(*tbl["position"].as_table());
@@ -89,6 +89,8 @@ public:
     n.output_pin = tbl["output_pin"].value<int>().value();
     if (n.texture_id)
       n.texture = assets->get_texture(n.texture_id);
-    return n;
+    return std::make_shared<Texture2DNode>(n);
   }
 };
+
+REGISTER_NODE_FACTORY(Texture2DNode)

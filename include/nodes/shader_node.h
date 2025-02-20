@@ -248,7 +248,7 @@ public:
         {"shader_id", shader_id},       //
     };
   }
-  static FragmentShaderNode load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+  static std::shared_ptr<Node> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
     auto n = FragmentShaderNode();
     n.id = tbl["node_id"].value<int>().value();
     n.pos = Node::load_pos(*tbl["position"].as_table());
@@ -270,6 +270,8 @@ public:
       });
     }
 
-    return n;
+    return std::make_shared<FragmentShaderNode>(n);
   }
 };
+
+REGISTER_NODE_FACTORY(FragmentShaderNode)

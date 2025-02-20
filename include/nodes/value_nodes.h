@@ -53,15 +53,17 @@ public:
         {"value", value},              //
     };
   }
-  static FloatNode load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+  static std::shared_ptr<Node> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
     auto n = FloatNode();
     n.id = tbl["node_id"].value<int>().value();
     n.pos = Node::load_pos(*tbl["position"].as_table());
     n.output_pin = tbl["output_pin"].value<int>().value();
     n.value = tbl["value"].value<float>().value();
-    return n;
+    return std::make_shared<FloatNode>(n);
   }
 };
+
+REGISTER_NODE_FACTORY(FloatNode)
 
 class Vec2Node : public Node {
   int output_pin;
@@ -113,12 +115,14 @@ public:
         {"value", Node::save(value)},  //
     };
   }
-  static Vec2Node load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+  static std::shared_ptr<Node> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
     auto n = Vec2Node();
     n.id = tbl["node_id"].value<int>().value();
     n.pos = Node::load_pos(*tbl["position"].as_table());
     n.output_pin = tbl["output_pin"].value<int>().value();
     n.value = Node::load_pos(*tbl["value"].as_table());
-    return n;
+    return std::make_shared<Vec2Node>(n);
   }
 };
+
+REGISTER_NODE_FACTORY(Vec2Node)

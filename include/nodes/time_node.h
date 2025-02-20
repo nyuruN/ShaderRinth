@@ -46,11 +46,13 @@ public:
         {"output_pin", output_pin},
     };
   }
-  static TimeNode load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+  static std::shared_ptr<Node> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
     auto n = TimeNode();
     n.id = tbl["node_id"].value<int>().value();
     n.pos = Node::load_pos(*tbl["position"].as_table());
     n.output_pin = tbl["output_pin"].value<int>().value();
-    return n;
+    return std::make_shared<TimeNode>(n);
   }
 };
+
+REGISTER_NODE_FACTORY(TimeNode)
