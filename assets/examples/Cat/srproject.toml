@@ -1,5 +1,6 @@
 [Assets]
 next_asset_id = 5
+next_widget_id = 6
 
     [[Assets.Geometries]]
     asset_id = 2
@@ -57,7 +58,6 @@ next_asset_id = 5
 [Settings]
 current_workspace = 0
 graph_id = 4
-next_widget_id = 4
 show_tab_bar = true
 
 [[Workspaces]]
@@ -66,16 +66,20 @@ name = 'Shading'
     [[Workspaces.Widgets]]
     shader_id = 1
     type = 'EditorWidget'
-    widget_id = 0
+    widget_id = 1
 
     [[Workspaces.Widgets]]
     graph_id = 4
     type = 'ViewportWidget'
-    widget_id = 1
+    widget_id = 2
 
     [[Workspaces.Widgets]]
     type = 'ConsoleWidget'
-    widget_id = 2
+    widget_id = 3
+
+    [[Workspaces.Widgets]]
+    type = 'OutlinerWidget'
+    widget_id = 4
 
 [[Workspaces]]
 name = 'RenderGraph'
@@ -83,4 +87,4 @@ name = 'RenderGraph'
     [[Workspaces.Widgets]]
     graph_id = 4
     type = 'NodeEditorWidget'
-    widget_id = 3
+    widget_id = 5

@@ -218,6 +218,8 @@ void App::open_project() {
     std::ostringstream buf;
     buf << imgui_file.rdbuf();
     std::string str = buf.str();
+
+    ImGui::ClearIniSettings();
     ImGui::LoadIniSettingsFromMemory(str.c_str(), str.size());
   }
 
