@@ -68,10 +68,10 @@ void App::render_menubar() {
     if (ImGui::BeginMenu("View")) {
       if (ImGui::MenuItem("Console"))
         EventQueue::push(
-            AddWidget(std::make_shared<ConsoleWidget>(ConsoleWidget(next_widget_id++))));
+            AddWidget(std::make_shared<ConsoleWidget>(ConsoleWidget(assets->get_widget_id()))));
       if (ImGui::MenuItem("Viewport"))
-        EventQueue::push(AddWidget(
-            std::make_shared<ViewportWidget>(ViewportWidget(next_widget_id++, assets, graph_id))));
+        EventQueue::push(AddWidget(std::make_shared<ViewportWidget>(
+            ViewportWidget(assets->get_widget_id(), assets, graph_id))));
       if (ImGui::BeginMenu("Editor")) {
         for (auto &pair : *assets->shaders) {
           ImGui::PushID(pair.first);
@@ -90,14 +90,14 @@ void App::render_menubar() {
           if (has_editor)
             continue;
 
-          EventQueue::push(AddWidget(
-              std::make_shared<EditorWidget>(EditorWidget(next_widget_id++, assets, pair.first))));
+          EventQueue::push(AddWidget(std::make_shared<EditorWidget>(
+              EditorWidget(assets->get_widget_id(), assets, pair.first))));
         }
         ImGui::EndMenu();
       }
       if (ImGui::MenuItem("Outliner"))
-        EventQueue::push(
-            AddWidget(std::make_shared<OutlinerWidget>(OutlinerWidget(next_widget_id++, assets))));
+        EventQueue::push(AddWidget(
+            std::make_shared<OutlinerWidget>(OutlinerWidget(assets->get_widget_id(), assets))));
       ImGui::Separator();
 
       ImGui::Checkbox("Show Tab Bar", &show_tab_bar);
@@ -125,8 +125,8 @@ void App::render_menubar() {
 }
 void App::new_shader() {
   auto shader_id = assets->insert_shader(std::make_shared<Shader>(Shader("NewShader")));
-  EventQueue::push(
-      AddWidget(std::make_shared<EditorWidget>(EditorWidget(next_widget_id++, assets, shader_id))));
+  EventQueue::push(AddWidget(
+      std::make_shared<EditorWidget>(EditorWidget(assets->get_widget_id(), assets, shader_id))));
   spdlog::info("Shader \"NewShader\" created!");
 }
 void App::import_texture() {
@@ -231,7 +231,6 @@ toml::table App::try_save_toml() {
   toml::table settings{
       {"show_tab_bar", show_tab_bar},
       {"current_workspace", current_workspace},
-      {"next_widget_id", next_widget_id},
       {"graph_id", graph_id},
   };
 
@@ -256,7 +255,6 @@ void App::try_load_toml(toml::table &tbl) {
   // Load Settings
   show_tab_bar = tbl["Settings"]["show_tab_bar"].value<bool>().value();
   current_workspace = tbl["Settings"]["current_workspace"].value<int>().value();
-  next_widget_id = tbl["Settings"]["next_widget_id"].value<int>().value();
   graph_id = tbl["Settings"]["graph_id"].value<int>().value();
 
   // Load Assets

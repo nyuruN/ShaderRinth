@@ -1,9 +1,11 @@
 #include "widgets/outliner_widget.h"
 
 #include "assets.h"
+#include "events.h"
 #include "geometry.h"
 #include "shader.h"
 #include "texture.h"
+#include "widgets/editor_widget.h"
 #include <imgui.h>
 #include <imgui_stdlib.h>
 
@@ -74,7 +76,9 @@ void OutlinerWidget::render(bool *p_open) {
   bool shaders_open = ImGui::TreeNodeEx("Shaders");
   ImGui::TableNextColumn();
   if (ImGui::Button(" + ##shader")) { // Handle creation
-    assets->insert_shader(std::make_shared<Shader>(Shader("NewShader")));
+    AssetId<Shader> id = assets->insert_shader(std::make_shared<Shader>(Shader("NewShader")));
+    EventQueue::push(AddWidget(
+        std::make_shared<EditorWidget>(EditorWidget(assets->get_widget_id(), assets, id))));
     spdlog::info("Shader \"NewShader\" created!");
   }
   // Shaders

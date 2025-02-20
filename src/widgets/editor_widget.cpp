@@ -1,6 +1,7 @@
 #include "widgets/editor_widget.h"
 
 #include "editor.h"
+#include "events.h"
 #include "shader.h"
 #include "utils.h"
 
@@ -40,8 +41,10 @@ void EditorWidget::onShutdown() {
 }
 void EditorWidget::onUpdate() {
   auto shader = this->shader.lock();
-  if (!shader) // Is shader deleted ?
+  if (!shader) { // Close editor if shader is deleted
+    EventQueue::push(DeleteWidget(id));
     return;
+  }
 
   uint64_t new_update = buffer->GetUpdateCount();
   if (new_update != last_update)

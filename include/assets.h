@@ -27,6 +27,8 @@ struct AssetManager : std::enable_shared_from_this<AssetManager> {
 private:
   // 0 is a reserved invalid asset id
   AssetId<Asset> next_asset_id = 1;
+  // 0 is a reserved invalid widget id
+  int next_widget_id = 1;
 
 public:
   std::shared_ptr<Assets<Texture>> textures = std::make_shared<Assets<Texture>>();
@@ -34,6 +36,8 @@ public:
   std::shared_ptr<Assets<Geometry>> geometries = std::make_shared<Assets<Geometry>>();
   std::shared_ptr<Assets<RenderGraph>> graphs = std::make_shared<Assets<RenderGraph>>();
 
+  // Generates the next widget id
+  int get_widget_id() { return next_widget_id++; }
   void destroy();
 
   AssetId<Shader> insert_shader(std::shared_ptr<Shader> shader) {

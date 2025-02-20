@@ -22,7 +22,6 @@ struct App {
   AssetId<RenderGraph> graph_id;
   std::vector<Workspace> workspaces;
   int current_workspace = 0;
-  int next_widget_id = 0;
   bool show_tab_bar = true;
 
   std::shared_ptr<RenderGraph> graph;
@@ -55,12 +54,12 @@ struct App {
     workspaces = std::vector<Workspace>({
         Workspace("Shading",
                   {
-                      std::make_shared<EditorWidget>(next_widget_id++, assets, shader_id),
-                      std::make_shared<ViewportWidget>(next_widget_id++, assets, graph_id),
-                      std::make_shared<ConsoleWidget>(next_widget_id++),
-                      std::make_shared<OutlinerWidget>(next_widget_id++, assets),
+                      std::make_shared<EditorWidget>(assets->get_widget_id(), assets, shader_id),
+                      std::make_shared<ViewportWidget>(assets->get_widget_id(), assets, graph_id),
+                      std::make_shared<ConsoleWidget>(assets->get_widget_id()),
+                      std::make_shared<OutlinerWidget>(assets->get_widget_id(), assets),
                   }),
-        Workspace("RenderGraph", {std::make_shared<NodeEditorWidget>(next_widget_id++, assets, graph_id)}),
+        Workspace("RenderGraph", {std::make_shared<NodeEditorWidget>(assets->get_widget_id(), assets, graph_id)}),
     });
     // clang-format on
   }
