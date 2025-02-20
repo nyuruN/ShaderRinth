@@ -84,9 +84,11 @@ public:
         {"widget_id", id},
     };
   }
-  static ConsoleWidget load(toml::table &tbl, std::shared_ptr<AssetManager>) {
+  static std::shared_ptr<Widget> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
     int id = tbl["widget_id"].value<int>().value();
     auto w = ConsoleWidget(id);
-    return w;
+    return std::make_shared<ConsoleWidget>(w);
   }
 };
+
+REGISTER_WIDGET_FACTORY(ConsoleWidget);

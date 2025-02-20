@@ -110,10 +110,12 @@ public:
         {"graph_id", graph_id},
     };
   }
-  static NodeEditorWidget load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+  static std::shared_ptr<Widget> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
     int id = tbl["widget_id"].value<int>().value();
     AssetId<RenderGraph> graph_id = tbl["graph_id"].value<int>().value();
     auto w = NodeEditorWidget(id, assets, graph_id);
-    return w;
+    return std::make_shared<NodeEditorWidget>(w);
   }
 };
+
+REGISTER_WIDGET_FACTORY(NodeEditorWidget);

@@ -48,10 +48,12 @@ public:
         {"graph_id", graph_id},
     };
   }
-  static ViewportWidget load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+  static std::shared_ptr<Widget> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
     int id = tbl["widget_id"].value<int>().value();
     AssetId<RenderGraph> graph_id = tbl["graph_id"].value<int>().value();
     auto w = ViewportWidget(id, assets, graph_id);
-    return w;
+    return std::make_shared<ViewportWidget>(w);
   }
 };
+
+REGISTER_WIDGET_FACTORY(ViewportWidget);

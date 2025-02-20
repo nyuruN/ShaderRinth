@@ -36,7 +36,7 @@ struct RenderGraph;
 struct AssetManager;
 class Node;
 
-// Nodes should implement a factory as follows:
+// Nodes should implement a factory function as follows:
 //
 // static std::shared_ptr<Node> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
 //   // Deserialization code

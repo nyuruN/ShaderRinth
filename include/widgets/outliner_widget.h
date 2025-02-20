@@ -26,9 +26,11 @@ public:
         {"widget_id", id},
     };
   }
-  static OutlinerWidget load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+  static std::shared_ptr<Widget> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
     int id = tbl["widget_id"].value<int>().value();
     auto w = OutlinerWidget(id, assets);
-    return w;
+    return std::make_shared<OutlinerWidget>(w);
   }
 };
+
+REGISTER_WIDGET_FACTORY(OutlinerWidget);

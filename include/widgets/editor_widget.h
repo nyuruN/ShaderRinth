@@ -38,10 +38,12 @@ public:
         {"shader_id", shader_id},
     };
   }
-  static EditorWidget load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+  static std::shared_ptr<Widget> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
     int id = tbl["widget_id"].value<int>().value();
     AssetId<Shader> shader_id = tbl["shader_id"].value<int>().value();
     auto w = EditorWidget(id, assets, shader_id);
-    return w;
+    return std::make_shared<EditorWidget>(w);
   }
 };
+
+REGISTER_WIDGET_FACTORY(EditorWidget);

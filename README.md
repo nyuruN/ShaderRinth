@@ -48,9 +48,9 @@ purposes.
 
 * [x] Copy and paste in NodeEditorWidget
 
-* [ ] Enhanced asset management
+* [x] Enhanced asset management
 
-* [ ] Runtime Factories for polymorphic nodes and widgets (no if-chains)
+* [x] Runtime Factories for polymorphic nodes and widgets (no if-chains)
 
 * [ ] Type erasure for assets (extension of Asset class)
 

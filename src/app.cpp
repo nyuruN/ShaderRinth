@@ -267,18 +267,7 @@ void App::try_load_toml(toml::table &tbl) {
       toml::table *t_widget = n_widget.as_table();
       std::string type = (*t_widget)["type"].value<std::string>().value();
 
-      // clang-format off
-      if (type == "ConsoleWidget")
-        widgets.push_back(std::make_shared<ConsoleWidget>(ConsoleWidget::load(*t_widget, assets)));
-      if (type == "EditorWidget")
-        widgets.push_back(std::make_shared<EditorWidget>(EditorWidget::load(*t_widget, assets)));
-      if (type == "ViewportWidget")
-        widgets.push_back(std::make_shared<ViewportWidget>(ViewportWidget::load(*t_widget, assets)));
-      if (type == "NodeEditorWidget")
-        widgets.push_back(std::make_shared<NodeEditorWidget>(NodeEditorWidget::load(*t_widget, assets)));
-      if (type == "OutlinerWidget")
-        widgets.push_back(std::make_shared<OutlinerWidget>(OutlinerWidget::load(*t_widget, assets)));
-      // clang-format on
+      widgets.push_back(Widget::load(*t_widget, assets));
     }
 
     workspaces.push_back({name, widgets});
