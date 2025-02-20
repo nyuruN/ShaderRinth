@@ -66,6 +66,7 @@ struct App {
   // Render the application
   void render() {
     render_menubar();
+    render_statusbar();
 
     render_dockspace();
     for (auto &widget : workspaces[current_workspace].second) {
@@ -108,6 +109,7 @@ struct App {
   void handle_events();
   void process_input();
   void render_menubar();
+  void render_statusbar();
   void new_shader();
   void import_texture();
   void render_dockspace();

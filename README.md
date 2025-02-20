@@ -52,7 +52,7 @@ purposes.
 
 * [x] Runtime Factories for polymorphic nodes and widgets (no if-chains)
 
-* [ ] Event system?
+* [x] Event system?
 
 * [ ] Status bar
 

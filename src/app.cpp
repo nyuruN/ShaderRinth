@@ -5,6 +5,8 @@
 #include <imgui_internal.h>
 #include <toml++/toml.hpp>
 
+static constexpr float STATUS_BAR_HEIGHT = 19;
+
 void App::process_input() {
   auto io = ImGui::GetIO();
   if (isKeyJustPressed(ImGuiKey_O) && io.KeyCtrl)
@@ -123,6 +125,34 @@ void App::render_menubar() {
     ImGui::EndMainMenuBar();
   }
 }
+void App::render_statusbar() {
+  ImGui::SetNextWindowPos({0, ImGui::GetWindowSize().y - STATUS_BAR_HEIGHT}, ImGuiCond_Once);
+  ImGui::SetNextWindowSize({ImGui::GetWindowSize().x, STATUS_BAR_HEIGHT}, ImGuiCond_Once);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
+  ImGui::Begin("Menubar", NULL,
+               ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoSavedSettings |
+                   ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+                   ImGuiWindowFlags_NoMove);
+  ImGui::PopStyleVar();
+
+  const float width = ImGui::GetWindowSize().x;
+
+  if (ImGui::BeginMenuBar()) {
+    ImGui::TextUnformatted("This is a status bar!");
+
+    // Get framerate
+    static float prev = glfwGetTime();
+    float curr = glfwGetTime();
+    float frame = 1 / (curr - prev);
+    prev = curr;
+
+    ImGui::Indent(width - ImGui::CalcTextSize("FPS: 00.00 ").x);
+    ImGui::Text("FPS: %.1f", frame);
+
+    ImGui::EndMenuBar();
+  }
+  ImGui::End();
+}
 void App::new_shader() {
   auto shader_id = assets->insert_shader(std::make_shared<Shader>(Shader("NewShader")));
   EventQueue::push(AddWidget(
@@ -146,7 +176,7 @@ void App::render_dockspace() {
   // Create a window just below the menu to host the docking space
   float menu_height = ImGui::GetFrameHeight();
   ImVec2 size = ImGui::GetWindowSize();
-  size.y -= menu_height;
+  size.y -= menu_height + STATUS_BAR_HEIGHT;
   ImGui::SetNextWindowPos(ImVec2(0, menu_height));
   ImGui::SetNextWindowSize(size); // Size matches display
 

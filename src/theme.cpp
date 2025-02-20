@@ -6,7 +6,7 @@ namespace ImGui {
 // Sourced from: https://github.com/GraphicsProgramming/dear-imgui-styles
 void StyleColorsCinder() {
   ImGuiStyle &style = ImGui::GetStyle();
-  style.WindowMinSize = ImVec2(160, 20);
+  style.WindowMinSize = ImVec2(160, 18);
   style.FramePadding = ImVec2(4, 2);
   style.ItemSpacing = ImVec2(6, 2);
   style.ItemInnerSpacing = ImVec2(6, 4);
