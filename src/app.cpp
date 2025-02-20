@@ -1,26 +1,10 @@
 #include "app.h"
 
+#include <events.h>
+#include <fstream>
 #include <imgui_internal.h>
 #include <toml++/toml.hpp>
 
-void App::handle_events() {
-  if (!deferred_add_widget.empty()) {
-    for (auto &widget : deferred_add_widget) {
-      widget->onStartup();
-      workspaces[current_workspace].second.push_back(widget);
-    }
-    deferred_add_widget.clear();
-  }
-  if (!deferred_remove_widget.empty()) {
-    for (auto &widget : deferred_remove_widget) {
-      widget->onShutdown();
-      auto it = std::find(workspaces[current_workspace].second.begin(),
-                          workspaces[current_workspace].second.end(), widget);
-      workspaces[current_workspace].second.erase(it);
-    }
-    deferred_remove_widget.clear();
-  }
-}
 void App::process_input() {
   auto io = ImGui::GetIO();
   if (isKeyJustPressed(ImGuiKey_O) && io.KeyCtrl)
@@ -36,6 +20,28 @@ void App::process_input() {
       glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     else
       glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  }
+}
+void App::handle_events() {
+  while (auto if_event = EventQueue::pop()) {
+    auto event = if_event.value();
+    if (std::holds_alternative<AddWidget>(event)) {
+      auto ev = std::get<AddWidget>(event);
+      ev.widget->onStartup();
+      workspaces[current_workspace].second.push_back(ev.widget);
+    } else if (std::holds_alternative<DeleteWidget>(event)) {
+      auto ev = std::get<DeleteWidget>(event);
+      // Find widget
+      auto it = std::find_if(
+          workspaces[current_workspace].second.begin(), workspaces[current_workspace].second.end(),
+          [ev](std::shared_ptr<Widget> &widget) { return widget->get_id() == ev.widget_id; });
+      if (it == workspaces[current_workspace].second.end()) {
+        spdlog::warn("Trying to delete non-existant widget!");
+        continue;
+      }
+      it->get()->onShutdown();
+      workspaces[current_workspace].second.erase(it);
+    }
   }
 }
 void App::render_menubar() {
@@ -61,11 +67,11 @@ void App::render_menubar() {
     }
     if (ImGui::BeginMenu("View")) {
       if (ImGui::MenuItem("Console"))
-        deferred_add_widget.push_back(
-            std::make_shared<ConsoleWidget>(ConsoleWidget(next_widget_id++)));
+        EventQueue::push(
+            AddWidget(std::make_shared<ConsoleWidget>(ConsoleWidget(next_widget_id++))));
       if (ImGui::MenuItem("Viewport"))
-        deferred_add_widget.push_back(
-            std::make_shared<ViewportWidget>(ViewportWidget(next_widget_id++, assets, graph_id)));
+        EventQueue::push(AddWidget(
+            std::make_shared<ViewportWidget>(ViewportWidget(next_widget_id++, assets, graph_id))));
       if (ImGui::BeginMenu("Editor")) {
         for (auto &pair : *assets->shaders) {
           ImGui::PushID(pair.first);
@@ -84,14 +90,14 @@ void App::render_menubar() {
           if (has_editor)
             continue;
 
-          deferred_add_widget.push_back(
-              std::make_shared<EditorWidget>(EditorWidget(next_widget_id++, assets, pair.first)));
+          EventQueue::push(AddWidget(
+              std::make_shared<EditorWidget>(EditorWidget(next_widget_id++, assets, pair.first))));
         }
         ImGui::EndMenu();
       }
       if (ImGui::MenuItem("Outliner"))
-        deferred_add_widget.push_back(
-            std::make_shared<OutlinerWidget>(OutlinerWidget(next_widget_id++, assets)));
+        EventQueue::push(
+            AddWidget(std::make_shared<OutlinerWidget>(OutlinerWidget(next_widget_id++, assets))));
       ImGui::Separator();
 
       ImGui::Checkbox("Show Tab Bar", &show_tab_bar);
@@ -119,8 +125,8 @@ void App::render_menubar() {
 }
 void App::new_shader() {
   auto shader_id = assets->insert_shader(std::make_shared<Shader>(Shader("NewShader")));
-  deferred_add_widget.push_back(
-      std::make_shared<EditorWidget>(EditorWidget(next_widget_id++, assets, shader_id)));
+  EventQueue::push(
+      AddWidget(std::make_shared<EditorWidget>(EditorWidget(next_widget_id++, assets, shader_id))));
   spdlog::info("Shader \"NewShader\" created!");
 }
 void App::import_texture() {

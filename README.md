@@ -48,13 +48,15 @@ purposes.
 
 * [x] Copy and paste in NodeEditorWidget
 
-* [x] Enhanced asset management
+* [x] Enhanced asset management (Outliner?)
 
 * [x] Runtime Factories for polymorphic nodes and widgets (no if-chains)
 
-* [ ] Type erasure for assets (extension of Asset class)
+* [ ] Event system?
 
-* [ ] Unit tests, cross platform tests etc.
+* [ ] Status bar
+
+* [ ] Portable package with CPack
 
 ### VERSION 0.1.0 (Miniminal Viable Product)
 
@@ -65,8 +67,6 @@ purposes.
 * [ ] Help page?
 
 * [ ] Inspector widget: Selection system? control parameters
-
-* [ ] Outliner widget: show execution flow if multiple graphs are present
 
 * [ ] Multiple graphs and render to texture if needed
 

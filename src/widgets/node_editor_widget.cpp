@@ -161,6 +161,7 @@ void Clipboard::paste(RenderGraph *graph) {
 //! NodeEditorWidget
 
 void NodeEditorWidget::render(bool *) {
+  ImGui::SetNextWindowSize({640, 480}, ImGuiCond_FirstUseEver);
   ImGui::Begin(title.c_str());
   ImNodes::EditorContextSet(context);
   ImNodes::PushColorStyle(ImNodesCol_Link, Data::COLORS_HOVER[current_link_type]);

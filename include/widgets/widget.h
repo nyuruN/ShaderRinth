@@ -45,6 +45,7 @@ protected:
   int id = -1;
 
 public:
+  int get_id() { return id; }
   // Runs on the first frame when loaded
   virtual void onStartup() {};
   // Runs on shutdown or otherwise destroyed

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <filesystem>
 #include <functional>
 #include <imgui.h>
 #include <memory>
@@ -16,9 +15,11 @@
 // Commit to overwrite previous value: Swap<T>.commit()
 // Overloads op= to overwrite both
 
+// Forward declares
 struct Action;
 struct UndoContext;
 
+// Helper struct for global data that need additional setup
 struct Global {
 public:
   UndoContext *undo_context;

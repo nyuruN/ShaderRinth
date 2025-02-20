@@ -1,6 +1,7 @@
 #pragma once
 
 #include "config_app.h"
+#include "events.h"
 #include "geometry.h"
 #include "graph.h"
 #include "shader.h"
@@ -9,7 +10,6 @@
 #include <GL/gl.h>
 #include <GLFW/glfw3.h> // OpenGL headers
 #include <filesystem>
-#include <fstream>
 #include <imgui.h>
 #include <optional>
 #include <portable-file-dialogs.h>
@@ -28,8 +28,6 @@ struct App {
   std::shared_ptr<RenderGraph> graph;
   std::optional<std::filesystem::path> project_root;
   ExportImagePopup export_image = ExportImagePopup();
-  std::vector<std::shared_ptr<Widget>> deferred_add_widget;
-  std::vector<std::shared_ptr<Widget>> deferred_remove_widget;
   bool is_project_dirty = false;
 
   // Setup App Logic
@@ -75,7 +73,7 @@ struct App {
       bool open = true;
       widget->render(&open);
       if (!open)
-        deferred_remove_widget.push_back(widget);
+        EventQueue::push(DeleteWidget(widget->get_id()));
     }
 
     export_image.render();
@@ -107,7 +105,7 @@ struct App {
     for (auto &widget : workspaces[current_workspace].second)
       widget->onUpdate();
   }
-  // Handle deferred 'events'
+  // Handle deferred events from EventQueue
   void handle_events();
   void process_input();
   void render_menubar();
