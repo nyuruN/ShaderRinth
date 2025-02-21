@@ -106,6 +106,7 @@ void App::render_menubar() {
       ImGui::Separator();
 
       ImGui::Checkbox("Show Tab Bar", &show_tab_bar);
+      ImGui::Checkbox("Show Status Bar", &show_status_bar);
 
       ImGui::EndMenu();
     }
@@ -129,6 +130,9 @@ void App::render_menubar() {
   }
 }
 void App::render_statusbar() {
+  if (!show_status_bar)
+    return;
+
   ImGui::SetNextWindowPos({0, ImGui::GetWindowSize().y - STATUS_BAR_HEIGHT}, ImGuiCond_Once);
   ImGui::SetNextWindowSize({ImGui::GetWindowSize().x, STATUS_BAR_HEIGHT}, ImGuiCond_Once);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
@@ -179,7 +183,7 @@ void App::render_dockspace() {
   // Create a window just below the menu to host the docking space
   float menu_height = ImGui::GetFrameHeight();
   ImVec2 size = ImGui::GetWindowSize();
-  size.y -= menu_height + STATUS_BAR_HEIGHT;
+  size.y -= menu_height + STATUS_BAR_HEIGHT * show_status_bar;
   ImGui::SetNextWindowPos(ImVec2(0, menu_height));
   ImGui::SetNextWindowSize(size); // Size matches display
 
@@ -261,10 +265,10 @@ void App::open_project() {
   spdlog::info("Project loaded {}", project_root.value().string());
 }
 toml::table App::try_save_toml() {
-
   // Save Settings
   toml::table settings{
       {"show_tab_bar", show_tab_bar},
+      {"show_status_bar", show_status_bar},
       {"current_workspace", current_workspace},
       {"graph_id", graph_id},
   };
@@ -289,6 +293,7 @@ toml::table App::try_save_toml() {
 void App::try_load_toml(toml::table &tbl) {
   // Load Settings
   show_tab_bar = tbl["Settings"]["show_tab_bar"].value<bool>().value();
+  show_status_bar = tbl["Settings"]["show_status_bar"].value<bool>().value();
   current_workspace = tbl["Settings"]["current_workspace"].value<int>().value();
   graph_id = tbl["Settings"]["graph_id"].value<int>().value();
 

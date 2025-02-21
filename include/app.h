@@ -23,6 +23,7 @@ struct App {
   AssetId<RenderGraph> graph_id;
   int current_workspace = 0;
   bool show_tab_bar = true;
+  bool show_status_bar = true;
 
   ExportImagePopup export_image = ExportImagePopup();
   std::optional<std::filesystem::path> project_root;
