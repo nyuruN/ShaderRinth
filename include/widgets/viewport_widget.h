@@ -32,8 +32,11 @@ public:
     viewgraph->set_resolution(wsize);
     viewgraph->evaluate();
 
-    auto out = dynamic_cast<OutputNode *>(viewgraph->get_root_node());
-    GLuint output = out->get_image();
+    GLuint output = 0;
+    if (auto if_node = viewgraph->get_root_node()) {
+      auto out = dynamic_cast<OutputNode *>(if_node.value());
+      output = out->get_image();
+    }
 
     ImGui::Image((ImTextureID)output, wsize, ImVec2(0, 1), ImVec2(1, 0));
 

@@ -30,6 +30,8 @@ void AddNodes::show(std::shared_ptr<AssetManager> assets) {
       insert_nodes.push_back(std::make_shared<ViewportNode>(ViewportNode()));
     if (ImGui::Selectable("Texture"))
       insert_nodes.push_back(std::make_shared<Texture2DNode>(Texture2DNode(assets)));
+    if (ImGui::Selectable("Output"))
+      insert_nodes.push_back(std::make_shared<OutputNode>(OutputNode()));
 
     if (ImGui::BeginMenu("Value Nodes")) {
       ImGui::Dummy(ImVec2(150, 0)); // Min width

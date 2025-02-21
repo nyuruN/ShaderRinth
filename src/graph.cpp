@@ -85,19 +85,23 @@ void RenderGraph::set_pin_data(int pinid, std::any ptr) {
 void RenderGraph::evaluate() {
   topological_order();
   should_stop = false;
+  bool is_empty = run_order.empty();
 
-  while (run_order.size() != 0) {
+  while (!run_order.empty()) {
     int nodeid = run_order.back();
     nodes.at(nodeid)->run(*this);
     run_order.pop_back();
 
     if (should_stop) {
-      EventQueue::push(StatusMessage("Graph status: FAILED"));
       break;
     }
   }
 
-  if (!should_stop)
+  if (should_stop)
+    EventQueue::push(StatusMessage("Graph status: FAILED"));
+  else if (is_empty)
+    EventQueue::push(StatusMessage("Graph status: NO OUTPUT"));
+  else
     EventQueue::push(StatusMessage("Graph status: OK"));
 };
 void RenderGraph::clear_graph_data() {

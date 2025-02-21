@@ -21,18 +21,29 @@ public:
 
     ImNodes::BeginNodeTitleBar();
     ImGui::Text("Output");
+    ImGui::SameLine();
+    ImGui::Indent(node_width - 7.5);
+
+    bool selected = graph.get_root_node_id() == id;
+    bool clicked = ImGui::Checkbox("##hidelabel", &selected);
+    if (clicked && !selected) // If unchecked
+      graph.set_root_node(-1);
+    else if (clicked)
+      graph.set_root_node(id);
+
     ImNodes::EndNodeTitleBar();
     {
       BEGIN_INPUT_PIN(input_pin, DataType::Texture2D);
       ImGui::Text("Image");
       END_INPUT_PIN();
     }
-    ImGui::Dummy(ImVec2(node_width, 20.0f));
+    ImGui::Dummy(ImVec2(node_width, 15.0f));
 
     ImNodes::EndNode();
   }
   void onEnter(RenderGraph &graph) override {
     graph.register_pin(id, DataType::Texture2D, &input_pin);
+    graph.set_root_node(id);
   }
   void onExit(RenderGraph &graph) override { graph.delete_pin(input_pin); }
   void run(RenderGraph &graph) override {

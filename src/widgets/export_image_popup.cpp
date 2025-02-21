@@ -14,8 +14,12 @@ void ExportImagePopup::export_image() {
   graph->clear_graph_data();
   graph->set_resolution(ImVec2({float(resolution[0]), float(resolution[1])}));
   graph->evaluate();
-  auto out = dynamic_cast<OutputNode *>(graph->get_root_node());
-  GLuint img = out->get_image();
+
+  GLuint img = 0;
+  if (auto if_node = graph->get_root_node()) {
+    auto out = dynamic_cast<OutputNode *>(if_node.value());
+    img = out->get_image();
+  }
 
   unsigned char data[resolution[0] * resolution[1] * 4];
   glBindTexture(GL_TEXTURE_2D, img);

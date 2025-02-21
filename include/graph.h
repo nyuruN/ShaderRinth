@@ -109,7 +109,7 @@ public:
       }
     }
   }
-  // Starting from the root node, traverse the N-ary tree
+  // Starting from a root node, traverse the N-ary tree
   // to perform a topological sort
   void traverse(std::vector<int> &order, int nodeid) {
     order.push_back(nodeid);
@@ -121,10 +121,23 @@ public:
       traverse(order, child);
     }
   }
-  void topological_order() { traverse(run_order, root_node); };
+  // Creates a topological run order of the DAG
+  void topological_order() {
+    if (!get_root_node())
+      return;
+    traverse(run_order, root_node);
+  };
   void stop() { should_stop = true; }
   void evaluate();
-  Node *get_root_node() { return nodes.at(root_node).get(); }
+  int get_root_node_id() { return root_node; }
+  void set_root_node(int root_node) { this->root_node = root_node; }
+  std::optional<Node *> get_root_node() {
+    try {
+      return nodes.at(root_node).get();
+    } catch (std::out_of_range) {
+      return {};
+    }
+  }
   Node *get_node(int nodeid) { return nodes.at(nodeid).get(); }
   Edge get_edge(int edgeid) { return edges.at(edgeid); }
   Pin get_pin(int pinid) { return pins.at(pinid); }
