@@ -19,14 +19,15 @@ using Workspace = std::pair<std::string, std::vector<std::shared_ptr<Widget>>>;
 
 struct App {
   std::shared_ptr<AssetManager> assets = std::make_shared<AssetManager>();
-  AssetId<RenderGraph> graph_id;
   std::vector<Workspace> workspaces;
+  AssetId<RenderGraph> graph_id;
   int current_workspace = 0;
   bool show_tab_bar = true;
 
-  std::shared_ptr<RenderGraph> graph;
-  std::optional<std::filesystem::path> project_root;
   ExportImagePopup export_image = ExportImagePopup();
+  std::optional<std::filesystem::path> project_root;
+  std::shared_ptr<RenderGraph> graph;
+  std::string status_message = "This is a status bar!";
   bool is_project_dirty = false;
 
   // Setup App Logic

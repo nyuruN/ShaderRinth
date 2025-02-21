@@ -43,6 +43,9 @@ void App::handle_events() {
       }
       it->get()->onShutdown();
       workspaces[current_workspace].second.erase(it);
+    } else if (std::holds_alternative<StatusMessage>(event)) {
+      auto ev = std::get<StatusMessage>(event);
+      status_message = ev.message;
     }
   }
 }
@@ -138,7 +141,7 @@ void App::render_statusbar() {
   const float width = ImGui::GetWindowSize().x;
 
   if (ImGui::BeginMenuBar()) {
-    ImGui::TextUnformatted("This is a status bar!");
+    ImGui::TextUnformatted(status_message.c_str());
 
     // Get framerate
     static float prev = glfwGetTime();

@@ -2,6 +2,7 @@
 
 #include "graph.h"
 #include "node.h"
+#include <GLES3/gl3.h>
 #include <imnodes.h>
 #include <spdlog/spdlog.h>
 

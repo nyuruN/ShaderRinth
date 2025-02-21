@@ -3,6 +3,7 @@
 #include <deque>
 #include <memory>
 #include <optional>
+#include <string>
 #include <variant>
 
 // Forward declares
@@ -20,9 +21,16 @@ struct AddWidget {
   AddWidget(std::shared_ptr<Widget> widget) : widget(widget) {}
 };
 
+// Request to update status bar message
+struct StatusMessage {
+  std::string message;
+  StatusMessage(std::string message) : message(message) {}
+};
+
 using Event = std::variant< //
     DeleteWidget,           //
-    AddWidget               //
+    AddWidget,              //
+    StatusMessage           //
     >;
 
 // Global event queue used to communicate certain

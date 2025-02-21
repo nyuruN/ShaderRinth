@@ -33,6 +33,7 @@ add_executable(
   src/widgets/editor_widget.cpp
   src/widgets/export_image_popup.cpp
   src/widgets/outliner_widget.cpp
+  src/nodes/shader_node.cpp
   
   extern/imnodes/imnodes.cpp
 )

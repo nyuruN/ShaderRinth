@@ -23,21 +23,21 @@ void AddNodes::show(std::shared_ptr<AssetManager> assets) {
     ImGui::Indent(5);
 
     if (ImGui::Selectable("Fragment Shader"))
-      insert_nodes.push_back(std::make_shared<FragmentShaderNode>());
+      insert_nodes.push_back(std::make_shared<FragmentShaderNode>(FragmentShaderNode(assets)));
     if (ImGui::Selectable("Time"))
-      insert_nodes.push_back(std::make_shared<TimeNode>());
+      insert_nodes.push_back(std::make_shared<TimeNode>(TimeNode()));
     if (ImGui::Selectable("Viewport"))
-      insert_nodes.push_back(std::make_shared<ViewportNode>());
+      insert_nodes.push_back(std::make_shared<ViewportNode>(ViewportNode()));
     if (ImGui::Selectable("Texture"))
-      insert_nodes.push_back(std::make_shared<Texture2DNode>(assets));
+      insert_nodes.push_back(std::make_shared<Texture2DNode>(Texture2DNode(assets)));
 
     if (ImGui::BeginMenu("Value Nodes")) {
       ImGui::Dummy(ImVec2(150, 0)); // Min width
       ImGui::Indent(5);
       if (ImGui::Selectable("Vec2"))
-        insert_nodes.push_back(std::make_shared<Vec2Node>());
+        insert_nodes.push_back(std::make_shared<Vec2Node>(Vec2Node()));
       if (ImGui::Selectable("Float"))
-        insert_nodes.push_back(std::make_shared<FloatNode>());
+        insert_nodes.push_back(std::make_shared<FloatNode>(FloatNode()));
       ImGui::Spacing();
       ImGui::EndMenu();
     }

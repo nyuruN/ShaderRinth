@@ -2,7 +2,6 @@
 
 #include "assets.h"
 #include "data.h"
-#include <GLES3/gl3.h>
 #include <any>
 #include <imgui.h>
 #include <map>
@@ -16,6 +15,7 @@ class Geometry;
 struct Shader;
 struct Texture;
 struct ImNodesEditorContext;
+struct Data;
 
 // Represents a pin of a node
 struct Pin {
@@ -38,21 +38,22 @@ private:
   std::map<int, std::shared_ptr<Node>> nodes = {};
   std::map<int, Edge> edges = {};
   std::map<int, Pin> pins = {};
-  std::vector<int> run_order = {};
 
   AssetId<Geometry> geometry_id;
   int root_node = -1;
-  bool should_stop = false;
   int next_node_id = 0;
   int next_edge_id = 0;
   int next_pin_id = 0;
+
+  std::vector<int> run_order = {};
+  bool should_stop = false;
 
   // Calls onLoad() on all nodes
   void setup_nodes_on_load();
 
 public:
-  std::shared_ptr<Geometry> graph_geometry = nullptr;
   ImVec2 viewport_resolution = ImVec2(640, 480);
+  std::shared_ptr<Geometry> graph_geometry = nullptr;
 
   RenderGraph(std::shared_ptr<AssetManager> assets = std::make_shared<AssetManager>(),
               AssetId<Geometry> geometry_id = 0) {

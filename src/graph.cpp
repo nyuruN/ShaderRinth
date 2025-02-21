@@ -1,6 +1,7 @@
 #include "graph.h"
-#include "nodes.h"
 
+#include "events.h"
+#include "nodes.h"
 #include <imnodes.h>
 
 //! RenderGraph
@@ -91,9 +92,13 @@ void RenderGraph::evaluate() {
     run_order.pop_back();
 
     if (should_stop) {
+      EventQueue::push(StatusMessage("Graph status: FAILED"));
       break;
     }
   }
+
+  if (!should_stop)
+    EventQueue::push(StatusMessage("Graph status: OK"));
 };
 void RenderGraph::clear_graph_data() {
   run_order.clear();
@@ -126,7 +131,7 @@ void RenderGraph::default_layout(std::shared_ptr<AssetManager> assets, AssetId<S
   int out = insert_root_node(std::make_shared<OutputNode>());
   int time = insert_node(std::make_shared<TimeNode>());
   int viewport = insert_node(std::make_shared<ViewportNode>());
-  int frag = insert_node(std::make_shared<FragmentShaderNode>());
+  int frag = insert_node(std::make_shared<FragmentShaderNode>(assets));
 
   auto f = dynamic_cast<FragmentShaderNode *>(get_node(frag));
   auto vp = dynamic_cast<ViewportNode *>(get_node(viewport));
@@ -135,7 +140,7 @@ void RenderGraph::default_layout(std::shared_ptr<AssetManager> assets, AssetId<S
   int time_out = dynamic_cast<TimeNode *>(get_node(time))->get_output_pin();
   int frag_out = f->get_output_pin();
   int vec_out = vp->get_output_pin();
-  f->set_shader(assets, shader_id);
+  f->set_shader(shader_id);
 
   int u_res_in = f->add_uniform_pin(*this, DataType::Vec2, "u_resolution");
   int u_time_in = f->add_uniform_pin(*this, DataType::Float, "u_time");
