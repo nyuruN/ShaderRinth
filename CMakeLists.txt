@@ -40,7 +40,6 @@ add_executable(
 target_include_directories(${EXECUTABLE} PRIVATE 
   include
 
-  ${CMAKE_SOURCE_DIR}
   extern/imnodes
   extern/zep/include
   extern/portable-file-dialogs

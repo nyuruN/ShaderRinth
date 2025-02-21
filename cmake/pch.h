@@ -1,14 +1,14 @@
 #pragma once
 
 //! Std
-#include <any>
-#include <filesystem>
-#include <fstream>
-#include <map>
-#include <memory>
-#include <optional>
-#include <string>
-#include <vector>
+#include <any>        // IWYU pragma: export
+#include <filesystem> // IWYU pragma: export
+#include <fstream>    // IWYU pragma: export
+#include <map>        // IWYU pragma: export
+#include <memory>     // IWYU pragma: export
+#include <optional>   // IWYU pragma: export
+#include <string>     // IWYU pragma: export
+#include <vector>     // IWYU pragma: export
 
 //! OpenGL
 #include <GL/gl.h>
@@ -23,10 +23,10 @@
 #include <imgui_stdlib.h>
 
 //! ImNodes
-#include <imnodes.h>
+#include "imnodes.h" // IWYU pragma: export
 
 //! Portable-File-Dialogs
-#include <portable-file-dialogs.h>
+#include "portable-file-dialogs.h" // IWYU pragma: export
 
 //! spdlog
 // #include <spdlog/sinks/ringbuffer_sink.h>

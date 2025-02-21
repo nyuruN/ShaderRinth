@@ -1,9 +1,9 @@
 #pragma once
 
 #include "graph.h"
+#include "imnodes.h"
 #include "node.h"
 #include "utils.h"
-#include <imnodes.h>
 
 class FloatNode : public Node {
   int output_pin;

@@ -1,6 +1,5 @@
 #include "theme.h"
 #include "editor.h"
-#include <zep.h>
 
 namespace ImGui {
 // Sourced from: https://github.com/GraphicsProgramming/dear-imgui-styles

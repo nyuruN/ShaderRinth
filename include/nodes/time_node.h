@@ -1,9 +1,9 @@
 #pragma once
 
 #include "graph.h"
+#include "imnodes.h"
 #include "node.h"
 #include <GLFW/glfw3.h>
-#include <imnodes.h>
 
 class TimeNode : public Node {
   int output_pin;

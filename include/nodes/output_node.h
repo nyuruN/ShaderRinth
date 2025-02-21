@@ -1,9 +1,9 @@
 #pragma once
 
 #include "graph.h"
+#include "imnodes.h"
 #include "node.h"
 #include <GLES3/gl3.h>
-#include <imnodes.h>
 #include <spdlog/spdlog.h>
 
 class OutputNode : public Node {

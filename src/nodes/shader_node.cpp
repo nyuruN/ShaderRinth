@@ -2,9 +2,9 @@
 
 #include "geometry.h"
 #include "graph.h"
+#include "imnodes.h"
 #include "shader.h"
 #include <imgui_stdlib.h>
-#include <imnodes.h>
 
 int FragmentShaderNode::add_uniform_pin(RenderGraph &graph, DataType type, std::string name) {
   int pinid;

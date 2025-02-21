@@ -4,6 +4,7 @@
 #include "events.h"
 #include "geometry.h"
 #include "graph.h"
+#include "portable-file-dialogs.h"
 #include "shader.h"
 #include "texture.h"
 #include "widgets.h"
@@ -12,7 +13,6 @@
 #include <filesystem>
 #include <imgui.h>
 #include <optional>
-#include <portable-file-dialogs.h>
 #include <vector>
 
 using Workspace = std::pair<std::string, std::vector<std::shared_ptr<Widget>>>;

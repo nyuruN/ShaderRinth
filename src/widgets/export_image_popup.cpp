@@ -1,11 +1,11 @@
 #include "widgets/export_image_popup.h"
 
 #include "graph.h"
+#include "nodes/output_node.h"
+#include "portable-file-dialogs.h"
 #include <GL/gl.h> // For glGetTexImage otherwise GLES/gl3.h
 #include <imgui.h>
 #include <imgui_stdlib.h>
-#include <nodes/output_node.h>
-#include <portable-file-dialogs.h>
 #include <spdlog/spdlog.h>
 #include <stb_image.h>
 #include <stb_image_write.h>

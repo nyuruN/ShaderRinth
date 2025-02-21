@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include <zep.h>
+// Re-exports
+#include "zep.h" // IWYU pragma: export
 
 // Helpers to create zep editor
 Zep::ZepEditor &zep_get_editor();
