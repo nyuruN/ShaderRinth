@@ -1,5 +1,4 @@
 #include "app.h"
-#include "config_app.h"
 #include "editor.h"
 #include "theme.h"
 #include <GL/gl.h>
@@ -45,13 +44,14 @@ int main(int, char **) {
     ImGui::CreateContext();
     ImGui::StyleColorsCinder();
     ImGuiIO &io = ImGui::GetIO();
+    io.IniFilename = nullptr; // Disable automatic saves
     // Enable standard controls
     io.ConfigFlags |=
         ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_DockingEnable; // Enable docking
 
     ImNodes::CreateContext();
 
-    auto fontPath = std::filesystem::path(APP_ROOT) / "assets" / "fonts" / "Cousine-Regular.ttf";
+    auto fontPath = getAppDir() / "assets/fonts/Cousine-Regular.ttf";
     io.Fonts->AddFontFromFileTTF(fontPath.string().c_str(), 15);
 
     // Setup Platform/Renderer backends

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "config_app.h"
+#include "app_path.h"
 #include "events.h"
 #include "geometry.h"
 #include "graph.h"
@@ -33,10 +33,9 @@ struct App {
 
   // Setup App Logic
   App() {
-    ImGui::LoadIniSettingsFromDisk((std::filesystem::path(APP_ROOT) / "assets/imgui.ini").c_str());
+    ImGui::LoadIniSettingsFromDisk((getAppDir() / "assets/imgui.ini").c_str());
 
-    auto texture = std::make_shared<Texture>("Cat", std::filesystem::path(APP_ROOT) /
-                                                        "assets/textures/cat.png");
+    auto texture = std::make_shared<Texture>("Cat", getAppDir() / "assets/textures/cat.png");
 
     if (!texture->is_loaded())
       spdlog::error("Failed to load texture assets/textures/cat.png");

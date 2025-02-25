@@ -62,14 +62,12 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(tomlplusplus REQUIRED IMPORTED_TARGET tomlplusplus)
 target_link_libraries(${EXECUTABLE} PRIVATE PkgConfig::tomlplusplus)
 
-# Link zep
+# Configure zep
 add_definitions(-DZEP_FEATURE_CPP_FILE_SYSTEM)
 add_definitions(-DZEP_SINGLE_HEADER=1)
-set(APP_ROOT ${CMAKE_CURRENT_LIST_DIR})
-configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/config_app.h.cmake ${CMAKE_BINARY_DIR}/config_app.h)
-target_include_directories(${EXECUTABLE} PRIVATE 
-  ${CMAKE_BINARY_DIR} # config_app.h
-)
+
+# Copy assets
+file(COPY assets/ DESTINATION ${CMAKE_BINARY_DIR}/assets)
 
 # Precompile headers
 option(USE_PCH "Enable precompiled headers" ON)

@@ -1,7 +1,7 @@
 #pragma once
 
+#include "app_path.h"
 #include "assets.h"
-#include "config_app.h"
 #include <GLES3/gl3.h>
 #include <filesystem>
 #include <spdlog/spdlog.h>
@@ -10,7 +10,7 @@
 #include <toml++/toml.hpp>
 
 static const std::filesystem::path DEFAULT_FRAG_PATH =
-    std::filesystem::path(APP_ROOT) / "assets" / "shaders" / "default_frag.glsl";
+    getAppDir() / "assets" / "shaders" / "default_frag.glsl";
 
 // Forward declares
 class Geometry;
