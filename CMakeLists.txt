@@ -87,3 +87,15 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   # other macOS-specific flags for Clang
 endif()
 
+# Install instructions
+install(TARGETS ${EXECUTABLE} DESTINATION .)
+install(DIRECTORY assets/ DESTINATION assets)
+
+# CPack Configuration
+set(CPACK_PACKAGE_NAME "ShaderRinth") 
+set(CPACK_PACKAGE_VERSION "0.0.1")
+set(CPACK_PACKAGE_DESCRIPTION "A Shadertoy-like GLSL Editor written in C++")
+set(CPACK_GENERATOR "TGZ;ZIP")
+
+include(CPack)
+

@@ -56,7 +56,9 @@ purposes.
 
 * [x] Status bar
 
-* [ ] Portable package with CPack
+* [x] Portable package with CPack
+
+* [ ] Finishing touches (testing, cleanup, cross-compiles)
 
 ### VERSION 0.1.0 (Miniminal Viable Product)
 
