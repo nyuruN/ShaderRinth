@@ -29,7 +29,7 @@ void EditorWidget::onStartup() {
   tab = zep.AddTabWindow();
 
   // NOTE: A tab should only ever have ONE window
-  tab->AddWindow(buffer);
+  window = tab->AddWindow(buffer);
 
   last_update = buffer->GetUpdateCount();
 };
@@ -71,6 +71,12 @@ void EditorWidget::render(bool *p_open) {
     return;
   }
 
+  // Begin Buffer edit if focus is gained
+  if (!is_focused && ImGui::IsWindowFocused())
+    buffer->GetMode()->Begin(window);
+  is_focused = ImGui::IsWindowFocused();
+
+  // Set TabWindow to render
   zep_get_editor().SetCurrentTabWindowUnchecked(tab);
   zep_show();
 

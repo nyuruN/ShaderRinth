@@ -54,7 +54,7 @@ purposes.
 
 * [x] Event system?
 
-* [ ] Status bar
+* [x] Status bar
 
 * [ ] Portable package with CPack
 

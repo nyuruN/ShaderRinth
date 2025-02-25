@@ -9,6 +9,7 @@ struct Shader;
 namespace Zep {
 class ZepTabWindow;
 class ZepBuffer;
+class ZepWindow;
 } // namespace Zep
 
 class EditorWidget : public Widget {
@@ -19,7 +20,9 @@ private:
   std::string title;
   Zep::ZepBuffer *buffer;
   Zep::ZepTabWindow *tab;
+  Zep::ZepWindow *window;
   bool is_dirty = false;
+  bool is_focused = false;
   uint64_t last_update = 0;
 
 public:
