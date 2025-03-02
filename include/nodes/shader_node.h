@@ -2,7 +2,9 @@
 
 #include "assets.h"
 #include "node.h"
-#include <GLFW/glfw3.h>
+#ifndef __gl_h_
+#include "glad/glad.h"
+#endif
 
 class FragmentShaderNode : public Node {
   struct UniformPin {

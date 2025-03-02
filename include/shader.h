@@ -2,7 +2,7 @@
 
 #include "app_path.h"
 #include "assets.h"
-#include <GLES3/gl3.h>
+#include <glad/glad.h>
 #include <filesystem>
 #include <spdlog/spdlog.h>
 #include <string>

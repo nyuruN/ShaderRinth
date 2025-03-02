@@ -22,7 +22,7 @@ void EditorWidget::onStartup() {
 
   assert(shader && "Invalid shader object on startup!");
 
-  buffer = zep.GetEmptyBuffer(shader->get_path().filename());
+  buffer = zep.GetEmptyBuffer(shader->get_path().filename().string());
   buffer->SetText(shader->get_source());
   buffer->SetFileFlags(Zep::FileFlags::SoftTabTwo, true);
 

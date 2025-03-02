@@ -71,12 +71,12 @@ public:
 struct UndoContext {
 private:
   std::vector<Action> history = {};
-  uint idx = 0;
-  uint max_history = 50;
-  uint delete_interval = 10;
+  unsigned int idx = 0;
+  unsigned int max_history = 50;
+  unsigned int delete_interval = 10;
 
 public:
-  UndoContext(uint max_history) { this->max_history = max_history; }
+  UndoContext(unsigned int max_history) { this->max_history = max_history; }
   // Executes given action and updates UndoContext
   void do_action(Action a);
   // Undo an action if available

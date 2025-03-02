@@ -36,10 +36,10 @@ public:
     auto pwd = std::filesystem::current_path();
     switch (format) {
     case PNG:
-      export_path = pwd / "image.png";
+      export_path = (pwd / "image.png").string();
       break;
     case JPEG:
-      export_path = pwd / "image.jpg";
+      export_path = (pwd / "image.jpg").string();
       break;
     }
   }

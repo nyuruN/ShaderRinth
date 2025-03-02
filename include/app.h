@@ -8,7 +8,8 @@
 #include "shader.h"
 #include "texture.h"
 #include "widgets.h"
-#include <GL/gl.h>
+#define GLFW_INCLUDE_NONE
+#include <glad/glad.h>
 #include <GLFW/glfw3.h> // OpenGL headers
 #include <filesystem>
 #include <imgui.h>
@@ -33,7 +34,7 @@ struct App {
 
   // Setup App Logic
   App() {
-    ImGui::LoadIniSettingsFromDisk((getAppDir() / "assets/imgui.ini").c_str());
+    ImGui::LoadIniSettingsFromDisk((getAppDir() / "assets/imgui.ini").string().c_str());
 
     auto texture = std::make_shared<Texture>("Cat", getAppDir() / "assets/textures/cat.png");
 

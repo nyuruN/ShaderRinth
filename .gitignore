@@ -3,3 +3,4 @@ compile_commands.json
 .cache/
 vcpkg_installed/
 .clang-format
+.vscode/

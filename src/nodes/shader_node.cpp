@@ -5,6 +5,7 @@
 #include "imnodes.h"
 #include "shader.h"
 #include <imgui_stdlib.h>
+#include <glad/glad.h>
 
 int FragmentShaderNode::add_uniform_pin(RenderGraph &graph, DataType type, std::string name) {
   int pinid;

@@ -173,9 +173,9 @@ void App::import_texture() {
     return;
   std::filesystem::path path(res[0]);
 
-  Texture texture(path.filename(), path);
+  Texture texture(path.filename().string(), path);
   if (!texture)
-    spdlog::error("Failed to load texture: {}", path.c_str());
+    spdlog::error("Failed to load texture: {}", path.string());
 
   assets->insert_texture(std::make_shared<Texture>(texture));
 }
@@ -217,7 +217,7 @@ void App::save_project(std::filesystem::path project_directory) {
   std::ofstream ofs(project_root.value() / "srproject.toml");
   ofs << tbl;
 
-  ImGui::SaveIniSettingsToDisk((project_root.value() / "sr_imgui.ini").c_str());
+  ImGui::SaveIniSettingsToDisk((project_root.value() / "sr_imgui.ini").string().c_str());
 
   spdlog::info("Project saved in {}", project_root.value().string());
 }

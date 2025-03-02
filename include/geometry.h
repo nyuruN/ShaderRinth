@@ -1,7 +1,6 @@
 #pragma once
 
 #include "assets.h"
-#include <GLES3/gl3.h>
 #include <string>
 
 #include <toml++/toml.hpp>
@@ -39,14 +38,14 @@ void main()
 }
 )";
 
-  GLuint vao;
-  GLuint vbo;
-  GLuint ebo;
+  unsigned int vao;
+  unsigned int vbo;
+  unsigned int ebo;
 
 public:
   // Creates a new ScreenQuadGeometry
   ScreenQuadGeometry(std::string name = "FullscreenQuad");
-  void compile_vertex_shader(GLuint &vert_shader) override;
+  void compile_vertex_shader(unsigned int  &vert_shader) override;
   void draw_geometry() override;
   void destroy() override;
 

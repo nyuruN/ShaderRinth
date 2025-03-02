@@ -1,5 +1,7 @@
 #include "geometry.h"
 
+#include <glad/glad.h>
+
 //! ScreenQuadGeometry
 
 ScreenQuadGeometry::ScreenQuadGeometry(std::string name) {

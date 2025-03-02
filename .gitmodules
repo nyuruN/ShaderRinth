@@ -1,15 +1,6 @@
 [submodule "vcpkg"]
 	path = vcpkg
 	url = https://github.com/microsoft/vcpkg.git
-[submodule "zep"]
-	path = zep
-	url = https://github.com/nyuruN/zep.git
-[submodule "imnodes"]
-	path = imnodes
-	url = https://github.com/Nelarius/imnodes.git
-[submodule "portable-file-dialogs"]
-	path = portable-file-dialogs
-	url = https://github.com/samhocevar/portable-file-dialogs.git
 [submodule "extern/imnodes"]
 	path = extern/imnodes
 	url = https://github.com/Nelarius/imnodes.git
@@ -18,4 +9,4 @@
 	url = https://github.com/samhocevar/portable-file-dialogs.git
 [submodule "extern/zep"]
 	path = extern/zep
-	url = git@github.com:nyuruN/zep.git
+	url = https://github.com/nyuruN/zep.git

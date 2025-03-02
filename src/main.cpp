@@ -1,9 +1,9 @@
 #include "app.h"
 #include "editor.h"
 #include "theme.h"
-#include <GL/gl.h>
-#include <GLES3/gl3.h>
-#include <GLFW/glfw3.h> // Will drag system OpenGL headers
+#define GLFW_INCLUDE_NONE
+#include <glad/glad.h> // Defines OpenGL headers
+#include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -35,6 +35,12 @@ int main(int, char **) {
       return 1;
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
+
+    // Setup GLAD
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+      std::cerr << "Failed to initialize GLAD" << std::endl;
+      return -1;
+    }
 
     // Setup Dear ImGui
     IMGUI_CHECKVERSION();

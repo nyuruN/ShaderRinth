@@ -46,16 +46,19 @@ target_include_directories(${EXECUTABLE} PRIVATE
 )
 
 # Link libraries (vcpkg)
-find_package(imgui CONFIG REQUIRED)
-target_link_libraries(${EXECUTABLE} PRIVATE imgui::imgui)
+find_package(OpenGL REQUIRED)
+target_link_libraries(${EXECUTABLE} PRIVATE OpenGL::GL)
+find_package(glad CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE} PRIVATE glad::glad)
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(${EXECUTABLE} PRIVATE glfw)
+find_package(imgui CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE} PRIVATE imgui::imgui)
 find_package(spdlog CONFIG REQUIRED)
 target_link_libraries(${EXECUTABLE} PRIVATE spdlog::spdlog)
 find_package(Stb REQUIRED)
 target_include_directories(${EXECUTABLE} PRIVATE ${Stb_INCLUDE_DIR})
-find_package(OpenGL REQUIRED)
-target_link_libraries(${EXECUTABLE} PRIVATE OpenGL::GL)
+
 
 # Link tomlplusplus
 find_package(PkgConfig REQUIRED)
@@ -70,7 +73,7 @@ add_definitions(-DZEP_SINGLE_HEADER=1)
 file(COPY assets/ DESTINATION ${CMAKE_BINARY_DIR}/assets)
 
 # Precompile headers
-option(USE_PCH "Enable precompiled headers" ON)
+option(USE_PCH "Enable precompiled headers" OFF)
 if(USE_PCH)
     message(STATUS "Using precompiled headers")
     target_precompile_headers(${EXECUTABLE} PRIVATE cmake/pch.h)
@@ -79,12 +82,10 @@ else()
 endif()
 
 # compile options
-if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   target_compile_options(${EXECUTABLE} PRIVATE /W4)
-elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+else (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(${EXECUTABLE} PRIVATE -Wall -Wextra -Wpedantic)
-elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  # other macOS-specific flags for Clang
 endif()
 
 # Install instructions

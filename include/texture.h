@@ -1,7 +1,8 @@
 #pragma once
 
 #include "assets.h"
-#include <GLES3/gl3.h>
+
+#include <glad/glad.h>
 #include <filesystem>
 #include <string>
 

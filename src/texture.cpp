@@ -12,12 +12,14 @@
 
 #include "texture.h"
 
+#include <glad/glad.h>
+
 //! Texture
 
 Texture::Texture(std::string name, std::filesystem::path path) : path(path) {
   this->name = name;
   stbi_set_flip_vertically_on_load(true);
-  unsigned char *data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+  unsigned char *data = stbi_load(path.string().c_str(), &width, &height, &channels, 0);
 
   if (data == NULL)
     return;
