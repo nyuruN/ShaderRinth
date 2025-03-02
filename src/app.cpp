@@ -133,8 +133,8 @@ void App::render_statusbar() {
   if (!show_status_bar)
     return;
 
-  ImGui::SetNextWindowPos({0, ImGui::GetWindowSize().y - STATUS_BAR_HEIGHT}, ImGuiCond_Once);
-  ImGui::SetNextWindowSize({ImGui::GetWindowSize().x, STATUS_BAR_HEIGHT}, ImGuiCond_Once);
+  ImGui::SetNextWindowPos({0, ImGui::GetWindowViewport()->Size.y - STATUS_BAR_HEIGHT});
+  ImGui::SetNextWindowSize({ImGui::GetWindowViewport()->Size.x, STATUS_BAR_HEIGHT});
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
   ImGui::Begin("Menubar", NULL,
                ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoSavedSettings |
@@ -182,7 +182,7 @@ void App::import_texture() {
 void App::render_dockspace() {
   // Create a window just below the menu to host the docking space
   float menu_height = ImGui::GetFrameHeight();
-  ImVec2 size = ImGui::GetWindowSize();
+  ImVec2 size = ImGui::GetMainViewport()->Size;
   size.y -= menu_height + STATUS_BAR_HEIGHT * show_status_bar;
   ImGui::SetNextWindowPos(ImVec2(0, menu_height));
   ImGui::SetNextWindowSize(size); // Size matches display

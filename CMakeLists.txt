@@ -81,11 +81,15 @@ else()
     message(STATUS "Building without precompiled headers")
 endif()
 
-# compile options
+# Compile options
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   target_compile_options(${EXECUTABLE} PRIVATE /W4)
-else (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-  target_compile_options(${EXECUTABLE} PRIVATE -Wall -Wextra -Wpedantic)
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(${EXECUTABLE} PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+# Disable console on startup on Windows
+if (MINGW AND WIN32)
+  set(CMAKE_EXE_LINKER_FLAGS "-mwindows")
 endif()
 
 # Install instructions
