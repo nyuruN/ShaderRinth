@@ -54,11 +54,9 @@ public:
         ImGui::TextUnformatted("] ");
         ImGui::SameLine(0, 0);
 
-        // Manually add null terminator
-        // TODO: Find a safer way that does not overwrite data
-        const_cast<char *>(msg.payload.data())[msg.payload.size() - 1] = '\0';
-
-        ImGui::TextWrapped(msg.payload.data());
+        ImGui::PushTextWrapPos(0.0f);
+        ImGui::TextUnformatted(msg.payload.begin(), msg.payload.end());
+        ImGui::PopTextWrapPos();
       }
     } else {
       auto buf = Global::instance().get_ringbuffer_sink()->last_formatted();

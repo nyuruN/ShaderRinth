@@ -3,6 +3,7 @@
 #include "graph.h"
 #include "imnodes.h"
 #include "node.h"
+#define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
 class TimeNode : public Node {

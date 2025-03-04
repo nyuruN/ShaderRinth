@@ -11,8 +11,9 @@
 #include <vector>     // IWYU pragma: export
 
 //! OpenGL
-#include <GL/gl.h>
+#define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+#include <glad/glad.h>
 
 //! ImGui
 #define IMGUI_DEFINE_MATH_OPERATORS

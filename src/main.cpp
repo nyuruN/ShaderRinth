@@ -2,8 +2,8 @@
 #include "editor.h"
 #include "theme.h"
 #define GLFW_INCLUDE_NONE
-#include <glad/glad.h> // Defines OpenGL headers
 #include <GLFW/glfw3.h>
+#include <glad/glad.h> // Defines OpenGL headers
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -31,15 +31,17 @@ int main(int, char **) {
 
     // Create window with graphics context
     window = glfwCreateWindow(1280, 720, "ShaderRinth", nullptr, nullptr);
-    if (window == nullptr)
+    if (window == nullptr) {
+      std::cerr << "Failed to initialize GLFW" << std::endl;
       return 1;
+    }
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
 
     // Setup GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
       std::cerr << "Failed to initialize GLAD" << std::endl;
-      return -1;
+      return 1;
     }
 
     // Setup Dear ImGui

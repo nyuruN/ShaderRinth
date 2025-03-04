@@ -25,6 +25,33 @@ and may appear to be stretched
 into ShaderRinth and may cause a crash in the worst case
   * :q will crash the program
 
+## Building the project
+
+This project depends on Git submodules and CMake
+so make sure these two are installed and available.
+
+### For Windows (MinGW)
+
+Make sure you have MinGW + PkgConfig installed on your system.
+
+```console
+git clone --recurse-submodules https://github.com/nyuruN/ShaderRinth.git
+cd ShaderRinth && mkdir build && cd build
+cmake -G "MinGW Makefiles" -DCMAKE_CXX_COMPILER=/path/to/mingw-g++.exe -DVCPKG_TARGET_TRIPLET=x64-mingw-static ..
+cmake --build .
+```
+
+### For Linux
+
+You can use any build system generator of your choice.
+
+```console
+git clone --recurse-submodules https://github.com/nyuruN/ShaderRinth.git
+cd ShaderRinth && mkdir build && cd build
+cmake -G Ninja ..
+cmake --build .
+```
+
 ## Goal posts
 
 The program is currently *viable* for testing
