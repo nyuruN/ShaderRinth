@@ -18,7 +18,7 @@ public:
   ViewportWidget(int id, std::shared_ptr<AssetManager> assets, AssetId<RenderGraph> graph_id) {
     this->id = id;
     title = fmt::format("Viewport##{}", id);
-    viewgraph = assets->get_graph(graph_id);
+    viewgraph = assets->getRenderGraph(graph_id).value();
     this->graph_id = graph_id;
   }
   void render(bool *p_open) override {

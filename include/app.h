@@ -9,9 +9,9 @@
 #include "texture.h"
 #include "widgets.h"
 #define GLFW_INCLUDE_NONE
-#include <glad/glad.h>
 #include <GLFW/glfw3.h> // OpenGL headers
 #include <filesystem>
+#include <glad/glad.h>
 #include <imgui.h>
 #include <optional>
 #include <vector>
@@ -19,7 +19,7 @@
 using Workspace = std::pair<std::string, std::vector<std::shared_ptr<Widget>>>;
 
 struct App {
-  std::shared_ptr<AssetManager> assets = std::make_shared<AssetManager>();
+  std::shared_ptr<AssetManager> assets = std::make_shared<AssetManager>(AssetManager());
   std::vector<Workspace> workspaces;
   AssetId<RenderGraph> graph_id;
   int current_workspace = 0;
@@ -36,18 +36,17 @@ struct App {
   App() {
     ImGui::LoadIniSettingsFromDisk((getAppDir() / "assets/imgui.ini").string().c_str());
 
-    auto texture = std::make_shared<Texture>("Cat", getAppDir() / "assets/textures/cat.png");
-
-    if (!texture->is_loaded())
+    if (auto texture = Texture("Cat", getAppDir() / "assets/textures/cat.png"))
+      auto tex_id = assets->insertTexture(std::make_shared<Texture>(texture));
+    else
       spdlog::error("Failed to load texture assets/textures/cat.png");
 
-    auto shader_id = assets->insert_shader(std::make_shared<Shader>("Default"));
-    auto geo_id = assets->insert_geometry(std::make_shared<ScreenQuadGeometry>());
-    auto tex_id = assets->insert_texture(texture);
+    auto shader_id = assets->insertShader(std::make_shared<Shader>("Default"));
+    auto geo_id = assets->insertGeometry(std::make_shared<ScreenQuadGeometry>());
 
-    graph_id = assets->insert_graph(std::make_shared<RenderGraph>(assets, geo_id));
-    graph = assets->get_graph(graph_id);
+    graph = std::make_shared<RenderGraph>(RenderGraph(assets, geo_id));
     graph->default_layout(assets, shader_id);
+    graph_id = assets->insertRenderGraph(graph);
 
     // Setup global widgets
     export_image.set_graph(graph);

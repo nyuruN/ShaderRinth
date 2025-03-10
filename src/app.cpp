@@ -78,7 +78,7 @@ void App::render_menubar() {
         EventQueue::push(AddWidget(std::make_shared<ViewportWidget>(
             ViewportWidget(assets->get_widget_id(), assets, graph_id))));
       if (ImGui::BeginMenu("Editor")) {
-        for (auto &pair : *assets->shaders) {
+        for (auto &pair : *assets->getShaderCollection()) {
           ImGui::PushID(pair.first);
           bool clicked = ImGui::MenuItem(pair.second->get_name().c_str());
           ImGui::PopID();
@@ -161,7 +161,7 @@ void App::render_statusbar() {
   ImGui::End();
 }
 void App::new_shader() {
-  auto shader_id = assets->insert_shader(std::make_shared<Shader>(Shader("NewShader")));
+  auto shader_id = assets->insertShader(std::make_shared<Shader>(Shader("NewShader")));
   EventQueue::push(AddWidget(
       std::make_shared<EditorWidget>(EditorWidget(assets->get_widget_id(), assets, shader_id))));
   spdlog::info("Shader \"NewShader\" created!");
@@ -177,7 +177,7 @@ void App::import_texture() {
   if (!texture)
     spdlog::error("Failed to load texture: {}", path.string());
 
-  assets->insert_texture(std::make_shared<Texture>(texture));
+  assets->insertTexture(std::make_shared<Texture>(texture));
 }
 void App::render_dockspace() {
   // Create a window just below the menu to host the docking space

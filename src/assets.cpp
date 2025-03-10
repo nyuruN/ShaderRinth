@@ -6,89 +6,88 @@
 #include "texture.h"
 
 void AssetManager::destroy() {
-  for (auto &pair : *textures) {
+  for (auto &pair : *mTexture) {
     pair.second->destroy();
   }
-  for (auto &pair : *shaders) {
+  for (auto &pair : *mShader) {
     pair.second->destroy();
   }
-  geometries.reset();
-  shaders.reset();
-  textures.reset();
-  graphs.reset();
+  for (auto &pair : *mGeometry) {
+    pair.second->destroy();
+  }
+  for (auto &pair : *mRenderGraph) {
+    pair.second->destroy();
+  }
+  mGeometry.reset();
+  mShader.reset();
+  mTexture.reset();
+  mRenderGraph.reset();
 }
 toml::table AssetManager::save(std::filesystem::path project_root) {
-  toml::array shaders{};
-  for (auto &pair : *this->shaders) {
+  this->project_root = project_root;
+
+  toml::array tShader{};
+  for (auto &pair : *mShader) {
     auto t = pair.second->save(project_root);
     t.insert("asset_id", pair.first);
-    shaders.push_back(t);
+    tShader.push_back(t);
   }
-  toml::array textures{};
-  for (auto &pair : *this->textures) {
-    auto t = pair.second->save();
+  toml::array tTexture{};
+  for (auto &pair : *mTexture) {
+    auto t = pair.second->save(project_root);
     t.insert("asset_id", pair.first);
-    textures.push_back(t);
+    tTexture.push_back(t);
   }
-  toml::array geometries{};
-  for (auto &pair : *this->geometries) {
-    auto t = pair.second->save();
+  toml::array tGeometry{};
+  for (auto &pair : *mGeometry) {
+    auto t = pair.second->save(project_root);
     t.insert("asset_id", pair.first);
-    geometries.push_back(t);
+    tGeometry.push_back(t);
   }
-  toml::array graphs{};
-  for (auto &pair : *this->graphs) {
-    auto t = pair.second->save();
+  toml::array tRenderGraph{};
+  for (auto &pair : *mRenderGraph) {
+    auto t = pair.second->save(project_root);
     t.insert("asset_id", pair.first);
-    graphs.push_back(t);
+    tRenderGraph.push_back(t);
   }
 
   return toml::table{
       {"next_asset_id", next_asset_id},   //
       {"next_widget_id", next_widget_id}, //
-      {"Shaders", shaders},
-      {"Textures", textures},
-      {"Geometries", geometries},
-      {"Graphs", graphs},
+      {"Shaders", tShader},
+      {"Geometries", tGeometry},
+      {"Textures", tTexture},
+      {"Graphs", tRenderGraph},
   };
 }
 void AssetManager::load(toml::table &tbl, std::filesystem::path project_root) {
+  this->project_root = project_root;
+
   next_asset_id = tbl["next_asset_id"].value<int>().value();
   next_widget_id = tbl["next_widget_id"].value<int>().value();
 
   for (auto &node : *tbl["Shaders"].as_array()) {
     toml::table *t = node.as_table();
     int asset_id = (*t)["asset_id"].value<int>().value();
-    std::string name = (*t)["name"].value<std::string>().value();
-    std::string path_str = (*t)["path"].value<std::string>().value(); // Relative path
-
-    shaders->insert({asset_id, std::make_shared<Shader>(Shader(name, project_root, path_str))});
+    auto asset = Shader::load(*t, shared_from_this());
+    mShader->insert(std::make_pair(asset_id, asset));
   }
   for (auto &node : *tbl["Textures"].as_array()) {
     toml::table *t = node.as_table();
     int asset_id = (*t)["asset_id"].value<int>().value();
-    std::string name = (*t)["name"].value<std::string>().value();
-    std::string path_str = (*t)["path"].value<std::string>().value(); // Absolute path
-
-    textures->insert({asset_id, std::make_shared<Texture>(Texture(name, path_str))});
+    auto asset = Texture::load(*t, shared_from_this());
+    mTexture->insert(std::make_pair(asset_id, asset));
   }
   for (auto &node : *tbl["Geometries"].as_array()) {
     toml::table *t = node.as_table();
     int asset_id = (*t)["asset_id"].value<int>().value();
-    std::string type = (*t)["type"].value<std::string>().value();
-
-    // We only have one geometry class for now...
-    if (type == "ScreenQuadGeometry") {
-      std::string name = (*t)["name"].value<std::string>().value();
-      geometries->insert(
-          {asset_id, std::make_shared<ScreenQuadGeometry>(ScreenQuadGeometry(name))});
-    }
+    auto asset = Geometry::load(*t, shared_from_this());
+    mGeometry->insert(std::make_pair(asset_id, asset));
   }
   for (auto &node : *tbl["Graphs"].as_array()) {
     toml::table *t = node.as_table();
     int asset_id = (*t)["asset_id"].value<int>().value();
-
-    graphs->insert(
-        {asset_id, std::make_shared<RenderGraph>(RenderGraph::load(*t, shared_from_this()))});
+    auto asset = RenderGraph::load(*t, shared_from_this());
+    mRenderGraph->insert(std::make_pair(asset_id, asset));
   }
 }

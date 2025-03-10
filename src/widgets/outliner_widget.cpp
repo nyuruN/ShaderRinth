@@ -58,14 +58,14 @@ void OutlinerWidget::render(bool *p_open) {
   // Textures
   if (ImGui::TreeNodeEx("Textures")) {
     std::vector<AssetId<Texture>> deferred_delete = {};
-    for (auto &pair : *assets->textures) {
+    for (auto &pair : *assets->getTextureCollection()) {
       ImGui::PushID(pair.first);
       render_entry(pair.first, pair.second->get_name(), editing, input, deferred_delete);
       ImGui::PopID();
     }
     for (auto id : deferred_delete) {
-      assets->textures->at(id)->destroy();
-      assets->textures->erase(id);
+      assets->getTextureCollection()->at(id)->destroy();
+      assets->getTextureCollection()->erase(id);
     }
     ImGui::TreePop();
   }
@@ -76,7 +76,7 @@ void OutlinerWidget::render(bool *p_open) {
   bool shaders_open = ImGui::TreeNodeEx("Shaders");
   ImGui::TableNextColumn();
   if (ImGui::Button(" + ##shader")) { // Handle creation
-    AssetId<Shader> id = assets->insert_shader(std::make_shared<Shader>(Shader("NewShader")));
+    AssetId<Shader> id = assets->insertShader(std::make_shared<Shader>(Shader("NewShader")));
     EventQueue::push(AddWidget(
         std::make_shared<EditorWidget>(EditorWidget(assets->get_widget_id(), assets, id))));
     spdlog::info("Shader \"NewShader\" created!");
@@ -84,14 +84,14 @@ void OutlinerWidget::render(bool *p_open) {
   // Shaders
   if (shaders_open) {
     std::vector<AssetId<Shader>> deferred_delete = {};
-    for (auto &pair : *assets->shaders) {
+    for (auto &pair : *assets->getShaderCollection()) {
       ImGui::PushID(pair.first);
       render_entry(pair.first, pair.second->get_name(), editing, input, deferred_delete);
       ImGui::PopID();
     }
     for (auto id : deferred_delete) { // Handle deletion
-      assets->shaders->at(id)->destroy();
-      assets->shaders->erase(id);
+      assets->getShaderCollection()->at(id)->destroy();
+      assets->getShaderCollection()->erase(id);
     }
     ImGui::TreePop();
   }
@@ -101,8 +101,8 @@ void OutlinerWidget::render(bool *p_open) {
 
   // Geometries
   if (ImGui::TreeNodeEx("Geometries")) {
-    std::vector<AssetId<Shader>> deferred_delete = {};
-    for (auto &pair : *assets->geometries) {
+    std::vector<AssetId<Geometry>> deferred_delete = {};
+    for (auto &pair : *assets->getGeometryCollection()) {
       ImGui::PushID(pair.first);
       ImGui::BeginDisabled(true);
       render_entry(pair.first, pair.second->get_name(), editing, input, deferred_delete);

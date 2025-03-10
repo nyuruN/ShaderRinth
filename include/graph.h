@@ -33,7 +33,7 @@ struct Edge {
 std::shared_ptr<Node> load_node(toml::table &tbl, std::shared_ptr<AssetManager> assets);
 
 // RenderGraph
-struct RenderGraph {
+struct RenderGraph : Asset {
 private:
   std::map<int, std::shared_ptr<Node>> nodes = {};
   std::map<int, Edge> edges = {};
@@ -57,11 +57,9 @@ public:
 
   RenderGraph(std::shared_ptr<AssetManager> assets = std::make_shared<AssetManager>(),
               AssetId<Geometry> geometry_id = 0) {
-    this->graph_geometry = assets->get_geometry(geometry_id);
+    this->graph_geometry = assets->getGeometry(geometry_id).value();
     this->geometry_id = geometry_id;
   };
-  static RenderGraph load(toml::table &tbl, std::shared_ptr<AssetManager> assets);
-  toml::table save();
   // Sets up node position for ImNodesEditorContext
   void set_node_positions(ImNodesEditorContext *context);
   // Gets node position for serialization
@@ -145,4 +143,6 @@ public:
   void clear_graph_data();
   // Default node layout
   void default_layout(std::shared_ptr<AssetManager> assets, AssetId<Shader> shader_id);
+  toml::table save(std::filesystem::path project_root) override;
+  static std::shared_ptr<RenderGraph> load(toml::table &tbl, std::shared_ptr<AssetManager> assets);
 };

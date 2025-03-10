@@ -2,8 +2,8 @@
 
 #include "app_path.h"
 #include "assets.h"
-#include <glad/glad.h>
 #include <filesystem>
+#include <glad/glad.h>
 #include <spdlog/spdlog.h>
 #include <string>
 
@@ -57,5 +57,11 @@ public:
   std::filesystem::path get_path() { return path; }
   char *get_log() { return log; }
 
-  toml::table save(std::filesystem::path project_root);
+  toml::table save(std::filesystem::path project_root) override;
+  static std::shared_ptr<Shader> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+    std::string name = tbl["name"].value<std::string>().value();
+    std::string path_str = tbl["path"].value<std::string>().value(); // Relative path
+
+    return std::make_shared<Shader>(Shader(name, assets->project_root, path_str));
+  }
 };

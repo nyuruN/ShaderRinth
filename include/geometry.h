@@ -14,7 +14,7 @@ public:
   // Release resources allocated by Geometry
   virtual void destroy() {};
 
-  virtual toml::table save() = 0;
+  static std::shared_ptr<Geometry> load(toml::table &table, std::shared_ptr<AssetManager> assets);
 };
 
 // Geometry covering the entire viewport
@@ -45,11 +45,11 @@ void main()
 public:
   // Creates a new ScreenQuadGeometry
   ScreenQuadGeometry(std::string name = "FullscreenQuad");
-  void compile_vertex_shader(unsigned int  &vert_shader) override;
+  void compile_vertex_shader(unsigned int &vert_shader) override;
   void draw_geometry() override;
   void destroy() override;
 
-  toml::table save() override {
+  toml::table save(std::filesystem::path) override {
     return toml::table{{"type", "ScreenQuadGeometry"}, {"name", this->name}};
   }
 };

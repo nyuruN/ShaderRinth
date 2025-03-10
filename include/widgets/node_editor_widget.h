@@ -69,7 +69,7 @@ public:
   NodeEditorWidget(int id, std::shared_ptr<AssetManager> assets, AssetId<RenderGraph> graph_id) {
     this->id = id;
     this->graph_id = graph_id;
-    this->graph = assets->get_graph(graph_id);
+    this->graph = assets->getRenderGraph(graph_id).value();
     this->assets = assets;
     this->title = fmt::format("Node Editor##{}", id);
   }

@@ -25,7 +25,8 @@ class FragmentShaderNode : public Node {
   const float node_width = 240.0f;
 
 public:
-  FragmentShaderNode(std::shared_ptr<AssetManager> assets) : shaders(assets->shaders) {}
+  FragmentShaderNode(std::shared_ptr<AssetManager> assets)
+      : shaders(assets->getShaderCollection()) {}
   // Programmatically set a shader
   void set_shader(AssetId<Shader> shader_id) {
     this->shader = shaders.lock()->at(shader_id);
@@ -84,7 +85,7 @@ public:
     n.pos = Node::load_pos(*tbl["position"].as_table());
     n.output_pin = tbl["output_pin"].value<int>().value();
     n.shader_id = tbl["shader_id"].value<int>().value();
-    n.shader = assets->get_shader(n.shader_id);
+    n.shader = assets->getShader(n.shader_id).value();
 
     for (auto &n_pin : *tbl["uniform_pins"].as_array()) {
       toml::table *t_pin = n_pin.as_table();

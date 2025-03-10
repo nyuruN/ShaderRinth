@@ -9,7 +9,7 @@ EditorWidget::EditorWidget(int id, std::shared_ptr<AssetManager> assets,
                            AssetId<Shader> shader_id) {
   this->id = id;
   this->shader_id = shader_id;
-  auto shader = assets->get_shader(shader_id);
+  auto shader = assets->getShader(shader_id).value();
   this->shader = shader;
   title = fmt::format("{}###Editor##{}", shader->get_name().c_str(), id);
 }

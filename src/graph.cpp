@@ -158,7 +158,7 @@ void RenderGraph::default_layout(std::shared_ptr<AssetManager> assets, AssetId<S
   get_node(time)->pos = {20, 160};
   get_node(frag)->pos = {200, 60};
 }
-toml::table RenderGraph::save() {
+toml::table RenderGraph::save(std::filesystem::path) {
   toml::array pins{};
   for (auto &pair : this->pins) {
     toml::table t{
@@ -203,7 +203,8 @@ toml::table RenderGraph::save() {
       {"next_pin_id", next_pin_id},   //
   };
 }
-RenderGraph RenderGraph::load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+std::shared_ptr<RenderGraph> RenderGraph::load(toml::table &tbl,
+                                               std::shared_ptr<AssetManager> assets) {
   AssetId<Geometry> geo_id = tbl["geometry_id"].value<int>().value();
   RenderGraph graph(assets, geo_id);
   graph.root_node = tbl["root_node"].value<int>().value();
@@ -239,5 +240,5 @@ RenderGraph RenderGraph::load(toml::table &tbl, std::shared_ptr<AssetManager> as
   // Setup nodes
   graph.setup_nodes_on_load();
 
-  return graph;
+  return std::make_shared<RenderGraph>(graph);
 }

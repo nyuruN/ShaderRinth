@@ -16,7 +16,9 @@ private:
   float node_width = 120.0f;
 
 public:
-  Texture2DNode(std::shared_ptr<AssetManager> assets) { this->textures = assets->textures; }
+  Texture2DNode(std::shared_ptr<AssetManager> assets) {
+    this->textures = assets->getTextureCollection();
+  }
   int get_output_pin() { return output_pin; }
   void render_combobox(RenderGraph &graph) {
     ImGui::SetNextItemWidth(node_width);
@@ -88,7 +90,7 @@ public:
     n.texture_id = tbl["texture_id"].value<int>().value();
     n.output_pin = tbl["output_pin"].value<int>().value();
     if (n.texture_id)
-      n.texture = assets->get_texture(n.texture_id);
+      n.texture = assets->getTexture(n.texture_id).value();
     return std::make_shared<Texture2DNode>(n);
   }
 };

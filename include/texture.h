@@ -2,8 +2,8 @@
 
 #include "assets.h"
 
-#include <glad/glad.h>
 #include <filesystem>
+#include <glad/glad.h>
 #include <string>
 
 #include <toml++/toml.h>
@@ -33,4 +33,17 @@ public:
         {"path", path.string()},
     };
   };
+
+  toml::table save(std::filesystem::path) override {
+    return toml::table{
+        {"name", name},         //
+        {"path", path.string()} //
+    };
+  };
+  static std::shared_ptr<Texture> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+    std::string name = tbl["name"].value<std::string>().value();
+    std::string path_str = tbl["path"].value<std::string>().value(); // Absolute path
+
+    return std::make_shared<Texture>(Texture(name, path_str));
+  }
 };

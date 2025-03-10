@@ -2,6 +2,20 @@
 
 #include <glad/glad.h>
 
+//! Geometry
+
+std::shared_ptr<Geometry> Geometry::load(toml::table &table, std::shared_ptr<AssetManager> assets) {
+  std::string type = table["type"].value<std::string>().value();
+
+  // We only have one geometry class for now...
+  if (type == "ScreenQuadGeometry") {
+    std::string name = table["name"].value<std::string>().value();
+    return std::make_shared<ScreenQuadGeometry>(ScreenQuadGeometry(name));
+  }
+
+  throw std::runtime_error("Unknown geometry type!");
+};
+
 //! ScreenQuadGeometry
 
 ScreenQuadGeometry::ScreenQuadGeometry(std::string name) {
