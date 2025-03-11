@@ -4,6 +4,7 @@
 
 #include <filesystem>
 #include <glad/glad.h>
+#include <spdlog/spdlog.h>
 #include <string>
 
 #include <toml++/toml.h>
@@ -43,7 +44,11 @@ public:
   static std::shared_ptr<Texture> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
     std::string name = tbl["name"].value<std::string>().value();
     std::string path_str = tbl["path"].value<std::string>().value(); // Absolute path
+                                                                     //
+    Texture texture(name, path_str);
+    if (!texture)
+      spdlog::warn("Missing texture \"{}\" in {}", name, path_str);
 
-    return std::make_shared<Texture>(Texture(name, path_str));
+    return std::make_shared<Texture>(texture);
   }
 };

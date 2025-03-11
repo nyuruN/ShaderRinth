@@ -212,6 +212,14 @@ std::shared_ptr<RenderGraph> RenderGraph::load(toml::table &tbl,
   graph.next_edge_id = tbl["next_edge_id"].value<int>().value();
   graph.next_node_id = tbl["next_node_id"].value<int>().value();
 
+  // if-guards
+  if (!tbl["pins"].is_array_of_tables())
+    throw std::bad_optional_access();
+  if (!tbl["edges"].is_array_of_tables())
+    throw std::bad_optional_access();
+  if (!tbl["nodes"].is_array_of_tables())
+    throw std::bad_optional_access();
+
   // Load pins
   for (auto &node : *tbl["pins"].as_array()) {
     toml::table *t = node.as_table();

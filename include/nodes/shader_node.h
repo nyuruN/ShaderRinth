@@ -87,6 +87,8 @@ public:
     n.shader_id = tbl["shader_id"].value<int>().value();
     n.shader = assets->getShader(n.shader_id).value();
 
+    if (!tbl["uniform_pins"].is_array_of_tables())
+      throw std::bad_optional_access();
     for (auto &n_pin : *tbl["uniform_pins"].as_array()) {
       toml::table *t_pin = n_pin.as_table();
 

@@ -144,5 +144,6 @@ public:
   // Default node layout
   void default_layout(std::shared_ptr<AssetManager> assets, AssetId<Shader> shader_id);
   toml::table save(std::filesystem::path project_root) override;
+  // Attempts to load RenderGraph, throwing std::bad_optional_access if failed
   static std::shared_ptr<RenderGraph> load(toml::table &tbl, std::shared_ptr<AssetManager> assets);
 };

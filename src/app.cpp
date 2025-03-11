@@ -212,14 +212,124 @@ void App::render_dockspace() {
   ImGui::End();
 }
 
-void App::save_project(std::filesystem::path project_directory) {
-  toml::table tbl = try_save_toml();
-  std::ofstream ofs(project_root.value() / "srproject.toml");
-  ofs << tbl;
+//! Serialization
 
-  ImGui::SaveIniSettingsToDisk((project_root.value() / "sr_imgui.ini").string().c_str());
+// Helper struct representing all data used in serialization
+struct AppData {
+public:
+  bool show_tab_bar;
+  bool show_status_bar;
+  int current_workspace;
+  AssetId<RenderGraph> graph_id;
+  std::shared_ptr<AssetManager> assets = std::make_shared<AssetManager>();
+  std::vector<Workspace> workspaces;
 
-  spdlog::info("Project saved in {}", project_root.value().string());
+  void from_app(App *app) {
+    this->show_tab_bar = app->show_tab_bar;
+    this->show_status_bar = app->show_status_bar;
+    this->current_workspace = app->current_workspace;
+    this->graph_id = app->graph_id;
+    this->assets = app->assets;
+    this->workspaces = app->workspaces;
+  }
+  void to_app(App *app) {
+    app->show_tab_bar = this->show_tab_bar;
+    app->show_status_bar = this->show_status_bar;
+    app->current_workspace = this->current_workspace;
+    app->graph_id = this->graph_id;
+    app->assets = this->assets;
+    app->workspaces = this->workspaces;
+  }
+  bool load_toml(toml::table &tbl, std::filesystem::path project_root) {
+    try {
+      // Load Settings
+      show_tab_bar = tbl["Settings"]["show_tab_bar"].value_or<bool>(true);
+      show_status_bar = tbl["Settings"]["show_status_bar"].value_or<bool>(true);
+      current_workspace = tbl["Settings"]["current_workspace"].value<int>().value();
+      graph_id = tbl["Settings"]["graph_id"].value<int>().value();
+
+      // Load Assets
+      if (!tbl["Assets"].is_table())
+        throw std::bad_optional_access();
+      assets->load(*tbl["Assets"].as_table(), project_root);
+
+      // Load Workspaces
+      if (!tbl["Workspaces"].is_array_of_tables())
+        throw std::bad_optional_access();
+      workspaces = load_workspaces(tbl["Workspaces"].as_array(), assets).value();
+    } catch (std::bad_optional_access) {
+      return false;
+    }
+    return true;
+  }
+  toml::table save_toml(std::filesystem::path project_root) {
+    // Save Settings
+    toml::table settings{
+        {"show_tab_bar", show_tab_bar},
+        {"show_status_bar", show_status_bar},
+        {"current_workspace", current_workspace},
+        {"graph_id", graph_id},
+    };
+
+    // Save Workspaces
+    toml::array workspaces{};
+    for (auto &pair : this->workspaces) {
+      toml::array widgets{};
+      for (auto &widget : pair.second) {
+        widgets.push_back(widget->save());
+      }
+
+      workspaces.push_back(toml::table{{"name", pair.first}, {"Widgets", widgets}});
+    }
+
+    // Save assets
+    toml::table assets = this->assets->save(project_root);
+
+    return toml::table{
+        {"Settings", settings},     //
+        {"Workspaces", workspaces}, //
+        {"Assets", assets},         //
+    };
+  }
+
+private:
+  /// Helper function to load [Workspaces]
+  static std::optional<std::vector<Workspace>>
+  load_workspaces(toml::array *tbl, std::shared_ptr<AssetManager> assets) {
+    std::vector<Workspace> workspaces;
+    for (auto &n_workspace : *tbl) {
+      toml::table *t_workspace = n_workspace.as_table();
+      std::string name = (*t_workspace)["name"].value_or<std::string>("Default");
+
+      std::vector<std::shared_ptr<Widget>> widgets = {};
+      if ((*t_workspace)["Widgets"].is_array_of_tables()) {
+        for (auto &n_widget : *(*t_workspace)["Widgets"].as_array()) {
+          toml::table *t_widget = n_widget.as_table();
+
+          widgets.push_back(Widget::load(*t_widget, assets));
+        }
+      }
+
+      workspaces.push_back(std::make_pair(name, widgets));
+    }
+    return workspaces;
+  }
+};
+
+void App::save_project(std::filesystem::path proj_dir) {
+  std::ofstream ofs(proj_dir / "srproject.toml");
+  if (!ofs) {
+    spdlog::error("Failed to save project file in {}", proj_dir.string());
+    return;
+  }
+
+  AppData data;
+  data.from_app(this);
+  ofs << data.save_toml(proj_dir);
+
+  ImGui::SaveIniSettingsToDisk((proj_dir / "sr_imgui.ini").string().c_str());
+
+  spdlog::info("Project saved in {}", proj_dir.string());
 }
 void App::open_project() {
   if (is_project_dirty) {
@@ -227,7 +337,7 @@ void App::open_project() {
   }
 
   auto dir_str = pfd::select_folder("Select an existing project directory").result();
-  if (dir_str.empty())
+  if (dir_str.empty()) // User cancel
     return;
 
   std::ifstream file(std::filesystem::path(dir_str) / "srproject.toml");
@@ -235,13 +345,26 @@ void App::open_project() {
     spdlog::error("Unknown project directory format!");
     return;
   }
+
+  // Parse project file
+  toml::table tbl;
+  try {
+    tbl = toml::parse(file);
+  } catch (const toml::parse_error &error) {
+    spdlog::error("Failed to parse project file:\n{}", error.what());
+    return;
+  }
+
+  // Load project
   project_root = dir_str;
-
-  // Safely clear all resources
+  AppData data;
+  if (!data.load_toml(tbl, project_root.value())) {
+    spdlog::error("Invalid project file!");
+    return;
+  }
+  // Apply changes
   shutdown();
-
-  toml::table tbl = toml::parse(file);
-  try_load_toml(tbl);
+  data.to_app(this);
 
   // Load ImGui settings
   auto imgui_filepath = project_root.value() / "sr_imgui.ini";
@@ -250,6 +373,7 @@ void App::open_project() {
 
     if (!imgui_file) {
       spdlog::error("Failed to load ImGui layout!");
+      return;
     }
 
     std::ostringstream buf;
@@ -263,57 +387,4 @@ void App::open_project() {
   startup();
 
   spdlog::info("Project loaded {}", project_root.value().string());
-}
-toml::table App::try_save_toml() {
-  // Save Settings
-  toml::table settings{
-      {"show_tab_bar", show_tab_bar},
-      {"show_status_bar", show_status_bar},
-      {"current_workspace", current_workspace},
-      {"graph_id", graph_id},
-  };
-
-  // Save Workspaces
-  toml::array workspaces{};
-  for (auto &pair : this->workspaces) {
-    toml::array widgets{};
-    for (auto &widget : pair.second) {
-      widgets.push_back(widget->save());
-    }
-
-    workspaces.push_back(toml::table{{"name", pair.first}, {"Widgets", widgets}});
-  }
-
-  return toml::table{
-      {"Settings", settings},                         //
-      {"Workspaces", workspaces},                     //
-      {"Assets", assets->save(project_root.value())}, // Save Assets
-  };
-}
-void App::try_load_toml(toml::table &tbl) {
-  // Load Settings
-  show_tab_bar = tbl["Settings"]["show_tab_bar"].value<bool>().value();
-  show_status_bar = tbl["Settings"]["show_status_bar"].value<bool>().value();
-  current_workspace = tbl["Settings"]["current_workspace"].value<int>().value();
-  graph_id = tbl["Settings"]["graph_id"].value<int>().value();
-
-  // Load Assets
-  assets = std::make_shared<AssetManager>();
-  assets->load(*tbl["Assets"].as_table(), project_root.value());
-
-  // Load Workspaces
-  for (auto &n_workspace : *tbl["Workspaces"].as_array()) {
-    toml::table *t_workspace = n_workspace.as_table();
-    std::string name = (*t_workspace)["name"].value<std::string>().value();
-
-    std::vector<std::shared_ptr<Widget>> widgets = {};
-    for (auto &n_widget : *(*t_workspace)["Widgets"].as_array()) {
-      toml::table *t_widget = n_widget.as_table();
-      std::string type = (*t_widget)["type"].value<std::string>().value();
-
-      widgets.push_back(Widget::load(*t_widget, assets));
-    }
-
-    workspaces.push_back({name, widgets});
-  }
 }

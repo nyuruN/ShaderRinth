@@ -66,6 +66,16 @@ void AssetManager::load(toml::table &tbl, std::filesystem::path project_root) {
   next_asset_id = tbl["next_asset_id"].value<int>().value();
   next_widget_id = tbl["next_widget_id"].value<int>().value();
 
+  // if-guards to prevent nullptr derefs
+  if (!tbl["Shaders"].is_array_of_tables())
+    throw std::bad_optional_access();
+  if (!tbl["Textures"].is_array_of_tables())
+    throw std::bad_optional_access();
+  if (!tbl["Geometries"].is_array_of_tables())
+    throw std::bad_optional_access();
+  if (!tbl["Graphs"].is_array_of_tables())
+    throw std::bad_optional_access();
+
   for (auto &node : *tbl["Shaders"].as_array()) {
     toml::table *t = node.as_table();
     int asset_id = (*t)["asset_id"].value<int>().value();

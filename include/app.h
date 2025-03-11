@@ -132,8 +132,6 @@ struct App {
     save_project(project_root.value());
   }
   // Save everything related to a project
-  void save_project(std::filesystem::path project_directory);
+  void save_project(std::filesystem::path);
   void open_project();
-  toml::table try_save_toml();
-  void try_load_toml(toml::table &);
 };

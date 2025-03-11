@@ -96,5 +96,6 @@ public:
   std::shared_ptr<Assets<RenderGraph>> getRenderGraphCollection() { return mRenderGraph; }
 
   toml::table save(std::filesystem::path project_root);
+  // Attempts to load asssets from config file, throwing std::bad_optional_access if failed
   void load(toml::table &tbl, std::filesystem::path project_root);
 };
