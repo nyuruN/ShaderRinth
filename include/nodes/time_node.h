@@ -3,8 +3,6 @@
 #include "graph.h"
 #include "imnodes.h"
 #include "node.h"
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
 
 class TimeNode : public Node {
   int output_pin;
@@ -33,9 +31,7 @@ public:
     graph.register_pin(id, DataType::Float, &output_pin);
   }
   void onExit(RenderGraph &graph) override { graph.delete_pin(output_pin); }
-  void run(RenderGraph &graph) override {
-    graph.set_pin_data(output_pin, (Data::Float)glfwGetTime());
-  }
+  void run(RenderGraph &graph) override { graph.set_pin_data(output_pin, (Data::Float)graph.time); }
 
   std::shared_ptr<Node> clone() const override { return std::make_shared<TimeNode>(*this); }
   std::vector<int> layout() const override { return {output_pin}; }

@@ -53,6 +53,7 @@ private:
 
 public:
   ImVec2 viewport_resolution = ImVec2(640, 480);
+  double time;
   std::shared_ptr<Geometry> graph_geometry = nullptr;
 
   RenderGraph(std::shared_ptr<AssetManager> assets = std::make_shared<AssetManager>(),
@@ -65,6 +66,7 @@ public:
   // Gets node position for serialization
   void get_node_positions() const;
   void set_resolution(ImVec2 res) { viewport_resolution = res; }
+  void set_time(double time) { this->time = time; }
   void set_geometry(std::shared_ptr<Geometry> geo) { graph_geometry = geo; }
   std::map<int, std::shared_ptr<Node>> &get_nodes() { return nodes; }
   std::map<int, Edge> &get_edges() { return edges; }

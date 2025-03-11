@@ -4,8 +4,8 @@
 #include "graph.h"
 #include "imnodes.h"
 #include "shader.h"
-#include <imgui_stdlib.h>
 #include <glad/glad.h>
+#include <imgui_stdlib.h>
 
 int FragmentShaderNode::add_uniform_pin(RenderGraph &graph, DataType type, std::string name) {
   int pinid;
@@ -149,6 +149,7 @@ void FragmentShaderNode::run(RenderGraph &graph) {
       return graph.stop();
     } else {
       should_error = true;
+      graph.set_time(0.0f);
     }
   }
 
