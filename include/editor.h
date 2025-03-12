@@ -8,7 +8,8 @@
 
 // Helpers to create zep editor
 Zep::ZepEditor &zep_get_editor();
-void zep_init(const Zep::NVec2f &pixelScale);
+void zep_init(const Zep::NVec2f &pixelScale,
+              std::function<void(std::shared_ptr<Zep::ZepMessage>)> callback);
 void zep_update();
 void zep_show();
 void zep_destroy();

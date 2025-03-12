@@ -52,10 +52,11 @@ struct ZepWrapper : public Zep::IZepComponent {
 
 std::shared_ptr<ZepWrapper> spZep;
 
-void zep_init(const Zep::NVec2f &pixelScale) {
+void zep_init(const Zep::NVec2f &pixelScale,
+              std::function<void(std::shared_ptr<Zep::ZepMessage>)> callback) {
   // Initialize the editor and watch for changes
-  spZep = std::make_shared<ZepWrapper>(getAppDir(), Zep::NVec2f(pixelScale.x, pixelScale.y),
-                                       [](std::shared_ptr<ZepMessage> spMessage) -> void {});
+  spZep =
+      std::make_shared<ZepWrapper>(getAppDir(), Zep::NVec2f(pixelScale.x, pixelScale.y), callback);
 
   // This is an example of adding different fonts for text styles.
   // If you ":e test.md" in the editor and type "# Heading 1" you will

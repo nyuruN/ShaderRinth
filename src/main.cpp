@@ -12,6 +12,18 @@
 static void glfw_error_callback(int error, const char *description) {
   spdlog::error("GLFW Error %d: %s\n", error, description);
 }
+static void zep_message_callback(std::shared_ptr<Zep::ZepMessage> message) {
+  if (message->messageId == Zep::Msg::GetClipBoard) {
+    message->str =
+        std::string(ImGui::GetPlatformIO().Platform_GetClipboardTextFn(ImGui::GetCurrentContext()));
+    message->handled = true;
+  }
+  if (message->messageId == Zep::Msg::SetClipBoard) {
+    std::string str = std::string(message->str);
+    ImGui::GetPlatformIO().Platform_SetClipboardTextFn(ImGui::GetCurrentContext(), str.c_str());
+    message->handled = true;
+  }
+}
 
 // Main code
 int main(int, char **) {
@@ -86,7 +98,7 @@ int main(int, char **) {
     if (first_frame) {
       first_frame = false;
 
-      zep_init(Zep::NVec2f(1.0f, 1.0f));
+      zep_init(Zep::NVec2f(1.0f, 1.0f), zep_message_callback);
       ZepStyleColorsCinder();
       auto &config = zep_get_editor().GetConfig();
       config.showTabBar = false;
