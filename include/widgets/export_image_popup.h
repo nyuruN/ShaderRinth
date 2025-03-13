@@ -15,8 +15,11 @@ private:
 
   std::string export_path = "";
   int resolution[2] = {1920, 1080};
+  double time = 0.0f;
   int format = PNG;
   int quality = 90;
+
+  bool override_time = false;
 
   float widget_width = 480;
 

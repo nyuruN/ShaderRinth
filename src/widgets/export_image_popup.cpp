@@ -13,6 +13,8 @@
 void ExportImagePopup::export_image() {
   graph->clear_graph_data();
   graph->set_resolution(ImVec2({float(resolution[0]), float(resolution[1])}));
+  if (override_time)
+    graph->set_time(time);
   graph->evaluate();
 
   GLuint img = 0;
@@ -40,7 +42,7 @@ void ExportImagePopup::export_image() {
   }
 
   if (success) {
-    spdlog::info("Image Saved!");
+    spdlog::info("Image saved in {}", export_path);
   } else {
     spdlog::error("Failed to write image!");
   }
@@ -70,6 +72,17 @@ void ExportImagePopup::render(bool *p_open) {
 
     ImGui::SetNextItemWidth(widget_width - ImGui::CalcTextSize("Image Resolution").x);
     ImGui::InputInt2("Image Resolution", resolution);
+
+    if (ImGui::Checkbox("Time Override", &override_time))
+      time = graph->time;
+    ImGui::SameLine();
+    if (override_time) {
+      ImGui::InputDouble("##hidelabel", &time, 0.0f, 0.0f, "%.2f");
+    } else {
+      ImGui::BeginDisabled(true);
+      ImGui::InputDouble("##hidelabel", &graph->time, 0.0f, 0.0f, "%.2f");
+      ImGui::EndDisabled();
+    }
 
     if (ImGui::RadioButton("PNG", &format, PNG))
       set_extension(".png");
