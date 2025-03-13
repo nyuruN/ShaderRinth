@@ -3,12 +3,12 @@
 #include "graph.h"
 #include "nodes/output_node.h"
 #include "widget.h"
+#include <imgui.h>
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-/// TODO:
-/// Add option to display the image without stretching
+/// A viewport to evaluate a RenderGraph in real-time
 class ViewportWidget : public Widget {
 private:
   AssetId<RenderGraph> graph_id;
@@ -17,6 +17,8 @@ private:
   std::string title;
   ImVec2 wsize = ImVec2(640, 480);
   double last_time = 0.0f;
+
+  bool paused = false;
 
 public:
   ViewportWidget(int id, std::shared_ptr<AssetManager> assets, AssetId<RenderGraph> graph_id) {
@@ -31,15 +33,20 @@ public:
                  ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
     ImGui::BeginChild("ViewportRender");
 
-    wsize = ImGui::GetWindowSize();
+    ImVec2 new_wsize = ImGui::GetWindowSize();
+    bool resized = (wsize.x != new_wsize.x || wsize.y != new_wsize.y);
+    wsize = new_wsize;
     double current = glfwGetTime();
     double delta = current - last_time;
     last_time = current;
 
-    viewgraph->clear_graph_data();
-    viewgraph->set_resolution(wsize);
-    viewgraph->time += delta;
-    viewgraph->evaluate();
+    if (!paused || resized) {
+      viewgraph->clear_graph_data();
+      viewgraph->set_resolution(wsize);
+      if (!paused)
+        viewgraph->time += delta;
+      viewgraph->evaluate();
+    }
 
     GLuint output = 0;
     if (auto if_node = viewgraph->get_root_node()) {
@@ -65,6 +72,14 @@ public:
         ImGui::SameLine();
         if (ImGui::Button("Reset"))
           viewgraph->time = 0.0f;
+        if (paused) {
+          if (ImGui::Button("Unpause"))
+            paused = false;
+        } else {
+          if (ImGui::Button("Pause"))
+            paused = true;
+        }
+
         ImGui::EndMenuBar();
       }
       ImGui::EndChild();
