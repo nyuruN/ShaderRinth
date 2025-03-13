@@ -10,3 +10,6 @@
 [submodule "extern/zep"]
 	path = extern/zep
 	url = https://github.com/nyuruN/zep.git
+[submodule "extern/IconFontCppHeaders"]
+	path = extern/IconFontCppHeaders
+	url = https://github.com/juliettef/IconFontCppHeaders.git

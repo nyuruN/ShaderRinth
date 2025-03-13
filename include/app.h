@@ -31,6 +31,7 @@ struct App {
   std::shared_ptr<RenderGraph> graph;
   std::string status_message = "This is a status bar!";
   bool is_project_dirty = false;
+  bool show_metrics = false;
 
   // Setup App Logic
   App() {
@@ -68,6 +69,9 @@ struct App {
   void render() {
     render_menubar();
     render_statusbar();
+
+    if (show_metrics)
+      ImGui::ShowMetricsWindow(&show_metrics);
 
     render_dockspace();
     for (auto &widget : workspaces[current_workspace].second) {

@@ -33,6 +33,7 @@ add_executable(
   src/widgets/editor_widget.cpp
   src/widgets/export_image_popup.cpp
   src/widgets/outliner_widget.cpp
+  src/widgets/viewport_widget.cpp
   src/nodes/shader_node.cpp
   
   extern/imnodes/imnodes.cpp
@@ -43,6 +44,7 @@ target_include_directories(${EXECUTABLE} PRIVATE
   extern/imnodes
   extern/zep/include
   extern/portable-file-dialogs
+  extern/IconFontCppHeaders
 )
 
 # Link libraries (vcpkg)

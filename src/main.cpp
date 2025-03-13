@@ -1,6 +1,3 @@
-#include "app.h"
-#include "editor.h"
-#include "theme.h"
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <glad/glad.h> // Defines OpenGL headers
@@ -8,6 +5,11 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <spdlog/spdlog.h>
+
+#include "IconsFontAwesome6.h"
+#include "app.h"
+#include "editor.h"
+#include "theme.h"
 
 static void glfw_error_callback(int error, const char *description) {
   spdlog::error("GLFW Error %d: %s\n", error, description);
@@ -68,8 +70,25 @@ int main(int, char **) {
 
     ImNodes::CreateContext();
 
-    auto fontPath = getAppDir() / "assets/fonts/Cousine-Regular.ttf";
-    io.Fonts->AddFontFromFileTTF(fontPath.string().c_str(), 15);
+    { // Load fonts
+      io.Fonts->ClearFonts();
+      static const float font_size = 15.0f;
+      auto fontPath = getAppDir() / "assets/fonts/Cousine-Regular.ttf";
+      ImFont *font = io.Fonts->AddFontFromFileTTF(fontPath.string().c_str(), font_size);
+
+      static const ImWchar FA_ICON_RANGES[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
+      float icon_size = round(font_size * 0.9f);
+      ImFontConfig config;
+      config.MergeMode = true;
+      config.GlyphMinAdvanceX = icon_size; // Make the icons monospace
+      auto faPath = getAppDir() / "assets/fonts/fontawesome-free-6.7.2-web/webfonts/" /
+                    FONT_ICON_FILE_NAME_FAR;
+      io.Fonts->AddFontFromFileTTF(faPath.string().c_str(), icon_size, &config, FA_ICON_RANGES);
+      auto fasPath = getAppDir() / "assets/fonts/fontawesome-free-6.7.2-web/webfonts/" /
+                     FONT_ICON_FILE_NAME_FAS;
+      io.Fonts->AddFontFromFileTTF(fasPath.string().c_str(), icon_size, &config, FA_ICON_RANGES);
+      io.Fonts->Build();
+    }
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);

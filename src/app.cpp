@@ -107,6 +107,7 @@ void App::render_menubar() {
 
       ImGui::Checkbox("Show Tab Bar", &show_tab_bar);
       ImGui::Checkbox("Show Status Bar", &show_status_bar);
+      ImGui::Checkbox("Show Metrics", &show_metrics);
 
       ImGui::EndMenu();
     }
