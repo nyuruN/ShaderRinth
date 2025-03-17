@@ -4,7 +4,6 @@ cmake_minimum_required(VERSION 3.31.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
-add_definitions(-w)
 
 project(
   ShaderRinth
@@ -15,9 +14,17 @@ project(
 
 set(EXECUTABLE ShaderRinth)
 
-add_executable(
-  ${EXECUTABLE}
-  src/main.cpp
+add_executable(${EXECUTABLE} src/main.cpp)
+
+target_include_directories(${EXECUTABLE} PRIVATE 
+  include/
+
+  extern/imnodes/
+  extern/zep/include/
+  extern/portable-file-dialogs/
+  extern/IconFontCppHeaders/
+)
+target_sources(${EXECUTABLE} PRIVATE
   src/editor.cpp
   src/utils.cpp
   src/data.cpp
@@ -35,16 +42,8 @@ add_executable(
   src/widgets/outliner_widget.cpp
   src/widgets/viewport_widget.cpp
   src/nodes/shader_node.cpp
-  
-  extern/imnodes/imnodes.cpp
-)
-target_include_directories(${EXECUTABLE} PRIVATE 
-  include
 
-  extern/imnodes
-  extern/zep/include
-  extern/portable-file-dialogs
-  extern/IconFontCppHeaders
+  extern/imnodes/imnodes.cpp
 )
 
 # Link libraries (vcpkg)
@@ -60,7 +59,6 @@ find_package(spdlog CONFIG REQUIRED)
 target_link_libraries(${EXECUTABLE} PRIVATE spdlog::spdlog)
 find_package(Stb REQUIRED)
 target_include_directories(${EXECUTABLE} PRIVATE ${Stb_INCLUDE_DIR})
-
 
 # Link tomlplusplus
 find_package(PkgConfig REQUIRED)
@@ -84,14 +82,19 @@ else()
 endif()
 
 # Compile options
+if (WIN32) # Set icon file on Windows
+  target_sources(${EXECUTABLE} PRIVATE icon.rc)
+endif()
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   target_compile_options(${EXECUTABLE} PRIVATE /W4)
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(${EXECUTABLE} PRIVATE -Wall -Wextra -Wpedantic)
 endif()
-# Disable console on startup on Windows
-if (MINGW AND WIN32)
-  set(CMAKE_EXE_LINKER_FLAGS "-mwindows")
+if (MINGW AND WIN32) # Disable console on startup on Windows
+  target_link_options(${EXECUTABLE}
+    PRIVATE "-mwindows"
+    PRIVATE "-static"
+  )
 endif()
 
 # Install instructions
@@ -105,4 +108,3 @@ set(CPACK_PACKAGE_DESCRIPTION "A Shadertoy-like GLSL Editor written in C++")
 set(CPACK_GENERATOR "TGZ;ZIP")
 
 include(CPack)
-
