@@ -43,7 +43,7 @@ public:
         ImGui::TextUnformatted("] [");
         ImGui::SameLine(0, 0);
 
-        if (msg.level < colors_len) {
+        if (msg.level < int(colors_len)) {
           ImGui::PushStyleColor(ImGuiCol_Text, colors[msg.level]);
           ImGui::TextUnformatted(spdlog::level::to_string_view(msg.level).data());
           ImGui::PopStyleColor();
@@ -61,7 +61,7 @@ public:
     } else {
       auto buf = Global::instance().get_ringbuffer_sink()->last_formatted();
       for (auto &msg : buf) {
-        ImGui::TextWrapped(msg.data());
+        ImGui::TextWrapped("%s", msg.c_str());
       }
     }
 
@@ -76,13 +76,13 @@ public:
     ImGui::End();
   }
 
-  toml::table save() {
+  toml::table save() override {
     return toml::table{
         {"type", "ConsoleWidget"},
         {"widget_id", id},
     };
   }
-  static std::shared_ptr<Widget> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+  static std::shared_ptr<Widget> load(toml::table &tbl, std::shared_ptr<AssetManager>) {
     int id = tbl["widget_id"].value<int>().value();
     auto w = ConsoleWidget(id);
     return std::make_shared<ConsoleWidget>(w);

@@ -14,7 +14,7 @@ void Global::init() {
   auto logger = create_logger("Global");
   spdlog::set_default_logger(std::make_shared<spdlog::logger>(logger));
 }
-spdlog::logger Global::create_logger(char *name) {
+spdlog::logger Global::create_logger(const char *name) {
   std::vector<spdlog::sink_ptr> sinks = {ringbuffer_sink, console_sink};
   return spdlog::logger(name, sinks.begin(), sinks.end());
 }

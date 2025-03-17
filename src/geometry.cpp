@@ -4,7 +4,7 @@
 
 //! Geometry
 
-std::shared_ptr<Geometry> Geometry::load(toml::table &table, std::shared_ptr<AssetManager> assets) {
+std::shared_ptr<Geometry> Geometry::load(toml::table &table, std::shared_ptr<AssetManager>) {
   std::string type = table["type"].value<std::string>().value();
 
   // We only have one geometry class for now...
@@ -35,7 +35,8 @@ ScreenQuadGeometry::ScreenQuadGeometry(std::string name) {
 }
 void ScreenQuadGeometry::compile_vertex_shader(GLuint &vert_shader) {
   vert_shader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vert_shader, 1, &VERT_SRC, NULL);
+  const char *src = VERT_SRC;
+  glShaderSource(vert_shader, 1, &src, NULL);
   glCompileShader(vert_shader);
 }
 void ScreenQuadGeometry::draw_geometry() {

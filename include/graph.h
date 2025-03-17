@@ -134,7 +134,7 @@ public:
   std::optional<Node *> get_root_node() {
     try {
       return nodes.at(root_node).get();
-    } catch (std::out_of_range) {
+    } catch (std::out_of_range &) {
       return {};
     }
   }

@@ -69,8 +69,8 @@ void Clipboard::copy(RenderGraph *graph) {
   int length;
 
   if ((length = ImNodes::NumSelectedNodes()) > 0) {
-    int nodeids[length];
-    ImNodes::GetSelectedNodes(nodeids);
+    std::vector<int> nodeids(length);
+    ImNodes::GetSelectedNodes(nodeids.data());
     for (auto &id : nodeids) {
       auto node = graph->get_node(id)->clone();
       auto pos = ImNodes::GetNodeGridSpacePos(id);
@@ -79,8 +79,8 @@ void Clipboard::copy(RenderGraph *graph) {
     }
   }
   if ((length = ImNodes::NumSelectedLinks()) > 0) {
-    int edgeids[length];
-    ImNodes::GetSelectedLinks(edgeids);
+    std::vector<int> edgeids(length);
+    ImNodes::GetSelectedLinks(edgeids.data());
     for (auto &id : edgeids) {
       Edge edge = graph->get_edge(id);
       Pin from = graph->get_pin(edge.from);
@@ -204,8 +204,8 @@ void NodeEditorWidget::delete_selected() {
 
   // Delete links
   if ((length = ImNodes::NumSelectedLinks()) > 0) {
-    int edgeids[length];
-    ImNodes::GetSelectedLinks(edgeids);
+    std::vector<int> edgeids(length);
+    ImNodes::GetSelectedLinks(edgeids.data());
     for (int id : edgeids) {
       if (ImNodes::IsLinkSelected(id))
         ImNodes::ClearLinkSelection(id);
@@ -214,8 +214,8 @@ void NodeEditorWidget::delete_selected() {
   }
   // Delete nodes
   if ((length = ImNodes::NumSelectedNodes()) > 0) {
-    int nodeids[length];
-    ImNodes::GetSelectedNodes(nodeids);
+    std::vector<int> nodeids(length);
+    ImNodes::GetSelectedNodes(nodeids.data());
     for (int id : nodeids) {
       if (ImNodes::IsNodeSelected(id))
         ImNodes::ClearNodeSelection(id);

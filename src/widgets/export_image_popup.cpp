@@ -23,9 +23,10 @@ void ExportImagePopup::export_image() {
     img = out->get_image();
   }
 
-  unsigned char data[resolution[0] * resolution[1] * 4];
+  // unsigned char data[resolution[0] * resolution[1] * 4];
+  std::vector<unsigned char> data(resolution[0] * resolution[1] * 4);
   glBindTexture(GL_TEXTURE_2D, img);
-  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
 
   bool success = false;
 
@@ -33,11 +34,12 @@ void ExportImagePopup::export_image() {
 
   switch (format) {
   case PNG:
-    success = stbi_write_png(export_path.c_str(), resolution[0], resolution[1], 4, data,
+    success = stbi_write_png(export_path.c_str(), resolution[0], resolution[1], 4, data.data(),
                              resolution[0] * 4);
     break;
   case JPEG:
-    success = stbi_write_jpg(export_path.c_str(), resolution[0], resolution[1], 4, data, quality);
+    success =
+        stbi_write_jpg(export_path.c_str(), resolution[0], resolution[1], 4, data.data(), quality);
     break;
   }
 
@@ -47,7 +49,7 @@ void ExportImagePopup::export_image() {
     spdlog::error("Failed to write image!");
   }
 }
-void ExportImagePopup::render(bool *p_open) {
+void ExportImagePopup::render(bool *) {
   update_popup("Export Image");
 
   // Always center this window when appearing

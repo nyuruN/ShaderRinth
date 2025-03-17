@@ -11,9 +11,9 @@ int FragmentShaderNode::add_uniform_pin(RenderGraph &graph, DataType type, std::
   int pinid;
   graph.register_pin(id, type, &pinid);
   uniform_pins.push_back(UniformPin{
-    pinid,
-    type,
-    identifier : name,
+    .pinid = pinid,
+    .type = type,
+    .identifier = name,
   });
   return pinid;
 }
@@ -77,7 +77,7 @@ void FragmentShaderNode::render(RenderGraph &graph) {
     for (auto &pin : uniform_pins) {
       BEGIN_INPUT_PIN(pin.pinid, pin.type)
 
-      ImGui::Text(Data::type_name(pin.type));
+      ImGui::Text("%s", Data::type_name(pin.type));
       ImGui::SameLine();
 
       ImGui::SetNextItemWidth(node_width - 20 - ImGui::CalcTextSize(" - ").x -

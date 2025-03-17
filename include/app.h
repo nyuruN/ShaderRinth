@@ -38,7 +38,7 @@ struct App {
     ImGui::LoadIniSettingsFromDisk((getAppDir() / "assets/imgui.ini").string().c_str());
 
     if (auto texture = Texture("Cat", getAppDir() / "assets/textures/cat.png"))
-      auto tex_id = assets->insertTexture(std::make_shared<Texture>(texture));
+      assets->insertTexture(std::make_shared<Texture>(texture));
     else
       spdlog::error("Failed to load texture assets/textures/cat.png");
 
@@ -88,6 +88,7 @@ struct App {
       for (auto &widget : pair.second)
         widget->onStartup();
     }
+    graph = assets->getRenderGraph(graph_id).value();
     export_image.set_graph(graph);
     export_image.onStartup();
   }

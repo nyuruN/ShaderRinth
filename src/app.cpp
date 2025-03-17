@@ -258,7 +258,7 @@ public:
       if (!tbl["Workspaces"].is_array_of_tables())
         throw std::bad_optional_access();
       workspaces = load_workspaces(tbl["Workspaces"].as_array(), assets).value();
-    } catch (std::bad_optional_access) {
+    } catch (std::bad_optional_access &) {
       return false;
     }
     return true;

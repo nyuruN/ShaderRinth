@@ -20,7 +20,7 @@ public:
     this->textures = assets->getTextureCollection();
   }
   int get_output_pin() { return output_pin; }
-  void render_combobox(RenderGraph &graph) {
+  void render_combobox(RenderGraph &) {
     ImGui::SetNextItemWidth(node_width);
     auto texture = this->texture.lock();
     if (ImGui::BeginCombo("##hidelabel", bool(texture) ? texture->get_name().c_str() : "")) {

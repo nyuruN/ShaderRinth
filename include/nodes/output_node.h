@@ -54,7 +54,7 @@ public:
     try {
       out_texture = data.get<Data::Texture2D>();
       logged = false;
-    } catch (std::bad_any_cast) {
+    } catch (std::bad_any_cast &) {
       if (!logged) {
         spdlog::error("Nothing is connected!");
         logged = true;
@@ -73,7 +73,7 @@ public:
         {"out_texture", out_texture},  //
     };
   }
-  static std::shared_ptr<Node> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+  static std::shared_ptr<Node> load(toml::table &tbl, std::shared_ptr<AssetManager>) {
     auto n = OutputNode();
     n.id = tbl["node_id"].value<int>().value();
     n.pos = Node::load_pos(*tbl["position"].as_table());

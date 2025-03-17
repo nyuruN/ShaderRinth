@@ -65,28 +65,28 @@ public:
   std::optional<std::shared_ptr<Shader>> getShader(AssetId<Shader> &id) {
     try {
       return mShader->at(id);
-    } catch (std::out_of_range) {
+    } catch (std::out_of_range &) {
       return {};
     }
   }
   std::optional<std::shared_ptr<Texture>> getTexture(AssetId<Texture> &id) {
     try {
       return mTexture->at(id);
-    } catch (std::out_of_range) {
+    } catch (std::out_of_range &) {
       return {};
     }
   }
   std::optional<std::shared_ptr<Geometry>> getGeometry(AssetId<Geometry> &id) {
     try {
       return mGeometry->at(id);
-    } catch (std::out_of_range) {
+    } catch (std::out_of_range &) {
       return {};
     }
   }
   std::optional<std::shared_ptr<RenderGraph>> getRenderGraph(AssetId<RenderGraph> &id) {
     try {
       return mRenderGraph->at(id);
-    } catch (std::out_of_range) {
+    } catch (std::out_of_range &) {
       return {};
     }
   }

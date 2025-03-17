@@ -74,7 +74,7 @@ int main(int, char **) {
       io.Fonts->ClearFonts();
       static const float font_size = 15.0f;
       auto fontPath = getAppDir() / "assets/fonts/Cousine-Regular.ttf";
-      ImFont *font = io.Fonts->AddFontFromFileTTF(fontPath.string().c_str(), font_size);
+      io.Fonts->AddFontFromFileTTF(fontPath.string().c_str(), font_size);
 
       static const ImWchar FA_ICON_RANGES[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
       float icon_size = round(font_size * 0.9f);

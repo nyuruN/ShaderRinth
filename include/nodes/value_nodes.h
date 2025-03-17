@@ -13,7 +13,7 @@ class FloatNode : public Node {
   float node_width = 80.0f;
 
 public:
-  void render(RenderGraph &graph) override {
+  void render(RenderGraph &) override {
     ImNodes::BeginNode(id);
 
     ImNodes::BeginNodeTitleBar();
@@ -53,7 +53,7 @@ public:
         {"value", value},              //
     };
   }
-  static std::shared_ptr<Node> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+  static std::shared_ptr<Node> load(toml::table &tbl, std::shared_ptr<AssetManager>) {
     auto n = FloatNode();
     n.id = tbl["node_id"].value<int>().value();
     n.pos = Node::load_pos(*tbl["position"].as_table());
@@ -78,7 +78,7 @@ public:
     value[1] = y;
   }
   int get_output_pin() { return output_pin; }
-  void render(RenderGraph &graph) override {
+  void render(RenderGraph &) override {
     ImNodes::BeginNode(id);
 
     ImNodes::BeginNodeTitleBar();
@@ -115,7 +115,7 @@ public:
         {"value", Node::save(value)},  //
     };
   }
-  static std::shared_ptr<Node> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+  static std::shared_ptr<Node> load(toml::table &tbl, std::shared_ptr<AssetManager>) {
     auto n = Vec2Node();
     n.id = tbl["node_id"].value<int>().value();
     n.pos = Node::load_pos(*tbl["position"].as_table());

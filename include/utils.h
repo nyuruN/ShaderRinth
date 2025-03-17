@@ -34,7 +34,7 @@ public:
   // Shuts down spdlog
   void shutdown() { spdlog::shutdown(); }
   // Create a logger with a custom name
-  spdlog::logger create_logger(char *name);
+  spdlog::logger create_logger(const char *name);
   // Gets the ringbuffer sink object for use in ConsoleWidget
   std::shared_ptr<spdlog::sinks::ringbuffer_sink_mt> get_ringbuffer_sink() {
     return ringbuffer_sink;

@@ -12,7 +12,7 @@ private:
 
 public:
   int get_output_pin() { return output_pin; }
-  void render(RenderGraph &graph) override {
+  void render(RenderGraph &) override {
     ImNodes::BeginNode(id);
 
     ImNodes::BeginNodeTitleBar();
@@ -45,7 +45,7 @@ public:
         {"output_pin", output_pin},    //
     };
   }
-  static std::shared_ptr<Node> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+  static std::shared_ptr<Node> load(toml::table &tbl, std::shared_ptr<AssetManager>) {
     auto n = ViewportNode();
     n.id = tbl["node_id"].value<int>().value();
     n.pos = Node::load_pos(*tbl["position"].as_table());

@@ -15,7 +15,7 @@ static const std::function<void(GLint, Data)> SET_UNIFORM[] = {
     [](GLint l, Data v) { glUniform2fv(l, 1, v.get<Data::Vec2>().data()); },
     [](GLint l, Data v) { glUniform3fv(l, 1, v.get<Data::Vec3>().data()); },
     [](GLint l, Data v) { glUniform4fv(l, 1, v.get<Data::Vec4>().data()); },
-    [](GLint l, Data v) { /* Data::Texture2D */ },
+    [](GLint, Data) { /* Data::Texture2D */ },
 };
 
 Shader::Shader(std::string name) {
@@ -94,7 +94,7 @@ void Shader::set_uniform(const char *name, Data data) {
     // Gets next texture unit
     int offset = bound_textures.size();
     bound_textures.push_back(texture);
-    GLenum unit = GL_TEXTURE0 + unit;
+    GLuint unit = GL_TEXTURE0 + offset;
 
     glActiveTexture(unit);
     glBindTexture(GL_TEXTURE_2D, texture);

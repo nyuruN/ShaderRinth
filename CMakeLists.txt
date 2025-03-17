@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.31.0)
+cmake_minimum_required(VERSION 3.31)
 
 # Other arguments
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
@@ -20,9 +20,11 @@ target_include_directories(${EXECUTABLE} PRIVATE
   include/
 
   extern/imnodes/
-  extern/zep/include/
   extern/portable-file-dialogs/
   extern/IconFontCppHeaders/
+)
+target_include_directories(${EXECUTABLE} # Suppress warnings
+  SYSTEM PRIVATE extern/zep/include/
 )
 target_sources(${EXECUTABLE} PRIVATE
   src/editor.cpp
@@ -75,10 +77,10 @@ file(COPY assets/ DESTINATION ${CMAKE_BINARY_DIR}/assets)
 # Precompile headers
 option(USE_PCH "Enable precompiled headers" OFF)
 if(USE_PCH)
-    message(STATUS "Using precompiled headers")
-    target_precompile_headers(${EXECUTABLE} PRIVATE cmake/pch.h)
+  message(STATUS "Using precompiled headers")
+  target_precompile_headers(${EXECUTABLE} PRIVATE cmake/pch.h)
 else()
-    message(STATUS "Building without precompiled headers")
+  message(STATUS "Building without precompiled headers")
 endif()
 
 # Compile options
@@ -88,7 +90,7 @@ endif()
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   target_compile_options(${EXECUTABLE} PRIVATE /W4)
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(${EXECUTABLE} PRIVATE -Wall -Wextra -Wpedantic)
+  target_compile_options(${EXECUTABLE} PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 if (MINGW AND WIN32) # Disable console on startup on Windows
   target_link_options(${EXECUTABLE}

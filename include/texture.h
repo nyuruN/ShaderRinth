@@ -22,7 +22,7 @@ public:
   operator bool() const { return loaded; }
 
   Texture(std::string name, std::filesystem::path path);
-  void destroy() {
+  void destroy() override {
     if (texture != 0)
       glDeleteTextures(1, &texture);
   }
@@ -41,7 +41,7 @@ public:
         {"path", path.string()} //
     };
   };
-  static std::shared_ptr<Texture> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
+  static std::shared_ptr<Texture> load(toml::table &tbl, std::shared_ptr<AssetManager>) {
     std::string name = tbl["name"].value<std::string>().value();
     std::string path_str = tbl["path"].value<std::string>().value(); // Absolute path
                                                                      //

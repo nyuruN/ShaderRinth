@@ -8,7 +8,7 @@
 class Geometry : public Asset {
 public:
   // Compiles a vertex shader, implementation should guarantee success
-  virtual void compile_vertex_shader(unsigned int &vert_shader) {};
+  virtual void compile_vertex_shader(unsigned int &vert_shader) = 0;
   // Calls the corresponding draw functions
   virtual void draw_geometry() {};
   // Release resources allocated by Geometry
@@ -27,7 +27,7 @@ private:
       1.0f,  1.0f,  0.0f, //
   };
   inline static constexpr unsigned int INDICES[6] = {0, 1, 2, 2, 1, 3};
-  inline static constexpr char *VERT_SRC = R"(
+  inline static constexpr char VERT_SRC[] = R"(
 #version 330 core
 
 layout (location = 0) in vec3 aPos;

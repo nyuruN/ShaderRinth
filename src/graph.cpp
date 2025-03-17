@@ -67,7 +67,7 @@ void RenderGraph::delete_pin(int pinid) {
     delete_edge(edgeid);
 };
 void RenderGraph::register_pin(int nodeid, DataType type, int *pinid) {
-  Pin pin = {id : get_next_pin_id(), node_id : nodeid, data : Data(type)};
+  Pin pin = {.id = get_next_pin_id(), .node_id = nodeid, .data = Data(type)};
   *pinid = pin.id;
   pins.insert(std::make_pair(pin.id, pin));
 };
@@ -226,7 +226,8 @@ std::shared_ptr<RenderGraph> RenderGraph::load(toml::table &tbl,
     int pin_id = (*t)["pin_id"].value<int>().value();
     int node_id = (*t)["node_id"].value<int>().value();
     int type = (*t)["type"].value<int>().value();
-    graph.pins.insert({pin_id, Pin{id : pin_id, node_id : node_id, data : Data(DataType(type))}});
+    graph.pins.insert(
+        {pin_id, Pin{.id = pin_id, .node_id = node_id, .data = Data(DataType(type))}});
   }
 
   // Load edges
@@ -235,7 +236,7 @@ std::shared_ptr<RenderGraph> RenderGraph::load(toml::table &tbl,
     int edge_id = (*t)["edge_id"].value<int>().value();
     int from_id = (*t)["from_node"].value<int>().value();
     int to_id = (*t)["to_node"].value<int>().value();
-    graph.edges.insert({edge_id, Edge{id : edge_id, from : from_id, to : to_id}});
+    graph.edges.insert({edge_id, Edge{.id = edge_id, .from = from_id, .to = to_id}});
   }
 
   // Load Nodes

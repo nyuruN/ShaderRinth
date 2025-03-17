@@ -54,7 +54,7 @@ public:
   virtual void onUpdate() {};
   // Runs every frame if visible
   // Setting p_open to false will close the widget
-  virtual void render(bool *p_open) {};
+  virtual void render(bool *p_open) = 0;
 
   virtual toml::table save() = 0;
   static std::shared_ptr<Widget> load(toml::table &tbl, std::shared_ptr<AssetManager> assets) {
@@ -70,7 +70,7 @@ protected:
 
   // Should be called at the start of the render function
   // MUST BE IN THE SAME ID STACK AS BeginPopup()
-  void update_popup(char *popup_str_id) {
+  void update_popup(const char *popup_str_id) {
     if (is_open && !ImGui::IsPopupOpen(popup_str_id))
       ImGui::OpenPopup(popup_str_id);
     else

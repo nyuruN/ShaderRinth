@@ -97,9 +97,9 @@ public:
       std::string identifier = (*t_pin)["identifier"].value<std::string>().value();
 
       n.uniform_pins.push_back(UniformPin{
-        pinid : pin_id,
-        type : DataType(type),
-        identifier : identifier,
+          .pinid = pin_id,
+          .type = DataType(type),
+          .identifier = identifier,
       });
     }
 
