@@ -82,3 +82,15 @@ void EditorWidget::render(bool *p_open) {
 
   ImGui::End();
 }
+
+static EditorWidget::Mode global_mode = EditorWidget::Mode::Standard;
+void EditorWidget::setEditorMode(Mode mode) {
+  global_mode = mode;
+  if (mode == Mode::Vim) {
+    zep_get_editor().SetGlobalMode(Zep::ZepMode_Vim::StaticName());
+  }
+  if (mode == Mode::Standard) {
+    zep_get_editor().SetGlobalMode(Zep::ZepMode_Standard::StaticName());
+  }
+}
+EditorWidget::Mode EditorWidget::getEditorMode() { return global_mode; }

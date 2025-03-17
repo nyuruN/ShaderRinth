@@ -34,6 +34,13 @@ public:
   void onStartup() override;
   void onShutdown() override;
 
+  enum Mode {
+    Vim,
+    Standard,
+  };
+  static void setEditorMode(Mode);
+  static Mode getEditorMode();
+
   toml::table save() {
     return toml::table{
         {"type", "EditorWidget"},

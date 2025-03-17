@@ -64,8 +64,10 @@ int AppMain() {
 
 #if defined(_WIN32) // Set app icon on windows
 #include "resource.h"
-    SendMessage(glfwGetWin32Window(window), WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(WindowsHInstance, MAKEINTRESOURCE(IDI_ICON1)));
-    SendMessage(glfwGetWin32Window(window), WM_SETICON, ICON_SMALL, (LPARAM)LoadIcon(WindowsHInstance, MAKEINTRESOURCE(IDI_ICON1)));
+    SendMessage(glfwGetWin32Window(window), WM_SETICON, ICON_BIG,
+                (LPARAM)LoadIcon(WindowsHInstance, MAKEINTRESOURCE(IDI_ICON1)));
+    SendMessage(glfwGetWin32Window(window), WM_SETICON, ICON_SMALL,
+                (LPARAM)LoadIcon(WindowsHInstance, MAKEINTRESOURCE(IDI_ICON1)));
 #endif
 
     // Setup GLAD
@@ -136,6 +138,7 @@ int AppMain() {
       zep_init(Zep::NVec2f(1.0f, 1.0f), zep_message_callback);
       ZepStyleColorsCinder();
       auto &config = zep_get_editor().GetConfig();
+      zep_get_editor().SetGlobalModeUnchecked(Zep::ZepMode_Standard::StaticName());
       config.showTabBar = false;
       config.autoHideAirlineRegion = false;
       config.autoHideCommandRegion = true;
@@ -176,16 +179,14 @@ int AppMain() {
   return 0;
 }
 
-
 #if defined(_WIN32)
-#include <Windows.h>
 
 // Entry point for MinGW and MSVC
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR , int) {
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int) {
   try {
     WindowsHInstance = hInstance;
-    return AppMain();  // No need for arguments
-  } catch (const std::exception& e) {
+    return AppMain(); // No need for arguments
+  } catch (const std::exception &e) {
     std::ostringstream oss;
     oss << "An unexpected error occurred:\n\n" << e.what();
     MessageBox(NULL, oss.str().c_str(), "Error", MB_ICONERROR | MB_OK);
@@ -198,8 +199,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR , int) {
 #else
 
 // Standard entry point
-int main(int, char **) {
-  return AppMain();
-}
+int main(int, char **) { return AppMain(); }
 
 #endif

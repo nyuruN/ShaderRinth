@@ -68,6 +68,16 @@ void App::render_menubar() {
     if (ImGui::BeginMenu("Edit")) {
       if (ImGui::MenuItem("New Shader", "Ctrl+N"))
         new_shader();
+
+      ImGui::Separator();
+
+      bool is_vim = EditorWidget::getEditorMode() == EditorWidget::Mode::Vim;
+      if (ImGui::Checkbox("Vim Mode", &is_vim)) {
+        if (is_vim)
+          EditorWidget::setEditorMode(EditorWidget::Mode::Vim);
+        else
+          EditorWidget::setEditorMode(EditorWidget::Mode::Standard);
+      }
       ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("View")) {
