@@ -1,5 +1,15 @@
-#define GLFW_INCLUDE_NONE
+#define GLFW_INCLUDE_NONE // Prevent GLFW from including system headers (use glad instead)
 #include <GLFW/glfw3.h>
+
+#if defined(_WIN32)
+#define NOMINMAX // Prevent Windows.h from defining min/max macros which breaks certain libraries
+#include <Windows.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#define GLFW_NATIVE_INCLUDE_NONE
+#include <glfw/glfw3native.h> // Provide access to glfwGetWin32Window()
+static HINSTANCE WindowsHInstance;
+#endif
+
 #include <glad/glad.h> // Defines OpenGL headers
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -28,7 +38,7 @@ static void zep_message_callback(std::shared_ptr<Zep::ZepMessage> message) {
 }
 
 // Main code
-int main(int, char **) {
+int AppMain() {
   GLFWwindow *window;
   { // Setup GLFW, ImGui Zep etc.
     glfwSetErrorCallback(glfw_error_callback);
@@ -51,6 +61,12 @@ int main(int, char **) {
     }
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
+
+#if defined(_WIN32) // Set app icon on windows
+#include "resource.h"
+    SendMessage(glfwGetWin32Window(window), WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(WindowsHInstance, MAKEINTRESOURCE(IDI_ICON1)));
+    SendMessage(glfwGetWin32Window(window), WM_SETICON, ICON_SMALL, (LPARAM)LoadIcon(WindowsHInstance, MAKEINTRESOURCE(IDI_ICON1)));
+#endif
 
     // Setup GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -159,3 +175,31 @@ int main(int, char **) {
 
   return 0;
 }
+
+
+#if defined(_WIN32)
+#include <Windows.h>
+
+// Entry point for MinGW and MSVC
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR , int) {
+  try {
+    WindowsHInstance = hInstance;
+    return AppMain();  // No need for arguments
+  } catch (const std::exception& e) {
+    std::ostringstream oss;
+    oss << "An unexpected error occurred:\n\n" << e.what();
+    MessageBox(NULL, oss.str().c_str(), "Error", MB_ICONERROR | MB_OK);
+  } catch (...) {
+    MessageBox(NULL, "An unknown error occurred!", "Error", MB_ICONERROR | MB_OK);
+  }
+  return 1;
+}
+
+#else
+
+// Standard entry point
+int main(int, char **) {
+  return AppMain();
+}
+
+#endif

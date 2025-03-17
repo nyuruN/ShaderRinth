@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.31)
 
-# Other arguments
+# Project configuration
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
@@ -14,7 +14,11 @@ project(
 
 set(EXECUTABLE ShaderRinth)
 
-add_executable(${EXECUTABLE} src/main.cpp)
+if (WIN32)
+  add_executable(${EXECUTABLE} WIN32 src/main.cpp)
+else()
+  add_executable(${EXECUTABLE} src/main.cpp)
+endif()
 
 target_include_directories(${EXECUTABLE} PRIVATE 
   include/
@@ -23,7 +27,7 @@ target_include_directories(${EXECUTABLE} PRIVATE
   extern/portable-file-dialogs/
   extern/IconFontCppHeaders/
 )
-target_include_directories(${EXECUTABLE} # Suppress warnings
+target_include_directories(${EXECUTABLE} # Suppress warnings from zep
   SYSTEM PRIVATE extern/zep/include/
 )
 target_sources(${EXECUTABLE} PRIVATE
@@ -84,19 +88,23 @@ else()
 endif()
 
 # Compile options
-if (WIN32) # Set icon file on Windows
+if (WIN32) # Set icon file (Windows)
   target_sources(${EXECUTABLE} PRIVATE icon.rc)
 endif()
+
+# Enable warnings
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   target_compile_options(${EXECUTABLE} PRIVATE /W4)
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(${EXECUTABLE} PRIVATE -Wall -Wextra -Wpedantic)
 endif()
-if (MINGW AND WIN32) # Disable console on startup on Windows
-  target_link_options(${EXECUTABLE}
-    PRIVATE "-mwindows"
-    PRIVATE "-static"
-  )
+
+# Disable windows console and enable static linking (Windows)
+if (MSVC) 
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
+  target_link_options(${EXECUTABLE} PRIVATE "/SUBSYSTEM:WINDOWS")
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang" AND WIN32)
+  target_link_options(${EXECUTABLE} PRIVATE "-static")
 endif()
 
 # Install instructions

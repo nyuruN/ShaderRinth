@@ -37,7 +37,7 @@ public:
       DataType::Int,  DataType::IVec2, DataType::IVec3, DataType::IVec4,     DataType::Float,
       DataType::Vec2, DataType::Vec3,  DataType::Vec4,  DataType::Texture2D,
   };
-  inline static constexpr char NAME[][10] = {
+  inline static constexpr const char * NAME[] = {
       "Int",       // Int
       "IVec2",     // IVec2
       "IVec3",     // IVec3
