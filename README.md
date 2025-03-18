@@ -13,12 +13,12 @@ demos, and more.
 
 ## Controls
 
-F1 : toggle wireframe
-Editor F5 : compile shader
-Node Editor CTRL+C : copy selection
-Node Editor CTRL+V : paste selection
-Node Editor X or DEL: delete selection
-Node Editor SHIFT+A or RMB: add node
+* F1 : toggle wireframe
+* Editor F5 : compile shader
+* Node Editor CTRL+C : copy selection
+* Node Editor CTRL+V : paste selection
+* Node Editor X or DEL: delete selection
+* Node Editor SHIFT+A or RMB: add node
 
 ## Known Issues
 

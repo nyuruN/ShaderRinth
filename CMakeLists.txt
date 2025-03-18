@@ -120,6 +120,7 @@ endif()
 # Install instructions
 install(TARGETS ${EXECUTABLE} DESTINATION .)
 install(DIRECTORY assets/ DESTINATION assets)
+install(FILES README.md DESTINATION .)
 install(FILES $<TARGET_RUNTIME_DLLS:${EXECUTABLE}> DESTINATION .)
 
 # CPack Configuration
