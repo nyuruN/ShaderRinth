@@ -192,7 +192,7 @@ void NodeEditorWidget::process_input() {
     add_nodes.open_popup();
   if (io.MouseClicked[1]) // Right-click
     add_nodes.open_popup();
-  if (isKeyJustPressed(ImGuiKey_X))
+  if (isKeyJustPressed(ImGuiKey_X) || isKeyJustPressed(ImGuiKey_Delete))
     delete_selected();
   if (isKeyJustPressed(ImGuiKey_C) && io.KeyCtrl)
     clipboard.copy(graph.get());

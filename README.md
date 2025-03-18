@@ -11,10 +11,14 @@ With ShaderRinth you should be able to generate
 textures with your renders, create interactive
 demos, and more.
 
-For that workflow to be applicable, the software
-should be relatively easy to use and offer various
-presets so that the user can iterate on their ideas
-faster.
+## Controls
+
+F1 : toggle wireframe
+Editor F5 : compile shader
+Node Editor CTRL+C : copy selection
+Node Editor CTRL+V : paste selection
+Node Editor X or DEL: delete selection
+Node Editor SHIFT+A or RMB: add node
 
 ## Known Issues
 
@@ -23,16 +27,26 @@ and may appear to be stretched
 
 * Many Zep Vim keybinds are not mapped nor integrated
 into ShaderRinth and may cause a crash in the worst case
-  * :q will crash the program
 
 ## Building the project
 
-This project depends on Git submodules and CMake
-so make sure these two are installed and available.
+This project depends on Git, CMake and Pkg-Config,
+make sure they are installed and available in your PATH.
 
-### For Windows (MinGW)
+### Windows (MSVC)
 
-Make sure you have MinGW + PkgConfig installed on your system.
+Make sure you have MSVC installed on your system.
+
+```console
+git clone --recurse-submodules https://github.com/nyuruN/ShaderRinth.git
+cd ShaderRinth && mkdir build && cd build
+cmake -G "Visual Studio 17 2022" ..
+cmake --build .
+```
+
+### Windows (MinGW)
+
+Make sure you have MinGW installed on your system.
 
 ```console
 git clone --recurse-submodules https://github.com/nyuruN/ShaderRinth.git
@@ -41,7 +55,7 @@ cmake -G "MinGW Makefiles" -DCMAKE_CXX_COMPILER=/path/to/mingw-g++.exe -DVCPKG_T
 cmake --build .
 ```
 
-### For Linux
+### Linux
 
 You can use any build system generator of your choice.
 
@@ -54,12 +68,11 @@ cmake --build .
 
 ## Goal posts
 
-The program is currently *viable* for testing
-purposes.
+The program is currently in active development.
 
 ---
 
-### VERSION 0.0.1 (Prototype)
+### VERSION 0.0.x
 
 * [x] Integrate more powerful code/text editor
 
@@ -85,9 +98,9 @@ purposes.
 
 * [x] Portable package with CPack
 
-* [ ] Finishing touches (testing, cleanup, cross-compiles)
+* [x] Finishing touches (testing, cleanup, cross-compiles)
 
-### VERSION 0.1.0 (Miniminal Viable Product)
+### VERSION 0.1.0
 
 * [x] Serialize project data in toml file
 

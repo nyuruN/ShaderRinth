@@ -57,7 +57,7 @@ void EditorWidget::onUpdate() {
     is_dirty = false;
   }
 
-  if (isKeyJustPressed(ImGuiKey_F5)) {
+  if (isKeyJustPressed(ImGuiKey_F5) && is_focused) {
     if (!shader->is_compiled())
       spdlog::error(shader->get_log());
     else
