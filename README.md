@@ -30,12 +30,12 @@ into ShaderRinth and may cause a crash in the worst case
 
 ## Building the project
 
-This project depends on Git, CMake and Pkg-Config,
+This project depends on Git and CMake,
 make sure they are installed and available in your PATH.
 
 ### Windows (MSVC)
 
-Make sure you have MSVC installed on your system.
+Make sure you have Microsoft Visual C++ Build Tools installed on your system.
 
 ```console
 git clone --recurse-submodules https://github.com/nyuruN/ShaderRinth.git
@@ -57,7 +57,7 @@ cmake --build .
 
 ### Linux
 
-You can use any build system generator of your choice.
+You may use any build system generator of your choice.
 
 ```console
 git clone --recurse-submodules https://github.com/nyuruN/ShaderRinth.git

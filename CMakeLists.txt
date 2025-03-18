@@ -7,7 +7,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 project(
   ShaderRinth
-  VERSION 0.0.1
+  VERSION 0.1.0
   DESCRIPTION "A Shadertoy-like GLSL Editor written in C++"
   LANGUAGES CXX
 )
@@ -66,17 +66,27 @@ target_link_libraries(${EXECUTABLE} PRIVATE spdlog::spdlog)
 find_package(Stb REQUIRED)
 target_include_directories(${EXECUTABLE} PRIVATE ${Stb_INCLUDE_DIR})
 
-# Link tomlplusplus
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(tomlplusplus REQUIRED IMPORTED_TARGET tomlplusplus)
-target_link_libraries(${EXECUTABLE} PRIVATE PkgConfig::tomlplusplus)
+# Link tomlplusplus (no vcpkg because it would require PkgConfig)
+include(FetchContent)
+FetchContent_Declare(
+    tomlplusplus
+    GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
+    GIT_TAG        v3.4.0
+)
+FetchContent_MakeAvailable(tomlplusplus)
+target_link_libraries(${EXECUTABLE} PRIVATE tomlplusplus::tomlplusplus)
 
 # Configure zep
 add_definitions(-DZEP_FEATURE_CPP_FILE_SYSTEM)
 add_definitions(-DZEP_SINGLE_HEADER=1)
 
 # Copy assets
-file(COPY assets/ DESTINATION ${CMAKE_BINARY_DIR}/assets)
+if (MSVC)
+  file(COPY assets/ DESTINATION ${CMAKE_BINARY_DIR}/Debug/assets)
+  file(COPY assets/ DESTINATION ${CMAKE_BINARY_DIR}/Release/assets)
+else()
+  file(COPY assets/ DESTINATION ${CMAKE_BINARY_DIR}/assets)
+endif()
 
 # Precompile headers
 option(USE_PCH "Enable precompiled headers" OFF)
@@ -110,11 +120,17 @@ endif()
 # Install instructions
 install(TARGETS ${EXECUTABLE} DESTINATION .)
 install(DIRECTORY assets/ DESTINATION assets)
+install(FILES $<TARGET_RUNTIME_DLLS:${EXECUTABLE}> DESTINATION .)
 
 # CPack Configuration
 set(CPACK_PACKAGE_NAME "ShaderRinth") 
-set(CPACK_PACKAGE_VERSION "0.0.1")
+set(CPACK_PACKAGE_VERSION "0.1.0-alpha")
 set(CPACK_PACKAGE_DESCRIPTION "A Shadertoy-like GLSL Editor written in C++")
-set(CPACK_GENERATOR "TGZ;ZIP")
+
+if (WIN32)
+  set(CPACK_GENERATOR "ZIP")
+else()
+  set(CPACK_GENERATOR "TGZ")
+endif()
 
 include(CPack)
