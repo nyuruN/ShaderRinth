@@ -4,16 +4,16 @@
 #include "graph.h"
 #include "imnodes.h"
 #include "shader.h"
-#include <glad/glad.h>
+#include <glad/gl.h>
 #include <imgui_stdlib.h>
 
 int FragmentShaderNode::add_uniform_pin(RenderGraph &graph, DataType type, std::string name) {
   int pinid;
   graph.register_pin(id, type, &pinid);
   uniform_pins.push_back(UniformPin{
-    .pinid = pinid,
-    .type = type,
-    .identifier = name,
+      .pinid = pinid,
+      .type = type,
+      .identifier = name,
   });
   return pinid;
 }

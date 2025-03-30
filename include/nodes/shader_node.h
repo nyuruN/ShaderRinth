@@ -3,7 +3,7 @@
 #include "assets.h"
 #include "node.h"
 #ifndef __gl_h_
-#include "glad/glad.h"
+#include "glad/gl.h"
 #endif
 
 class FragmentShaderNode : public Node {

@@ -3,9 +3,7 @@
 #include "graph.h"
 #include "imnodes.h"
 #include "node.h"
-#ifndef __gl_h_
-#include "glad/glad.h"
-#endif
+#include <glad/gl.h>
 #include <spdlog/spdlog.h>
 
 class OutputNode : public Node {

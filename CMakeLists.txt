@@ -9,7 +9,7 @@ project(
   ShaderRinth
   VERSION 0.1.0
   DESCRIPTION "A Shadertoy-like GLSL Editor written in C++"
-  LANGUAGES CXX
+  LANGUAGES C CXX
 )
 
 set(EXECUTABLE ShaderRinth)
@@ -24,6 +24,7 @@ target_include_directories(${EXECUTABLE} PRIVATE
   include/
 
   extern/imnodes/
+  extern/glad/include/
   extern/portable-file-dialogs/
   extern/IconFontCppHeaders/
 )
@@ -50,13 +51,10 @@ target_sources(${EXECUTABLE} PRIVATE
   src/nodes/shader_node.cpp
 
   extern/imnodes/imnodes.cpp
+  extern/glad/src/gl.c
 )
 
 # Link libraries (vcpkg)
-find_package(OpenGL REQUIRED)
-target_link_libraries(${EXECUTABLE} PRIVATE OpenGL::GL)
-find_package(glad CONFIG REQUIRED)
-target_link_libraries(${EXECUTABLE} PRIVATE glad::glad)
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(${EXECUTABLE} PRIVATE glfw)
 find_package(imgui CONFIG REQUIRED)

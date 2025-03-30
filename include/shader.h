@@ -3,7 +3,7 @@
 #include "app_path.h"
 #include "assets.h"
 #include <filesystem>
-#include <glad/glad.h>
+#include <glad/gl.h>
 #include <spdlog/spdlog.h>
 #include <string>
 

@@ -3,7 +3,7 @@
 #include "geometry.h"
 
 #include <fstream>
-#include <glad/glad.h>
+#include <glad/gl.h>
 
 // Uniform setters
 static const std::function<void(GLint, Data)> SET_UNIFORM[] = {

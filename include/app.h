@@ -11,7 +11,7 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h> // OpenGL headers
 #include <filesystem>
-#include <glad/glad.h>
+#include <glad/gl.h>
 #include <imgui.h>
 #include <optional>
 #include <vector>

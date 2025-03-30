@@ -1,6 +1,7 @@
+#include <glad/gl.h>
+
 #define GLFW_INCLUDE_NONE // Prevent GLFW from including system headers (use glad instead)
 #include <GLFW/glfw3.h>
-
 #if defined(_WIN32)
 #define NOMINMAX // Prevent Windows.h from defining min/max macros which breaks certain libraries
 #include <Windows.h>
@@ -10,7 +11,6 @@
 static HINSTANCE WindowsHInstance;
 #endif
 
-#include <glad/glad.h> // Defines OpenGL headers
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -71,10 +71,12 @@ int AppMain() {
 #endif
 
     // Setup GLAD
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    int version = gladLoadGL((GLADloadfunc)glfwGetProcAddress);
+    if (version == 0) {
       std::cerr << "Failed to initialize GLAD" << std::endl;
       return 1;
     }
+    printf("GL %d.%d\n", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
 
     // Setup Dear ImGui
     IMGUI_CHECKVERSION();
