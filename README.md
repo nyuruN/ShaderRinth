@@ -68,7 +68,7 @@ cmake --build .
 
 ## Goal posts
 
-The program is currently in active development.
+The project is currently on halt.
 
 ---
 
@@ -110,7 +110,9 @@ The program is currently in active development.
 
 * [ ] Inspector widget: Selection system? control parameters
 
-* [ ] Multiple graphs and render to texture if needed
+* [ ] Better node editor (with zoom functionality)
+ 
+* [ ] Ability to setup multiple RenderGraphs
 
 * [ ] Undo history for common actions
 
@@ -119,7 +121,5 @@ The program is currently in active development.
   * [x] Custom theme
 
   * [ ] Advanced windowing e.g. Splitters, Widgets etc. 
-
-* ***To be continued***
 
 

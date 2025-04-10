@@ -1,13 +1,16 @@
 #include "widgets/outliner_widget.h"
 
+#include <imgui.h>
+#include <imgui_stdlib.h>
+
 #include "assets.h"
 #include "events.h"
 #include "geometry.h"
 #include "shader.h"
 #include "texture.h"
 #include "widgets/editor_widget.h"
-#include <imgui.h>
-#include <imgui_stdlib.h>
+
+#include "IconsFontAwesome6.h"
 
 void render_entry(AssetId<Asset> asset_id, std::string &name, AssetId<Asset> &editing,
                   std::string &input, std::vector<AssetId<Asset>> &deferred_delete) {
@@ -27,12 +30,12 @@ void render_entry(AssetId<Asset> asset_id, std::string &name, AssetId<Asset> &ed
   }
 
   ImGui::TableNextColumn();
-  if (ImGui::Button("Edit")) {
+  if (ImGui::Button(ICON_FA_PENCIL)) {
     editing = asset_id;
     input = name;
   }
   ImGui::SameLine();
-  if (ImGui::Button(" - ")) {
+  if (ImGui::Button(ICON_FA_MINUS)) {
     deferred_delete.push_back(asset_id);
   }
   ImGui::SameLine();
@@ -75,7 +78,7 @@ void OutlinerWidget::render(bool *p_open) {
 
   bool shaders_open = ImGui::TreeNodeEx("Shaders");
   ImGui::TableNextColumn();
-  if (ImGui::Button(" + ##shader")) { // Handle creation
+  if (ImGui::Button(ICON_FA_SQUARE_PLUS "##shader")) { // Handle creation
     AssetId<Shader> id = assets->insertShader(std::make_shared<Shader>(Shader("NewShader")));
     EventQueue::push(AddWidget(
         std::make_shared<EditorWidget>(EditorWidget(assets->get_widget_id(), assets, id))));

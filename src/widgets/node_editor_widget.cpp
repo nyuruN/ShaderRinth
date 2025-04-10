@@ -177,6 +177,7 @@ void NodeEditorWidget::render(bool *) {
 
   focused = ImGui::IsWindowFocused();
 
+  ImNodes::MiniMap();
   ImNodes::EndNodeEditor();
   ImNodes::PopColorStyle();
   ImGui::End();

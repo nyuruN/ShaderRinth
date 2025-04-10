@@ -4,8 +4,11 @@
 #include "graph.h"
 #include "imnodes.h"
 #include "shader.h"
+
 #include <glad/gl.h>
 #include <imgui_stdlib.h>
+
+#include "IconsFontAwesome6.h"
 
 int FragmentShaderNode::add_uniform_pin(RenderGraph &graph, DataType type, std::string name) {
   int pinid;
@@ -80,13 +83,13 @@ void FragmentShaderNode::render(RenderGraph &graph) {
       ImGui::Text("%s", Data::type_name(pin.type));
       ImGui::SameLine();
 
-      ImGui::SetNextItemWidth(node_width - 20 - ImGui::CalcTextSize(" - ").x -
+      ImGui::SetNextItemWidth(node_width - 6 - ImGui::CalcTextSize(ICON_FA_MINUS).x -
                               ImGui::CalcTextSize(Data::type_name(pin.type)).x);
       ImGui::InputText("##hidelabel", &pin.identifier);
 
       ImGui::SameLine();
-      ImGui::Indent(node_width - ImGui::CalcTextSize(" - ").x);
-      if (ImGui::Button(" - ")) {
+      ImGui::Indent(node_width - ImGui::CalcTextSize(ICON_FA_MINUS).x);
+      if (ImGui::Button(ICON_FA_MINUS)) {
         marked.push_back(idx);
       }
 

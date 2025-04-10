@@ -158,14 +158,23 @@ void App::render_statusbar() {
   if (ImGui::BeginMenuBar()) {
     ImGui::TextUnformatted(status_message.c_str());
 
-    // Get framerate
-    static float prev = glfwGetTime();
+    // Calculate framerate
+    static float prev = 0.0f;
     float curr = glfwGetTime();
     float frame = 1 / (curr - prev);
     prev = curr;
 
+    // Sample framerate every interval
+    constexpr static float sample_interval = 0.5f;
+    static float prev_sample_t = 0.0f;
+    static float sample_frame = 0.0f;
+    if (glfwGetTime() - prev_sample_t > sample_interval) {
+      sample_frame = frame;
+      prev_sample_t = glfwGetTime();
+    }
+
     ImGui::Indent(width - ImGui::CalcTextSize("FPS: 00.00 ").x);
-    ImGui::Text("FPS: %.1f", frame);
+    ImGui::Text("FPS: %.1f", sample_frame);
 
     ImGui::EndMenuBar();
   }
